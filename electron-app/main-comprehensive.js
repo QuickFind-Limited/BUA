@@ -123,17 +123,31 @@ function createWindow() {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false
+      sandbox: false,
+      partition: 'persist:default'
     }
   });
 
   mainWindow.contentView.addChildView(webView);
   updateWebViewBounds();
   
-  // Set user agent to bypass Google sign-in prompt
+  // Set user agent and session to bypass Google sign-in prompt
   const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
   webView.webContents.setUserAgent(userAgent);
-  webView.webContents.loadURL('https://www.google.com');
+  
+  // Set cookie to indicate not signed in preference
+  webView.webContents.session.cookies.set({
+    url: 'https://www.google.com',
+    name: 'NID',
+    value: '511=eVvn6gKJmLKdqPWJm8fVqP9rXPvJHYaGfKqylNMqg_lTKrkrBfGMdH2E2g3hI9epNTOQg0pLHIUd1sSJoLwQpg',
+    domain: '.google.com',
+    path: '/',
+    secure: true,
+    httpOnly: true,
+    sameSite: 'no_restriction'
+  });
+  
+  webView.webContents.loadURL('https://www.google.com/?gws_rd=ssl');
   setupRecordingListeners();
 
   // Initialize default tab in the UI
@@ -192,6 +206,13 @@ function createWindow() {
   // Update WebView navigation state
   webView.webContents.on('did-navigate', (event, url) => {
     console.log('WebView navigated to:', url);
+    // Send navigation state update
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('navigation-update', {
+        canGoBack: webView.webContents.canGoBack(),
+        canGoForward: webView.webContents.canGoForward()
+      });
+    }
     // Update the tab UI
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.executeJavaScript(`
@@ -559,23 +580,7 @@ ipcMain.handle('start-enhanced-recording', async () => {
           startMonitoring: function() {
             console.log('Starting comprehensive DOM monitoring...');
             
-            // Recording indicator
-            const indicator = document.createElement('div');
-            indicator.id = '__recording_indicator';
-            indicator.innerHTML = '🔴 COMPREHENSIVE RECORDING';
-            indicator.style.cssText = \`
-              position: fixed;
-              top: 10px;
-              right: 10px;
-              z-index: 999999;
-              background: rgba(255, 0, 0, 0.9);
-              color: white;
-              padding: 5px 10px;
-              border-radius: 3px;
-              font-size: 12px;
-              pointer-events: none;
-            \`;
-            document.body.appendChild(indicator);
+            // Recording indicator removed - no popup needed
             
             // Capture ALL events
             const allEvents = ['click', 'dblclick', 'mousedown', 'mouseup', 'mousemove', 'mouseenter', 'mouseleave',
@@ -584,7 +589,7 @@ ipcMain.handle('start-enhanced-recording', async () => {
             
             allEvents.forEach(eventType => {
               document.addEventListener(eventType, (e) => {
-                if (e.target.id === '__recording_indicator') return;
+                // Process all events
                 
                 const eventData = {
                   type: eventType,
@@ -778,6 +783,74 @@ async function startScreenshotCapture() {
   }, 2000); // Screenshot every 2 seconds
 }
 
+// Pause recording handler
+ipcMain.handle('pause-enhanced-recording', async () => {
+  if (!recordingActive) {
+    return { success: false, error: 'No recording active' };
+  }
+  
+  console.log('⏸️ Pausing recording...');
+  recordingData.isPaused = true;
+  
+  // Send pause signal to page
+  if (webView && debuggerAttached) {
+    try {
+      await webView.webContents.debugger.sendCommand('Runtime.evaluate', {
+        expression: `
+          if (window.__comprehensiveRecording) {
+            window.__comprehensiveRecording.isPaused = true;
+            console.log('Recording paused');
+          }
+        `
+      });
+    } catch (e) {
+      console.error('Error pausing recording:', e);
+    }
+  }
+  
+  return { success: true };
+});
+
+// Resume recording handler
+ipcMain.handle('resume-enhanced-recording', async () => {
+  if (!recordingActive) {
+    return { success: false, error: 'No recording active' };
+  }
+  
+  console.log('▶️ Resuming recording...');
+  recordingData.isPaused = false;
+  
+  // Send resume signal to page
+  if (webView && debuggerAttached) {
+    try {
+      await webView.webContents.debugger.sendCommand('Runtime.evaluate', {
+        expression: `
+          if (window.__comprehensiveRecording) {
+            window.__comprehensiveRecording.isPaused = false;
+            console.log('Recording resumed');
+          }
+        `
+      });
+    } catch (e) {
+      console.error('Error resuming recording:', e);
+    }
+  }
+  
+  return { success: true };
+});
+
+// Get recording status handler
+ipcMain.handle('enhanced-recording-status', async () => {
+  return {
+    success: true,
+    data: {
+      isRecording: recordingActive,
+      isPaused: recordingData.isPaused || false,
+      sessionId: recordingActive ? `comprehensive-${recordingData.startTime}` : null
+    }
+  };
+});
+
 // Stop recording handler
 ipcMain.handle('stop-enhanced-recording', async () => {
   if (!recordingActive) {
@@ -796,9 +869,7 @@ ipcMain.handle('stop-enhanced-recording', async () => {
         expression: `
           const data = window.__comprehensiveRecording || { actions: [], domSnapshots: [], mutations: [], visibilityChanges: [] };
           
-          // Remove recording indicator
-          const indicator = document.getElementById('__recording_indicator');
-          if (indicator) indicator.remove();
+          // Recording stopped
           
           console.log('Collected comprehensive recording data:', {
             actions: data.actions.length,
@@ -1047,23 +1118,34 @@ ipcMain.handle('navigate-tab', async (event, tabId, url) => {
 
 // Navigation handlers matching preload.js
 ipcMain.handle('tab-back', async (event, tabId) => {
-  if (webView && webView.webContents.canGoBack()) {
-    webView.webContents.goBack();
-    return true;
+  console.log('🔙 Navigation back requested');
+  if (webView && webView.webContents) {
+    const canGoBack = webView.webContents.canGoBack();
+    console.log('🔙 Can go back:', canGoBack);
+    if (canGoBack) {
+      webView.webContents.goBack();
+      return true;
+    }
   }
   return false;
 });
 
 ipcMain.handle('tab-forward', async (event, tabId) => {
-  if (webView && webView.webContents.canGoForward()) {
-    webView.webContents.goForward();
-    return true;
+  console.log('🔜 Navigation forward requested');
+  if (webView && webView.webContents) {
+    const canGoForward = webView.webContents.canGoForward();
+    console.log('🔜 Can go forward:', canGoForward);
+    if (canGoForward) {
+      webView.webContents.goForward();
+      return true;
+    }
   }
   return false;
 });
 
 ipcMain.handle('tab-reload', async (event, tabId) => {
-  if (webView) {
+  console.log('🔄 Reload requested');
+  if (webView && webView.webContents) {
     webView.webContents.reload();
     return true;
   }

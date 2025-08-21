@@ -251,19 +251,24 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: none;
   border-radius: 4px;
   background: transparent;
-  color: #666;
+  color: #555;
   transition: all 0.2s;
 }
 
 .settings-btn.icon-only:hover {
   background: #f0f0f0;
   color: #333;
+}
+
+.settings-btn.icon-only svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* Recording Action Buttons (icon-only) */

@@ -114,30 +114,12 @@ function createInitialTab() {
     updateStatus();
 }
 
-function createNewTab(url = 'https://www.google.com') {
-    const tabId = 'tab-' + Date.now();
-    const tab = {
-        id: tabId,
-        title: 'New Tab',
-        url: url,
-        active: false
-    };
-    
-    tabs.set(tabId, tab);
-    
-    // Add tab to UI
-    addTabToUI(tab);
-    
-    // Send IPC message to create tab in main process
+async function createNewTab(url = 'https://www.google.com') {
+    // Just send IPC message to create tab in main process
+    // The main process will send back the tab update which will update the UI
     if (window.electronAPI) {
-        window.electronAPI.createTab(url);
+        await window.electronAPI.createTab(url);
     }
-    
-    // Switch to new tab
-    switchToTab(tabId);
-    
-    // Update status
-    updateStatus();
 }
 
 function addTabToUI(tab) {
