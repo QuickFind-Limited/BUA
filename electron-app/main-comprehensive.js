@@ -847,8 +847,22 @@ ipcMain.handle('enhanced-recording:status', async () => {
   };
 });
 
-// Tab management handlers with proper synchronization
-ipcMain.handle('tabs:create', async (event, url) => {
+// Tab management handlers matching preload.js
+ipcMain.handle('close-tab', async (event, tabId) => {
+  // In this simple implementation, we don't actually close tabs
+  // since we only have one WebView
+  console.log(`Close tab requested for: ${tabId}`);
+  return true;
+});
+
+ipcMain.handle('switch-tab', async (event, tabId) => {
+  // In this simple implementation, switching tabs just means
+  // potentially navigating to a different URL
+  console.log(`Switch to tab: ${tabId}`);
+  return true;
+});
+
+ipcMain.handle('create-tab', async (event, url) => {
   const targetUrl = url || 'https://www.google.com';
   const tabId = `tab-${Date.now()}`;
   
@@ -930,7 +944,7 @@ ipcMain.handle('tabs:getAll', async () => {
   }];
 });
 
-ipcMain.handle('tabs:navigate', async (event, tabId, url) => {
+ipcMain.handle('navigate-tab', async (event, tabId, url) => {
   if (webView) {
     // Handle different URL formats
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -987,6 +1001,32 @@ ipcMain.handle('tabs:navigate', async (event, tabId, url) => {
   return false;
 });
 
+// Navigation handlers matching preload.js
+ipcMain.handle('tab-back', async (event, tabId) => {
+  if (webView && webView.webContents.canGoBack()) {
+    webView.webContents.goBack();
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('tab-forward', async (event, tabId) => {
+  if (webView && webView.webContents.canGoForward()) {
+    webView.webContents.goForward();
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('tab-reload', async (event, tabId) => {
+  if (webView) {
+    webView.webContents.reload();
+    return true;
+  }
+  return false;
+});
+
+// Also keep the old handlers for compatibility
 ipcMain.handle('tabs:goBack', async () => {
   if (webView && webView.webContents.canGoBack()) {
     webView.webContents.goBack();
