@@ -320,10 +320,15 @@ function setupCDPEventListeners(sessionId) {
         // Handle events from page-recording-script.js
         if (payload[0] === 'page-recording:action') {
           const actionData = payload[1];
-          // Store the raw action with all its data
+          // Store the action with its specific type
           recordingCollector.addAction({
-            type: actionData.type,
-            ...actionData
+            action: actionData.type,  // The actual event type (click, scroll, etc.)
+            element: actionData.element,
+            selector: actionData.selector,
+            value: actionData.value,
+            url: actionData.url,
+            timestamp: actionData.timestamp,
+            ...actionData  // Include all other event-specific data
           }, currentTabId);
         } else {
           handleRecordingEvent(payload, currentTabId);
