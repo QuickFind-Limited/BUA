@@ -124,30 +124,22 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
-      partition: 'persist:default'
+      partition: 'persist:default',
+      webSecurity: false
     }
   });
 
   mainWindow.contentView.addChildView(webView);
   updateWebViewBounds();
   
-  // Set user agent and session to bypass Google sign-in prompt
-  const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-  webView.webContents.setUserAgent(userAgent);
+  // Use Firefox user agent to bypass Google's Electron detection
+  // This prevents the "Stay signed out" prompt
+  const firefoxUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0';
+  webView.webContents.setUserAgent(firefoxUserAgent);
   
-  // Set cookie to indicate not signed in preference
-  webView.webContents.session.cookies.set({
-    url: 'https://www.google.com',
-    name: 'NID',
-    value: '511=eVvn6gKJmLKdqPWJm8fVqP9rXPvJHYaGfKqylNMqg_lTKrkrBfGMdH2E2g3hI9epNTOQg0pLHIUd1sSJoLwQpg',
-    domain: '.google.com',
-    path: '/',
-    secure: true,
-    httpOnly: true,
-    sameSite: 'no_restriction'
-  });
-  
-  webView.webContents.loadURL('https://www.google.com/?gws_rd=ssl');
+  // Load Google with parameters to prevent sign-in prompts and redirects
+  // gl=us - US region, hl=en - English, gws_rd=cr - stay on .com, pws=0 - no personalization
+  webView.webContents.loadURL('https://www.google.com/webhp?gl=us&hl=en&gws_rd=cr&pws=0');
   setupRecordingListeners();
 
   // Initialize default tab in the UI
@@ -978,11 +970,17 @@ ipcMain.handle('switch-tab', async (event, tabId) => {
 });
 
 ipcMain.handle('create-tab', async (event, url) => {
-  const targetUrl = url || 'https://www.google.com';
+  // Use the same Google URL with parameters for new tabs
+  const targetUrl = url || 'https://www.google.com/webhp?gl=us&hl=en&gws_rd=cr&pws=0';
   const tabId = `tab-${Date.now()}`;
   
   if (webView) {
     console.log(`Creating new tab with URL: ${targetUrl}`);
+    
+    // Ensure Firefox user agent is maintained for new tabs
+    const firefoxUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0';
+    webView.webContents.setUserAgent(firefoxUserAgent);
+    
     await webView.webContents.loadURL(targetUrl);
     
     // Wait a moment for page to start loading
@@ -1061,12 +1059,16 @@ ipcMain.handle('tabs:getAll', async () => {
 
 ipcMain.handle('navigate-tab', async (event, tabId, url) => {
   if (webView) {
+    // Ensure Firefox user agent is maintained during navigation
+    const firefoxUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0';
+    webView.webContents.setUserAgent(firefoxUserAgent);
+    
     // Handle different URL formats
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       // Check if it looks like a search query or a domain
       if (url.includes(' ') || !url.includes('.')) {
-        // It's a search query
-        url = `https://www.google.com/search?q=${encodeURIComponent(url)}`;
+        // It's a search query - use Google with parameters
+        url = `https://www.google.com/search?q=${encodeURIComponent(url)}&gl=us&hl=en&pws=0`;
       } else {
         // It's a domain
         url = 'https://' + url;
