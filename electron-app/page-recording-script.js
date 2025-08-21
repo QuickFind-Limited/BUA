@@ -18,7 +18,15 @@
     maxSelectorDepth: 5,
     capturePasswords: false,
     captureMouseMove: true,
-    captureScroll: true
+    captureScroll: true,
+    captureHover: true,
+    captureClipboard: true,
+    captureDragDrop: true,
+    captureTouch: true,
+    captureMedia: true,
+    capturePerformance: true,
+    captureConsole: true,
+    captureStorage: true
   };
   
   // State management
@@ -188,9 +196,11 @@
   function handleClick(e) {
     const extra = {
       button: e.button,
+      clickCount: e.detail,
       ctrlKey: e.ctrlKey,
       shiftKey: e.shiftKey,
       altKey: e.altKey,
+      metaKey: e.metaKey,
       x: e.clientX,
       y: e.clientY
     };
@@ -281,6 +291,189 @@
     sendAction('blur', e.target, null, {});
   }
   
+  function handleDoubleClick(e) {
+    sendAction('dblclick', e.target, null, {
+      x: e.clientX,
+      y: e.clientY
+    });
+  }
+  
+  function handleContextMenu(e) {
+    sendAction('contextmenu', e.target, null, {
+      x: e.clientX,
+      y: e.clientY
+    });
+  }
+  
+  function handleMouseEnter(e) {
+    sendActionThrottled(`hover-${getElementSelector(e.target)}`, 'mouseenter', e.target, null, {
+      x: e.clientX,
+      y: e.clientY
+    });
+  }
+  
+  function handleMouseLeave(e) {
+    sendActionThrottled(`hover-${getElementSelector(e.target)}`, 'mouseleave', e.target, null, {
+      x: e.clientX,
+      y: e.clientY
+    });
+  }
+  
+  function handleWheel(e) {
+    sendActionThrottled('wheel', 'wheel', e.target, null, {
+      deltaX: e.deltaX,
+      deltaY: e.deltaY,
+      deltaZ: e.deltaZ,
+      deltaMode: e.deltaMode
+    });
+  }
+  
+  function handleDragStart(e) {
+    const dataTransferInfo = {};
+    if (e.dataTransfer) {
+      dataTransferInfo.types = Array.from(e.dataTransfer.types);
+      dataTransferInfo.effectAllowed = e.dataTransfer.effectAllowed;
+    }
+    sendAction('dragstart', e.target, null, {
+      x: e.clientX,
+      y: e.clientY,
+      dataTransfer: dataTransferInfo
+    });
+  }
+  
+  function handleDragEnd(e) {
+    sendAction('dragend', e.target, null, {
+      x: e.clientX,
+      y: e.clientY,
+      dropEffect: e.dataTransfer?.dropEffect
+    });
+  }
+  
+  function handleDrop(e) {
+    const dataTransferInfo = {};
+    if (e.dataTransfer) {
+      dataTransferInfo.types = Array.from(e.dataTransfer.types);
+      dataTransferInfo.files = Array.from(e.dataTransfer.files).map(f => ({
+        name: f.name,
+        size: f.size,
+        type: f.type
+      }));
+    }
+    sendAction('drop', e.target, null, {
+      x: e.clientX,
+      y: e.clientY,
+      dataTransfer: dataTransferInfo
+    });
+  }
+  
+  function handleCopy(e) {
+    sendAction('copy', e.target, window.getSelection().toString());
+  }
+  
+  function handlePaste(e) {
+    const clipboardData = e.clipboardData || window.clipboardData;
+    const pastedText = clipboardData ? clipboardData.getData('text') : null;
+    sendAction('paste', e.target, pastedText?.slice(0, 100));
+  }
+  
+  function handleCut(e) {
+    sendAction('cut', e.target, window.getSelection().toString());
+  }
+  
+  function handleTouchStart(e) {
+    const touches = Array.from(e.touches).map(t => ({
+      x: t.clientX,
+      y: t.clientY,
+      id: t.identifier
+    }));
+    sendAction('touchstart', e.target, null, { touches });
+  }
+  
+  function handleTouchEnd(e) {
+    const touches = Array.from(e.changedTouches).map(t => ({
+      x: t.clientX,
+      y: t.clientY,
+      id: t.identifier
+    }));
+    sendAction('touchend', e.target, null, { touches });
+  }
+  
+  function handleFullscreenChange() {
+    sendAction('fullscreenchange', document.fullscreenElement, null, {
+      isFullscreen: !!document.fullscreenElement
+    });
+  }
+  
+  function handleBeforePrint() {
+    sendAction('beforeprint', null, null, {});
+  }
+  
+  function handleAfterPrint() {
+    sendAction('afterprint', null, null, {});
+  }
+  
+  function handleStorageChange(e) {
+    sendAction('storage', null, null, {
+      key: e.key,
+      oldValue: e.oldValue?.slice(0, 100),
+      newValue: e.newValue?.slice(0, 100),
+      storageArea: e.storageArea === localStorage ? 'local' : 'session',
+      url: e.url
+    });
+  }
+  
+  function handlePopState(e) {
+    sendAction('popstate', null, null, {
+      state: e.state,
+      url: location.href
+    });
+  }
+  
+  function handleHashChange(e) {
+    sendAction('hashchange', null, null, {
+      oldURL: e.oldURL,
+      newURL: e.newURL
+    });
+  }
+  
+  function handleOnline() {
+    sendAction('online', null, null, { online: true });
+  }
+  
+  function handleOffline() {
+    sendAction('offline', null, null, { online: false });
+  }
+  
+  function captureConsoleWarning() {
+    const originalWarn = console.warn;
+    console.warn = function(...args) {
+      sendAction('console-warn', null, null, {
+        message: args.map(a => String(a)).join(' ').slice(0, 500)
+      });
+      originalWarn.apply(console, args);
+    };
+  }
+  
+  function captureMediaEvents() {
+    const mediaElements = document.querySelectorAll('video, audio');
+    mediaElements.forEach(media => {
+      media.addEventListener('play', () => sendAction('media-play', media, null, {
+        currentTime: media.currentTime,
+        duration: media.duration
+      }));
+      media.addEventListener('pause', () => sendAction('media-pause', media, null, {
+        currentTime: media.currentTime
+      }));
+      media.addEventListener('seeked', () => sendAction('media-seeked', media, null, {
+        currentTime: media.currentTime
+      }));
+      media.addEventListener('volumechange', () => sendAction('media-volume', media, null, {
+        volume: media.volume,
+        muted: media.muted
+      }));
+    });
+  }
+  
   function handleSubmit(e) {
     const form = e.target;
     const formData = {};
@@ -360,16 +553,58 @@
     
     // Set up event listeners with passive where appropriate
     document.addEventListener('click', handleClick, true);
+    document.addEventListener('dblclick', handleDoubleClick, true);
+    document.addEventListener('contextmenu', handleContextMenu, true);
     document.addEventListener('input', handleInput, true);
     document.addEventListener('keydown', handleKeydown, true);
     document.addEventListener('submit', handleSubmit, true);
     document.addEventListener('focus', handleFocus, true);
     document.addEventListener('blur', handleBlur, true);
     document.addEventListener('change', handleChange, true);
+    
+    // Mouse events
+    document.addEventListener('mouseenter', handleMouseEnter, true);
+    document.addEventListener('mouseleave', handleMouseLeave, true);
+    window.addEventListener('wheel', handleWheel, { passive: true });
     window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Drag and drop
+    document.addEventListener('dragstart', handleDragStart, true);
+    document.addEventListener('dragend', handleDragEnd, true);
+    document.addEventListener('drop', handleDrop, true);
+    
+    // Clipboard
+    document.addEventListener('copy', handleCopy, true);
+    document.addEventListener('paste', handlePaste, true);
+    document.addEventListener('cut', handleCut, true);
+    
+    // Touch events
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    
+    // Window events
     window.addEventListener('resize', handleResize);
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+    
+    // Storage
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Navigation
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Network
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    // Errors
     window.addEventListener('error', handleError, true);
+    
+    // Console warnings
+    captureConsoleWarning();
     
     // Optional mouse move tracking
     if (config.captureMouseMove) {
@@ -396,6 +631,33 @@
     // Periodic DOM snapshots
     setInterval(captureDomSnapshot, config.domSnapshotInterval);
     
+    // Monitor for new media elements
+    const mediaObserver = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeName === 'VIDEO' || node.nodeName === 'AUDIO') {
+            captureMediaEvents();
+          }
+        });
+      });
+    });
+    mediaObserver.observe(document.body, { childList: true, subtree: true });
+    
+    // Initial media capture
+    captureMediaEvents();
+    
+    // Capture file inputs
+    document.addEventListener('change', (e) => {
+      if (e.target.type === 'file') {
+        const files = Array.from(e.target.files).map(f => ({
+          name: f.name,
+          size: f.size,
+          type: f.type
+        }));
+        sendAction('file-selected', e.target, null, { files });
+      }
+    }, true);
+    
     // Capture performance metrics
     if (window.performance && performance.timing) {
       const timing = performance.timing;
@@ -403,8 +665,50 @@
         domContentLoaded: timing.domContentLoadedEventEnd - timing.navigationStart,
         loadComplete: timing.loadEventEnd - timing.navigationStart,
         domInteractive: timing.domInteractive - timing.navigationStart,
-        firstPaint: performance.getEntriesByType('paint')[0]?.startTime || 0
+        firstPaint: performance.getEntriesByType('paint')[0]?.startTime || 0,
+        firstContentfulPaint: performance.getEntriesByType('paint')[1]?.startTime || 0,
+        largestContentfulPaint: 0
       };
+      
+      // Capture LCP
+      const observer = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        const lastEntry = entries[entries.length - 1];
+        performanceData.largestContentfulPaint = lastEntry.renderTime || lastEntry.loadTime;
+      });
+      
+      try {
+        observer.observe({ entryTypes: ['largest-contentful-paint'] });
+      } catch (e) {}
+      
+      // Capture CLS
+      let clsValue = 0;
+      const clsObserver = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (!entry.hadRecentInput) {
+            clsValue += entry.value;
+          }
+        }
+        sendAction('performance-cls', null, null, { cls: clsValue });
+      });
+      
+      try {
+        clsObserver.observe({ entryTypes: ['layout-shift'] });
+      } catch (e) {}
+      
+      // Capture long tasks
+      const longTaskObserver = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          sendAction('long-task', null, null, {
+            duration: entry.duration,
+            startTime: entry.startTime
+          });
+        }
+      });
+      
+      try {
+        longTaskObserver.observe({ entryTypes: ['longtask'] });
+      } catch (e) {}
       
       sendAction('performance', null, null, performanceData);
     }
