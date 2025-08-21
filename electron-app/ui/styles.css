@@ -271,48 +271,59 @@ body {
   height: 18px;
 }
 
-/* Recording Action Buttons (icon-only) */
+/* Recording Action Buttons (modern minimal style) */
 .recording-action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border: none;
-  border-radius: 4px;
+  border-radius: 50%;
   cursor: pointer;
-  background: #607D8B;
-  color: white;
-  transition: background 0.2s;
+  background: transparent;
+  color: #555;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .recording-action-btn:hover {
-  background: #455A64;
+  background: rgba(0, 0, 0, 0.05);
+  transform: scale(1.1);
+}
+
+.recording-action-btn:active {
+  transform: scale(0.95);
+}
+
+.recording-action-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
 .recording-action-btn.pause-btn {
-  background: #666;
+  color: #FF9800;
 }
 
 .recording-action-btn.pause-btn:hover {
-  background: #555;
+  background: rgba(255, 152, 0, 0.1);
 }
 
 .recording-action-btn.resume-btn {
-  background: #2196F3;
+  color: #4CAF50;
 }
 
 .recording-action-btn.resume-btn:hover {
-  background: #1976D2;
+  background: rgba(76, 175, 80, 0.1);
 }
 
 .recording-action-btn.stop-btn {
-  background: #333;
+  color: #F44336;
 }
 
 .recording-action-btn.stop-btn:hover {
-  background: #222;
+  background: rgba(244, 67, 54, 0.1);
 }
 
 .begin-analysis-btn:hover {

@@ -35,6 +35,9 @@ let recordingActive = false;
 let debuggerAttached = false;
 let sidebarWidth = 320;
 
+// Track tabs and their URLs
+const tabsData = new Map();
+
 // Comprehensive recording data structure
 let recordingData = {
   // Core actions
@@ -163,6 +166,14 @@ function createWindow() {
   // Initialize default tab in the UI
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('✅ Main window loaded, initializing default tab');
+    
+    // Store the initial tab
+    const initialTabId = 'tab-' + Date.now();
+    tabsData.set(initialTabId, { 
+      id: initialTabId, 
+      url: 'https://www.google.com/webhp?gl=us&hl=en&gws_rd=cr&pws=0',
+      title: 'Google'
+    });
     console.log(`📍 CDP endpoint available at: http://127.0.0.1:${CDP_PORT}`);
     console.log(`📁 User data directory: ${userDataPath}`);
     // Send initial tab info to renderer
@@ -216,8 +227,20 @@ function createWindow() {
   // Update WebView navigation state
   webView.webContents.on('did-navigate', (event, url) => {
     console.log('WebView navigated to:', url);
-    // Send navigation state update
+    
+    // Update the current tab's URL in our tracking
     if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.executeJavaScript(`
+        typeof activeTabId !== 'undefined' ? activeTabId : null
+      `).then(activeTabId => {
+        if (activeTabId && tabsData.has(activeTabId)) {
+          const tabData = tabsData.get(activeTabId);
+          tabData.url = url;
+          console.log(`Updated tab ${activeTabId} URL to: ${url}`);
+        }
+      });
+      
+      // Send navigation state update
       mainWindow.webContents.send('navigation-update', {
         canGoBack: webView.webContents.canGoBack(),
         canGoForward: webView.webContents.canGoForward()
@@ -983,10 +1006,19 @@ ipcMain.handle('close-tab', async (event, tabId) => {
 });
 
 ipcMain.handle('switch-tab', async (event, tabId) => {
-  // In this simple implementation, switching tabs just means
-  // potentially navigating to a different URL
   console.log(`Switch to tab: ${tabId}`);
-  return true;
+  
+  // Get the tab's URL and navigate to it
+  const tabData = tabsData.get(tabId);
+  if (tabData && webView) {
+    console.log(`Navigating to tab URL: ${tabData.url}`);
+    const firefoxUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0';
+    webView.webContents.setUserAgent(firefoxUserAgent);
+    await webView.webContents.loadURL(tabData.url);
+    return true;
+  }
+  
+  return false;
 });
 
 ipcMain.handle('create-tab', async (event, url) => {
@@ -995,7 +1027,9 @@ ipcMain.handle('create-tab', async (event, url) => {
   const tabId = `tab-${Date.now()}`;
   const title = 'New Tab';
   
-  // Since we only have one webView, we'll track tabs in the UI only
+  // Store tab data
+  tabsData.set(tabId, { id: tabId, url: targetUrl, title });
+  
   console.log(`Creating new tab: ${tabId}`);
   
   if (mainWindow && !mainWindow.isDestroyed()) {
