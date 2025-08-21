@@ -1168,24 +1168,17 @@ async function toggleEnhancedRecording() {
                     console.log('Enhanced recording started successfully:', result.data?.sessionId);
                     
                     isEnhancedRecording = true;
+                    enhancedRecordingSessionId = result.data?.sessionId;
                     
                     // Update record button to disabled state with "Recording" text
                     enhancedRecorderBtn.disabled = true;
                     enhancedRecorderBtn.classList.add('recording');
                     enhancedRecorderBtn.querySelector('.enhanced-recorder-text').textContent = 'Recording';
+                    enhancedRecorderBtn.title = 'Recording in progress';
                     
                     // Show control buttons
                     if (pauseBtn) pauseBtn.style.display = 'flex';
                     if (stopBtn) stopBtn.style.display = 'flex';
-                    enhancedRecordingSessionId = result.data?.sessionId;
-                    
-                    // Update button to show recording state
-                    enhancedRecorderBtn.classList.add('recording');
-                    enhancedRecorderBtn.querySelector('.enhanced-recorder-text').textContent = '⏹️ Stop Enhanced';
-                    enhancedRecorderBtn.title = 'Stop Enhanced Recording';
-                    
-                    // Add pause/resume buttons
-                    addEnhancedRecordingControls();
                     
                     console.log('Enhanced recording UI updated');
                 } else {
@@ -1216,11 +1209,13 @@ async function toggleEnhancedRecording() {
                     
                     // Update button back to start state
                     enhancedRecorderBtn.classList.remove('recording', 'paused');
-                    enhancedRecorderBtn.querySelector('.enhanced-recorder-text').textContent = '🔬 Enhanced Record';
-                    enhancedRecorderBtn.title = 'Start Enhanced CDP Recording with Pause/Resume';
+                    enhancedRecorderBtn.querySelector('.enhanced-recorder-text').textContent = 'Record';
+                    enhancedRecorderBtn.title = 'Start Recording';
                     
-                    // Remove pause/resume controls
-                    removeEnhancedRecordingControls();
+                    // Hide control buttons
+                    if (pauseBtn) pauseBtn.style.display = 'none';
+                    if (resumeBtn) resumeBtn.style.display = 'none';
+                    if (stopBtn) stopBtn.style.display = 'none';
                     
                     // Store recording session for analysis
                     if (result.data?.session) {
@@ -1267,20 +1262,10 @@ function addEnhancedRecordingControls() {
     }
 }
 
-/**
- * Remove pause/resume controls
- */
-function removeEnhancedRecordingControls() {
-    const pauseResumeBtn = document.getElementById('pause-resume-btn');
-    if (pauseResumeBtn) {
-        pauseResumeBtn.remove();
-    }
-}
+// Old pause/resume control functions removed - using new icon buttons
 
-/**
- * Toggle pause/resume for enhanced recording
- */
-async function toggleEnhancedRecordingPause() {
+// Old toggle function removed
+async function oldToggleEnhancedRecordingPause() {
     const pauseResumeBtn = document.getElementById('pause-resume-btn');
     const enhancedRecorderBtn = document.getElementById('enhanced-recorder-btn');
     if (!pauseResumeBtn || !enhancedRecorderBtn) return;

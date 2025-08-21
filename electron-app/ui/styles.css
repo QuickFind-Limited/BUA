@@ -287,27 +287,27 @@ body {
 }
 
 .recording-action-btn.pause-btn {
-  background: #FF9800;
+  background: #666;
 }
 
 .recording-action-btn.pause-btn:hover {
-  background: #F57C00;
+  background: #555;
 }
 
 .recording-action-btn.resume-btn {
-  background: #4CAF50;
+  background: #2196F3;
 }
 
 .recording-action-btn.resume-btn:hover {
-  background: #388E3C;
+  background: #1976D2;
 }
 
 .recording-action-btn.stop-btn {
-  background: #F44336;
+  background: #333;
 }
 
 .recording-action-btn.stop-btn:hover {
-  background: #D32F2F;
+  background: #222;
 }
 
 .begin-analysis-btn:hover {
