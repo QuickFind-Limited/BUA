@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Recording Controller Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #fafafa;
+            border-left: 4px solid #4CAF50;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.recording {
+            background: #ff9800;
+            color: white;
+        }
+        .status.idle {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        .status.error {
+            background: #f44336;
+            color: white;
+        }
+        .performance-stats {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .performance-stats h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .feature {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 3px solid #2196f3;
+        }
+        .feature h4 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Enhanced Recording Controller</h1>
+        <p>Advanced recording system with < 5% performance overhead via CDP integration</p>
+
+        <div class="section">
+            <h2>🎯 Key Features</h2>
+            <div class="feature-list">
+                <div class="feature">
+                    <h4>🚀 Performance Optimized</h4>
+                    <p>< 5% overhead through throttling and selective monitoring</p>
+                </div>
+                <div class="feature">
+                    <h4>🚫 Popup Blocking</h4>
+                    <p>Blocks Google sign-in, notifications, and OAuth redirects</p>
+                </div>
+                <div class="feature">
+                    <h4>📸 Strategic Screenshots</h4>
+                    <p>Key moments capture, not continuous recording</p>
+                </div>
+                <div class="feature">
+                    <h4>🔍 Lightweight DOM</h4>
+                    <p>Structure-only monitoring, max 100 elements</p>
+                </div>
+                <div class="feature">
+                    <h4>🌐 Network Metadata</h4>
+                    <p>Request/response headers only, not full bodies</p>
+                </div>
+                <div class="feature">
+                    <h4>⚠️ Error-Only Logging</h4>
+                    <p>Console errors only, not all log levels</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎮 Controls</h2>
+            <div style="margin-bottom: 15px;">
+                <button id="connectBtn">🔗 Connect to Active Tab</button>
+                <button id="startBtn" disabled>🎬 Start Recording</button>
+                <button id="stopBtn" disabled>⏹️ Stop Recording</button>
+                <button id="statusBtn">📊 Check Status</button>
+                <button id="statsBtn">📈 Performance Stats</button>
+            </div>
+            
+            <div>
+                <label>Start URL (optional): </label>
+                <input type="text" id="urlInput" placeholder="https://example.com" style="width: 300px; padding: 8px;">
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Status</h2>
+            <div id="status" class="status idle">Ready to record</div>
+            <div id="performanceStats" class="performance-stats" style="display: none;">
+                <h3>Performance Statistics</h3>
+                <div id="statsContent"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📝 Log</h2>
+            <div id="log" class="log">Enhanced Recording Controller ready...\n</div>
+            <button onclick="clearLog()" style="background: #666;">Clear Log</button>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Technical Details</h2>
+            <ul>
+                <li><strong>CDP Port:</strong> 9335 (configured in main.ts)</li>
+                <li><strong>DOM Throttle:</strong> 1 second between snapshots</li>
+                <li><strong>Screenshot Throttle:</strong> 5 seconds between captures</li>
+                <li><strong>Max DOM Elements:</strong> 100 per snapshot</li>
+                <li><strong>Max Network Requests:</strong> 200 tracked</li>
+                <li><strong>Screenshot Quality:</strong> 80% (balanced)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Check if running in Electron with proper API
+        if (typeof window !== 'undefined' && window.electronAPI) {
+            initializeRecordingExample();
+        } else {
+            log('⚠️ Not running in Electron environment - Enhanced Recording unavailable');
+        }
+
+        function initializeRecordingExample() {
+            log('✅ Electron API available - Enhanced Recording ready');
+            
+            const connectBtn = document.getElementById('connectBtn');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const statusBtn = document.getElementById('statusBtn');
+            const statsBtn = document.getElementById('statsBtn');
+            const urlInput = document.getElementById('urlInput');
+            
+            // Connect to active tab
+            connectBtn.addEventListener('click', async () => {
+                try {
+                    log('🔗 Connecting to active tab...');
+                    updateStatus('Connecting...', 'recording');
+                    
+                    const result = await window.electronAPI.invoke('enhanced-recording:connect');
+                    
+                    if (result.success) {
+                        log('✅ Connected to active tab successfully');
+                        updateStatus('Connected - Ready to record', 'idle');
+                        startBtn.disabled = false;
+                    } else {
+                        log(`❌ Failed to connect: ${result.error}`);
+                        updateStatus(`Connection failed: ${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ Connection error: ${error.message}`);
+                    updateStatus('Connection error', 'error');
+                }
+            });
+            
+            // Start recording
+            startBtn.addEventListener('click', async () => {
+                try {
+                    const url = urlInput.value.trim() || undefined;
+                    log(`🎬 Starting enhanced recording${url ? ` with URL: ${url}` : ''}...`);
+                    updateStatus('Starting recording...', 'recording');
+                    
+                    const result = await window.electronAPI.invoke('enhanced-recording:start', url);
+                    
+                    if (result.success) {
+                        log(`✅ Recording started successfully! Session ID: ${result.sessionId}`);
+                        updateStatus(`Recording active (${result.sessionId})`, 'recording');
+                        startBtn.disabled = true;
+                        stopBtn.disabled = false;
+                        connectBtn.disabled = true;
+                        
+                        // Start status monitoring
+                        startStatusMonitoring();
+                    } else {
+                        log(`❌ Failed to start recording: ${result.error}`);
+                        updateStatus(`Start failed: ${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ Start recording error: ${error.message}`);
+                    updateStatus('Start error', 'error');
+                }
+            });
+            
+            // Stop recording
+            stopBtn.addEventListener('click', async () => {
+                try {
+                    log('🛑 Stopping enhanced recording...');
+                    updateStatus('Stopping recording...', 'recording');
+                    
+                    const result = await window.electronAPI.invoke('enhanced-recording:stop');
+                    
+                    if (result.success) {
+                        log('✅ Recording stopped successfully!');
+                        log(`📊 Recording data keys: ${Object.keys(result.recordingData || {}).join(', ')}`);
+                        updateStatus('Recording stopped - Data captured', 'idle');
+                        startBtn.disabled = false;
+                        stopBtn.disabled = true;
+                        connectBtn.disabled = false;
+                        
+                        stopStatusMonitoring();
+                    } else {
+                        log(`❌ Failed to stop recording: ${result.error}`);
+                        updateStatus(`Stop failed: ${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ Stop recording error: ${error.message}`);
+                    updateStatus('Stop error', 'error');
+                }
+            });
+            
+            // Check status
+            statusBtn.addEventListener('click', async () => {
+                try {
+                    const status = await window.electronAPI.invoke('enhanced-recording:status');
+                    log(`📊 Recording status: ${JSON.stringify(status, null, 2)}`);
+                    
+                    if (status.isRecording) {
+                        const duration = Math.round(status.duration / 1000);
+                        updateStatus(`Recording: ${status.sessionId} (${duration}s)`, 'recording');
+                    } else {
+                        updateStatus('Not recording', 'idle');
+                    }
+                } catch (error) {
+                    log(`❌ Status check error: ${error.message}`);
+                }
+            });
+            
+            // Get performance stats
+            statsBtn.addEventListener('click', async () => {
+                try {
+                    const stats = await window.electronAPI.invoke('enhanced-recording:performance-stats');
+                    log(`📈 Performance stats: ${JSON.stringify(stats, null, 2)}`);
+                    displayPerformanceStats(stats);
+                } catch (error) {
+                    log(`❌ Stats error: ${error.message}`);
+                }
+            });
+        }
+        
+        let statusMonitorInterval;
+        
+        function startStatusMonitoring() {
+            statusMonitorInterval = setInterval(async () => {
+                try {
+                    const status = await window.electronAPI.invoke('enhanced-recording:status');
+                    if (status.isRecording) {
+                        const duration = Math.round(status.duration / 1000);
+                        updateStatus(`Recording: ${status.sessionId} (${duration}s)`, 'recording');
+                    }
+                } catch (error) {
+                    // Ignore errors during monitoring
+                }
+            }, 1000);
+        }
+        
+        function stopStatusMonitoring() {
+            if (statusMonitorInterval) {
+                clearInterval(statusMonitorInterval);
+                statusMonitorInterval = null;
+            }
+        }
+        
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+        
+        function displayPerformanceStats(stats) {
+            const statsDiv = document.getElementById('performanceStats');
+            const contentDiv = document.getElementById('statsContent');
+            
+            if (Object.keys(stats).length === 0) {
+                contentDiv.innerHTML = '<p>No performance data available (not recording)</p>';
+            } else {
+                let html = '';
+                for (const [key, value] of Object.entries(stats)) {
+                    html += `<div class="stat-item"><span>${key}:</span><span>${value}</span></div>`;
+                }
+                contentDiv.innerHTML = html;
+            }
+            
+            statsDiv.style.display = 'block';
+        }
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = 'Enhanced Recording Controller ready...\n';
+        }
+    </script>
+</body>
+</html>

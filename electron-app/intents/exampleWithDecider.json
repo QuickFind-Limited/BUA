@@ -1,0 +1,64 @@
+{
+  "name": "Login Flow with SDK Decider",
+  "url": "https://example.com/login",
+  "params": ["USERNAME", "PASSWORD"],
+  "preferences": {
+    "navigate_to_login": "snippet",
+    "fill_username": "ai",
+    "fill_password": "snippet",
+    "submit_form": "ai"
+  },
+  "steps": [
+    {
+      "name": "navigate_to_login",
+      "action": "navigate",
+      "selector": "",
+      "value": "https://example.com/login",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "ai_instruction": "Navigate to the login page at {{URL}}",
+      "snippet": "await page.goto('{{URL}}');"
+    },
+    {
+      "name": "fill_username",
+      "action": "type",
+      "selector": "#username-field",
+      "value": "{{USERNAME}}",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "ai_instruction": "Find the username field and type the username '{{USERNAME}}'",
+      "snippet": "await page.fill('#username-field', '{{USERNAME}}');"
+    },
+    {
+      "name": "fill_password",
+      "action": "type",
+      "selector": "#password-field", 
+      "value": "{{PASSWORD}}",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "ai_instruction": "Find the password field and type the password '{{PASSWORD}}'",
+      "snippet": "await page.fill('#password-field', '{{PASSWORD}}');"
+    },
+    {
+      "name": "submit_form",
+      "action": "click",
+      "selector": "#login-button",
+      "value": "",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "ai_instruction": "Click the login button to submit the form",
+      "snippet": "await page.click('#login-button');"
+    },
+    {
+      "name": "wait_for_success",
+      "action": "wait",
+      "selector": ".dashboard-welcome",
+      "value": "5000",
+      "prefer": "snippet",
+      "fallback": "none",
+      "ai_instruction": "Wait for the dashboard welcome message to appear",
+      "snippet": "await page.waitForSelector('.dashboard-welcome', { timeout: 5000 });"
+    }
+  ],
+  "successCheck": ".dashboard-welcome"
+}

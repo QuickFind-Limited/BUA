@@ -1,0 +1,33 @@
+{
+  "name": "Email Validation Test Flow",
+  "description": "Test flow specifically for email validation functionality",
+  "startUrl": "https://example.com/registration",
+  "params": [
+    "PRIMARY_EMAIL",
+    "BACKUP_EMAIL_ADDRESS",
+    "CONTACT_MAIL"
+  ],
+  "steps": [
+    {
+      "action": "type",
+      "target": "#primary-email",
+      "value": "{{PRIMARY_EMAIL}}"
+    },
+    {
+      "action": "type",
+      "target": "#backup-email",
+      "value": "{{BACKUP_EMAIL_ADDRESS}}"
+    },
+    {
+      "action": "type",
+      "target": "#contact-email",
+      "value": "{{CONTACT_MAIL}}"
+    },
+    {
+      "action": "click",
+      "target": "#validate-button",
+      "value": ""
+    }
+  ],
+  "successCheck": ".email-validation-success"
+}

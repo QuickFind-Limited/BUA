@@ -1,0 +1,17 @@
+{
+  "name": "Invalid JSON Test Flow",
+  "description": "Test flow to check error handling",
+  "startUrl": "https://example.com/test",
+  "params": [
+    "TEST_PARAM"
+  ],
+  "steps": [
+    {
+      "action": "type",
+      "target": "#test-input",
+      "value": "{{TEST_PARAM}}"
+    }
+  ],
+  "successCheck": ".test-success"
+  // This comment makes it invalid JSON
+}

@@ -1,0 +1,28 @@
+{
+  "name": "No Variables Test Flow",
+  "description": "Test flow without any variables to test zero-parameter scenario",
+  "startUrl": "https://example.com/static",
+  "steps": [
+    {
+      "action": "click",
+      "target": "#static-button",
+      "value": ""
+    },
+    {
+      "action": "wait",
+      "target": "2000",
+      "value": ""
+    },
+    {
+      "action": "click",
+      "target": ".next-page-link",
+      "value": ""
+    },
+    {
+      "action": "type",
+      "target": "#static-text",
+      "value": "Static text input"
+    }
+  ],
+  "successCheck": ".static-completion"
+}

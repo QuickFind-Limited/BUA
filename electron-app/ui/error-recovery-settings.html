@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Error Recovery Settings</title>
+    <link rel="stylesheet" href="styles-modern.css">
+    <link rel="stylesheet" href="error-recovery-settings.css">
+</head>
+<body>
+    <div class="error-recovery-settings">
+        <div class="settings-header">
+            <h2>AI Error Recovery Settings</h2>
+            <p class="settings-description">
+                Configure how the system handles errors and attempts automatic recovery using AI.
+            </p>
+        </div>
+
+        <!-- Message Display -->
+        <div id="message-container" class="message-container" style="display: none;">
+            <div id="message" class="message"></div>
+        </div>
+
+        <div class="settings-content">
+            <!-- Main Settings -->
+            <div class="settings-section">
+                <h3>General Settings</h3>
+                
+                <div class="setting-group">
+                    <label class="setting-label">
+                        <input type="checkbox" id="enabled" />
+                        <span class="checkmark"></span>
+                        Enable AI-powered error recovery
+                    </label>
+                    <p class="setting-description">
+                        When enabled, the system will automatically attempt to recover from errors using AI analysis.
+                    </p>
+                </div>
+
+                <div class="setting-group">
+                    <label class="setting-label">
+                        Complexity Threshold for AI Usage
+                    </label>
+                    <div class="slider-container">
+                        <input type="range" id="complexityThreshold" min="1" max="10" value="5" class="slider" />
+                        <span id="complexityValue" class="slider-value">5</span>
+                    </div>
+                    <p class="setting-description">
+                        AI will only be used for errors with complexity level <span id="complexityText">5</span> or higher (1 = simple, 10 = very complex).
+                    </p>
+                </div>
+
+                <div class="setting-group">
+                    <label class="setting-label">
+                        Retry Limit
+                    </label>
+                    <input type="number" id="retryLimit" min="1" max="10" value="3" class="number-input" />
+                    <p class="setting-description">
+                        Maximum number of recovery attempts for each error.
+                    </p>
+                </div>
+
+                <div class="setting-group">
+                    <label class="setting-label">
+                        Timeout (milliseconds)
+                    </label>
+                    <input type="number" id="timeout" min="5000" max="300000" step="1000" value="30000" class="number-input" />
+                    <p class="setting-description">
+                        Maximum time to wait for AI recovery response.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="settings-section">
+                <h3>Recovery Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div id="totalAttempts" class="stat-value">0</div>
+                        <div class="stat-label">Total Attempts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div id="successfulRecoveries" class="stat-value">0</div>
+                        <div class="stat-label">Successful</div>
+                    </div>
+                    <div class="stat-card">
+                        <div id="failedRecoveries" class="stat-value">0</div>
+                        <div class="stat-label">Failed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div id="successRate" class="stat-value">0%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div id="averageResponseTime" class="stat-value">0ms</div>
+                        <div class="stat-label">Avg Response Time</div>
+                    </div>
+                    <div id="lastRecoveryCard" class="stat-card" style="display: none;">
+                        <div id="lastRecoveryTime" class="stat-value"></div>
+                        <div class="stat-label">Last Recovery</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Settings -->
+            <div class="settings-section">
+                <div class="section-header" onclick="toggleAdvancedSettings()">
+                    <h3>Advanced Settings</h3>
+                    <span id="advancedChevron" class="chevron">▶</span>
+                </div>
+                
+                <div id="advancedSettings" class="advanced-settings" style="display: none;">
+                    <div class="setting-group">
+                        <label class="setting-label">
+                            <input type="checkbox" id="enableAuditLog" />
+                            <span class="checkmark"></span>
+                            Enable audit logging
+                        </label>
+                        <p class="setting-description">
+                            Log all error recovery attempts for analysis and debugging.
+                        </p>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">
+                            <input type="checkbox" id="autoExportSettings" />
+                            <span class="checkmark"></span>
+                            Auto-export settings daily
+                        </label>
+                        <p class="setting-description">
+                            Automatically backup settings configuration daily.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="settings-section">
+                <h3>Actions</h3>
+                <div class="action-buttons">
+                    <button id="saveBtn" onclick="saveSettings()" class="btn btn-primary">
+                        Save Settings
+                    </button>
+                    
+                    <button id="clearCacheBtn" onclick="clearCache()" class="btn btn-secondary">
+                        Clear Solution Cache
+                    </button>
+                    
+                    <button id="exportBtn" onclick="exportSettings()" class="btn btn-secondary">
+                        Export Settings
+                    </button>
+                    
+                    <button id="importBtn" onclick="importSettings()" class="btn btn-secondary">
+                        Import Settings
+                    </button>
+                </div>
+            </div>
+
+            <!-- Audit Logs -->
+            <div id="auditLogsSection" class="settings-section">
+                <div class="section-header">
+                    <h3>Audit Logs</h3>
+                    <button id="clearLogsBtn" onclick="clearAuditLogs()" class="btn btn-small btn-danger">
+                        Clear Logs
+                    </button>
+                </div>
+                
+                <div class="audit-logs">
+                    <div id="noLogs" class="no-logs">No audit logs available.</div>
+                    <div id="logsContainer" class="logs-container" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Processing...</div>
+    </div>
+
+    <script src="error-recovery-settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+{
+  "name": "Complex Multi-Step Flow Test",
+  "description": "Complex flow with many steps to test the View Steps functionality",
+  "startUrl": "https://app.example.com/dashboard",
+  "params": [
+    "USER_ID",
+    "PROJECT_NAME",
+    "DESCRIPTION_TEXT",
+    "BUDGET_AMOUNT",
+    "DEADLINE_DATE"
+  ],
+  "steps": [
+    {
+      "action": "click",
+      "target": "#menu-projects",
+      "value": ""
+    },
+    {
+      "action": "wait",
+      "target": "1000",
+      "value": ""
+    },
+    {
+      "action": "click",
+      "target": "#create-new-project",
+      "value": ""
+    },
+    {
+      "action": "type",
+      "target": "#project-name",
+      "value": "{{PROJECT_NAME}}"
+    },
+    {
+      "action": "type",
+      "target": "#project-description",
+      "value": "{{DESCRIPTION_TEXT}}"
+    },
+    {
+      "action": "type",
+      "target": "#budget-input",
+      "value": "{{BUDGET_AMOUNT}}"
+    },
+    {
+      "action": "type",
+      "target": "#deadline-date",
+      "value": "{{DEADLINE_DATE}}"
+    },
+    {
+      "action": "click",
+      "target": "#assign-user-btn",
+      "value": ""
+    },
+    {
+      "action": "type",
+      "target": "#user-search",
+      "value": "{{USER_ID}}"
+    },
+    {
+      "action": "click",
+      "target": ".user-select-item:first-child",
+      "value": ""
+    },
+    {
+      "action": "click",
+      "target": "#save-project-btn",
+      "value": ""
+    },
+    {
+      "action": "wait",
+      "target": "3000",
+      "value": ""
+    },
+    {
+      "action": "click",
+      "target": "#confirm-creation",
+      "value": ""
+    }
+  ],
+  "successCheck": ".project-created-success"
+}

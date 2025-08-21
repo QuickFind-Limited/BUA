@@ -1,0 +1,54 @@
+{
+  "id": "test-storage-flow-1755345900635",
+  "spec": {
+    "name": "Test Storage Flow",
+    "startUrl": "https://example.com",
+    "steps": [
+      {
+        "action": "wait",
+        "target": "body",
+        "value": "1000",
+        "description": "Wait for page"
+      }
+    ],
+    "successCheck": "Example Domain"
+  },
+  "variables": {
+    "test": "value"
+  },
+  "result": {
+    "success": true,
+    "logs": [
+      "Test log"
+    ],
+    "data": {
+      "extracted": "data"
+    }
+  },
+  "executionHistory": [
+    {
+      "id": "exec-1755345900635-kg5g47sqq",
+      "timestamp": "2025-08-16T12:05:00.635Z",
+      "variables": {
+        "test": "value"
+      },
+      "result": {
+        "success": true,
+        "logs": [
+          "Test log"
+        ],
+        "data": {
+          "extracted": "data"
+        }
+      },
+      "duration": 0,
+      "success": true
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-08-16T12:05:00.635Z",
+    "lastExecuted": "2025-08-16T12:05:00.635Z",
+    "executionCount": 1,
+    "tags": []
+  }
+}

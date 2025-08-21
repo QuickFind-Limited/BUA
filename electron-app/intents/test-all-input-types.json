@@ -1,0 +1,75 @@
+{
+  "name": "Complete Input Types Test Flow",
+  "description": "Test flow with all input parameter types for comprehensive Variables Panel testing",
+  "startUrl": "https://example-forms.com/test",
+  "params": [
+    "USERNAME",
+    "PASSWORD",
+    "EMAIL_ADDRESS",
+    "PHONE_NUMBER",
+    "WEBSITE_URL",
+    "SEARCH_QUERY",
+    "AGE_NUMBER",
+    "FIRST_NAME",
+    "LAST_NAME",
+    "CONFIRM_PASSWORD"
+  ],
+  "steps": [
+    {
+      "action": "type",
+      "target": "#username",
+      "value": "{{USERNAME}}"
+    },
+    {
+      "action": "type",
+      "target": "#password",
+      "value": "{{PASSWORD}}"
+    },
+    {
+      "action": "type",
+      "target": "#email",
+      "value": "{{EMAIL_ADDRESS}}"
+    },
+    {
+      "action": "type",
+      "target": "#phone",
+      "value": "{{PHONE_NUMBER}}"
+    },
+    {
+      "action": "type",
+      "target": "#website",
+      "value": "{{WEBSITE_URL}}"
+    },
+    {
+      "action": "type",
+      "target": "#search",
+      "value": "{{SEARCH_QUERY}}"
+    },
+    {
+      "action": "type",
+      "target": "#age",
+      "value": "{{AGE_NUMBER}}"
+    },
+    {
+      "action": "type",
+      "target": "#firstName",
+      "value": "{{FIRST_NAME}}"
+    },
+    {
+      "action": "type",
+      "target": "#lastName",
+      "value": "{{LAST_NAME}}"
+    },
+    {
+      "action": "type",
+      "target": "#confirmPassword",
+      "value": "{{CONFIRM_PASSWORD}}"
+    },
+    {
+      "action": "click",
+      "target": "#submit-button",
+      "value": ""
+    }
+  ],
+  "successCheck": ".success-message"
+}

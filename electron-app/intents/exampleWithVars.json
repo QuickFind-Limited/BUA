@@ -1,0 +1,38 @@
+{
+  "name": "Login Flow with Variables",
+  "startUrl": "https://example.com/login",
+  "params": ["USERNAME", "PASSWORD"],
+  "steps": [
+    {
+      "action": "click",
+      "target": "#username-field",
+      "value": ""
+    },
+    {
+      "action": "type",
+      "target": "#username-field",
+      "value": "{{USERNAME}}"
+    },
+    {
+      "action": "click",
+      "target": "#password-field",
+      "value": ""
+    },
+    {
+      "action": "type",
+      "target": "#password-field",
+      "value": "{{PASSWORD}}"
+    },
+    {
+      "action": "click",
+      "target": "#login-button",
+      "value": ""
+    },
+    {
+      "action": "wait",
+      "target": "2000",
+      "value": ""
+    }
+  ],
+  "successCheck": ".dashboard-welcome"
+}

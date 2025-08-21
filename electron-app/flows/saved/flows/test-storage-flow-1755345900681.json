@@ -1,0 +1,72 @@
+{
+  "id": "test-storage-flow-1755345900681",
+  "spec": {
+    "name": "Test Storage Flow",
+    "startUrl": "https://example.com",
+    "steps": [
+      {
+        "action": "wait",
+        "target": "body",
+        "value": "1000",
+        "description": "Wait for page"
+      }
+    ],
+    "successCheck": "Example Domain"
+  },
+  "variables": {},
+  "result": {
+    "success": true,
+    "logs": [
+      "Test log"
+    ],
+    "data": {},
+    "metrics": {
+      "startTime": "2025-08-16T12:05:00.681Z",
+      "endTime": "2025-08-16T12:05:00.681Z",
+      "duration": 1000,
+      "stepsExecuted": 1,
+      "stepsTotal": 1,
+      "retryCount": 0,
+      "browserInteractions": 1,
+      "llmCalls": {
+        "act": 1,
+        "query": 0
+      }
+    }
+  },
+  "executionHistory": [
+    {
+      "id": "exec-1755345900681-1ku8s1uyf",
+      "timestamp": "2025-08-16T12:05:00.681Z",
+      "variables": {},
+      "result": {
+        "success": true,
+        "logs": [
+          "Test log"
+        ],
+        "data": {},
+        "metrics": {
+          "startTime": "2025-08-16T12:05:00.681Z",
+          "endTime": "2025-08-16T12:05:00.681Z",
+          "duration": 1000,
+          "stepsExecuted": 1,
+          "stepsTotal": 1,
+          "retryCount": 0,
+          "browserInteractions": 1,
+          "llmCalls": {
+            "act": 1,
+            "query": 0
+          }
+        }
+      },
+      "duration": 1000,
+      "success": true
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-08-16T12:05:00.681Z",
+    "lastExecuted": "2025-08-16T12:05:00.681Z",
+    "executionCount": 1,
+    "tags": []
+  }
+}

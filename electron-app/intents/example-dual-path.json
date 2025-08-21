@@ -1,0 +1,79 @@
+{
+  "name": "Login Flow",
+  "description": "Automated login flow with both AI and snippet execution paths for maximum flexibility and reliability",
+  "url": "https://example.com/login",
+  "params": ["USERNAME", "PASSWORD"],
+  "steps": [
+    {
+      "name": "navigate_to_login",
+      "ai_instruction": "Navigate to the login page",
+      "snippet": "await page.goto('https://example.com/login');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selector": null,
+      "value": null
+    },
+    {
+      "name": "click_username_field",
+      "ai_instruction": "Click on the username input field to focus it",
+      "snippet": "await page.click('#username');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selector": "#username",
+      "value": null
+    },
+    {
+      "name": "enter_username",
+      "ai_instruction": "Enter the username into the focused input field",
+      "snippet": "await page.fill('#username', '{{USERNAME}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selector": "#username",
+      "value": "{{USERNAME}}"
+    },
+    {
+      "name": "click_password_field",
+      "ai_instruction": "Click on the password input field to focus it",
+      "snippet": "await page.click('#password');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selector": "#password",
+      "value": null
+    },
+    {
+      "name": "enter_password",
+      "ai_instruction": "Enter the password into the focused password field",
+      "snippet": "await page.fill('#password', '{{PASSWORD}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selector": "#password",
+      "value": "{{PASSWORD}}"
+    },
+    {
+      "name": "click_login_button",
+      "ai_instruction": "Click on the login button to submit the credentials",
+      "snippet": "await page.click('button[type=\"submit\"]');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selector": "button[type=\"submit\"]",
+      "value": null
+    },
+    {
+      "name": "wait_for_dashboard",
+      "ai_instruction": "Wait for the dashboard page to load and become visible",
+      "snippet": "await page.waitForSelector('.dashboard-welcome', { timeout: 5000 });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selector": ".dashboard-welcome",
+      "value": null
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "navigation": "snippet"
+  },
+  "success_screenshot": "recordings/login-success-state.png",
+  "recording_spec": "recordings/login-recording.spec.ts"
+}

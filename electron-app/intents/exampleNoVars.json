@@ -1,0 +1,32 @@
+{
+  "name": "Simple Navigation Flow",
+  "startUrl": "https://example.com",
+  "steps": [
+    {
+      "action": "click",
+      "target": ".navbar-about",
+      "value": ""
+    },
+    {
+      "action": "wait",
+      "target": "1000",
+      "value": ""
+    },
+    {
+      "action": "click",
+      "target": "#contact-link",
+      "value": ""
+    },
+    {
+      "action": "type",
+      "target": "#message-textarea",
+      "value": "Hello, this is a test message."
+    },
+    {
+      "action": "click",
+      "target": ".submit-button",
+      "value": ""
+    }
+  ],
+  "successCheck": ".confirmation-message"
+}

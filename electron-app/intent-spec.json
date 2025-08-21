@@ -1,0 +1,77 @@
+{
+  "name": "Generated from recording.spec.ts",
+  "description": "Intent spec generated from Playwright recording",
+  "url": "https://example.com",
+  "params": [],
+  "steps": [
+    {
+      "name": "Navigate to https://example.com/login",
+      "ai_instruction": "Navigate to the page at https://example.com/login",
+      "snippet": "await page.goto('https://example.com/login');",
+      "prefer": "ai",
+      "fallback": "none",
+      "action": "goto",
+      "description": "Navigate to https://example.com/login"
+    },
+    {
+      "name": "Wait for page to load",
+      "ai_instruction": "Wait for the page to finish loading",
+      "snippet": "await page.waitForLoadState('domcontentloaded');",
+      "prefer": "ai",
+      "fallback": "none",
+      "action": "waitForLoad",
+      "description": "Wait for page to load"
+    },
+    {
+      "name": "Enter \"{{USERNAME}}\" in input[name=\"username\"]",
+      "ai_instruction": "Enter \"{{USERNAME}}\" in the input[name=\"username\"]",
+      "snippet": "await page.locator('input[name=\"username\"]').fill('{{USERNAME}}');",
+      "prefer": "ai",
+      "fallback": "none",
+      "selector": "input[name=\"username\"]",
+      "value": "{{USERNAME}}",
+      "action": "fill",
+      "target": "input[name=\"username\"]",
+      "description": "Enter \"{{USERNAME}}\" in input[name=\"username\"]"
+    },
+    {
+      "name": "Enter \"{{PASSWORD}}\" in input[name=\"password\"]",
+      "ai_instruction": "Enter \"{{PASSWORD}}\" in the input[name=\"password\"]",
+      "snippet": "await page.locator('input[name=\"password\"]').fill('{{PASSWORD}}');",
+      "prefer": "ai",
+      "fallback": "none",
+      "selector": "input[name=\"password\"]",
+      "value": "{{PASSWORD}}",
+      "action": "fill",
+      "target": "input[name=\"password\"]",
+      "description": "Enter \"{{PASSWORD}}\" in input[name=\"password\"]"
+    },
+    {
+      "name": "Click button[type=\"submit\"]",
+      "ai_instruction": "Click on the button[type=\"submit\"]",
+      "snippet": "await page.locator('button[type=\"submit\"]').click();",
+      "prefer": "snippet",
+      "fallback": "none",
+      "selector": "button[type=\"submit\"]",
+      "action": "click",
+      "target": "button[type=\"submit\"]",
+      "description": "Click button[type=\"submit\"]"
+    },
+    {
+      "name": "Wait 2000ms",
+      "ai_instruction": "Wait for 2000ms",
+      "snippet": "await page.waitForTimeout(2000);",
+      "prefer": "ai",
+      "fallback": "none",
+      "value": "2000",
+      "action": "wait",
+      "description": "Wait 2000ms"
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "snippet",
+    "simple_steps": "ai",
+    "button": "snippet",
+    "input": "ai"
+  }
+}

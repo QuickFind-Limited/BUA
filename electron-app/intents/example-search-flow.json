@@ -1,0 +1,97 @@
+{
+  "name": "Product Search Flow",
+  "description": "Search for products with dynamic element handling, demonstrating AI-first approach for flexible UI elements",
+  "url": "https://example-shop.com",
+  "params": ["SEARCH_TERM", "CATEGORY", "PRICE_RANGE"],
+  "steps": [
+    {
+      "name": "navigate_to_homepage",
+      "ai_instruction": "Navigate to the main shopping website homepage",
+      "snippet": "await page.goto('https://example-shop.com');",
+      "prefer": "snippet",
+      "fallback": "ai"
+    },
+    {
+      "name": "find_search_box",
+      "ai_instruction": "Find and click on the search input box on the page",
+      "snippet": "await page.click('input[placeholder*=\"search\"], #search-input, .search-box input');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selector": "input[placeholder*=\"search\"]",
+      "value": null
+    },
+    {
+      "name": "enter_search_term",
+      "ai_instruction": "Type the search term into the search box",
+      "snippet": "await page.fill('input[placeholder*=\"search\"], #search-input, .search-box input', '{{SEARCH_TERM}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selector": "input[placeholder*=\"search\"]",
+      "value": "{{SEARCH_TERM}}"
+    },
+    {
+      "name": "click_search_button",
+      "ai_instruction": "Click the search button or press enter to start searching",
+      "snippet": "await page.click('button[type=\"submit\"], .search-button, button:has-text(\"Search\")');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selector": "button[type=\"submit\"]",
+      "value": null
+    },
+    {
+      "name": "select_category_filter",
+      "ai_instruction": "Select the category filter from the available options on the search results page",
+      "snippet": "await page.selectOption('select[name=\"category\"], #category-filter', '{{CATEGORY}}');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selector": "select[name=\"category\"]",
+      "value": "{{CATEGORY}}"
+    },
+    {
+      "name": "set_price_range",
+      "ai_instruction": "Set the price range filter by selecting the appropriate option",
+      "snippet": "await page.selectOption('select[name=\"price_range\"], #price-filter', '{{PRICE_RANGE}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selector": "select[name=\"price_range\"]",
+      "value": "{{PRICE_RANGE}}"
+    },
+    {
+      "name": "apply_filters",
+      "ai_instruction": "Click the apply filters button to refine the search results",
+      "snippet": "await page.click('button:has-text(\"Apply\"), .apply-filters, #filter-submit');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selector": "button:has-text(\"Apply\")",
+      "value": null
+    },
+    {
+      "name": "wait_for_results",
+      "ai_instruction": "Wait for the filtered search results to load completely",
+      "snippet": "await page.waitForSelector('.product-list, .search-results, [data-testid=\"product-grid\"]', { timeout: 10000 });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selector": ".product-list",
+      "value": null
+    },
+    {
+      "name": "verify_results_displayed",
+      "ai_instruction": "Verify that search results are displayed and contain products",
+      "snippet": "await page.waitForSelector('.product-item:first-child, .product-card:first-child', { timeout: 5000 });",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selector": ".product-item:first-child",
+      "value": null
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "navigation": "snippet",
+    "search_interactions": "ai",
+    "filter_controls": "ai"
+  },
+  "success_screenshot": "recordings/search-results-success.png",
+  "recording_spec": "recordings/product-search-recording.spec.ts"
+}

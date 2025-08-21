@@ -1,0 +1,792 @@
+/* Modern CSS Variables and Design System */
+:root {
+  /* Color Palette - Clean Monochrome Theme matching tabs */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #f0f0f0;
+  --bg-elevated: #fafafa;
+  --bg-overlay: rgba(255, 255, 255, 0.95);
+  
+  /* Border colors */
+  --border-primary: #e0e0e0;
+  --border-secondary: #d0d0d0;
+  --border-light: #f0f0f0;
+  
+  /* Text Colors */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --text-disabled: #cccccc;
+  
+  /* Accent Colors - Subtle */
+  --accent-primary: #4a90e2;
+  --accent-secondary: #5ca0f2;
+  --accent-success: #4caf50;
+  --accent-warning: #ff9800;
+  --accent-danger: #f44336;
+  
+  /* Gradients - Removed for flat design */
+  --gradient-primary: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+  --gradient-secondary: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+  --gradient-dark: linear-gradient(180deg, #f5f5f5 0%, #ffffff 100%);
+  
+  /* Spacing (8px grid) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  
+  /* Animation - Spring Physics */
+  --spring-quick: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --spring-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --spring-bounce: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  
+  /* Durations */
+  --duration-instant: 100ms;
+  --duration-quick: 200ms;
+  --duration-moderate: 300ms;
+  --duration-slow: 500ms;
+  
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  --font-mono: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+  
+  /* Sidebar specific */
+  --sidebar-width: 320px;
+  --sidebar-collapsed-width: 48px;
+}
+
+/* Global Resets */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: var(--font-sans);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Modern Analysis Sidebar */
+.modern-sidebar,
+.analysis-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border-primary);
+  border-top: 1px solid var(--border-primary);
+  transform: translateX(0); /* Always visible */
+  transition: transform var(--duration-moderate) ease;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+  padding-top: 0; /* Start from the top */
+}
+
+.modern-sidebar.active,
+.analysis-sidebar.active {
+  transform: translateX(0);
+  /* box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15); removed shadow */
+}
+
+.modern-sidebar.collapsed,
+.analysis-sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+.modern-sidebar.collapsed.active,
+.analysis-sidebar.collapsed.active {
+  transform: translateX(0);
+}
+
+.modern-sidebar.collapsed:not(.active),
+.analysis-sidebar.collapsed:not(.active) {
+  transform: translateX(calc(-1 * var(--sidebar-collapsed-width)));
+}
+
+/* Sidebar Header - Removed since we don't need it anymore */
+.sidebar-header {
+  display: none;
+}
+
+.sidebar-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  opacity: 1;
+  transition: opacity var(--duration-quick) ease;
+}
+
+.modern-sidebar.collapsed .sidebar-header h3,
+.analysis-sidebar.collapsed .sidebar-header h3 {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modern-sidebar.collapsed .sidebar-header,
+.analysis-sidebar.collapsed .sidebar-header {
+  justify-content: center;
+  padding: var(--space-sm);
+}
+
+/* Toggle Button */
+.sidebar-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--border-secondary);
+  padding: var(--space-xs);
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-quick) ease;
+  color: var(--text-secondary);
+}
+
+.sidebar-toggle-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--text-secondary);
+}
+
+.sidebar-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.sidebar-toggle-btn svg {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--duration-quick) ease;
+  color: var(--text-primary) !important;
+  stroke: var(--text-primary) !important;
+}
+
+/* Removed transform - chevron direction handled by JavaScript */
+/* .modern-sidebar.collapsed .sidebar-toggle-btn svg,
+.analysis-sidebar.collapsed .sidebar-toggle-btn svg {
+  transform: rotate(180deg);
+} */
+
+/* Progress Section */
+.progress-section {
+  flex: 1;
+  padding: var(--space-sm) var(--space-lg) var(--space-lg);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-secondary) transparent;
+}
+
+.progress-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.progress-section::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.progress-section::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 3px;
+}
+
+.progress-section::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Progress Items - Clean, no boxes */
+.progress-item {
+  display: flex;
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-xs);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  position: relative;
+  overflow: visible;
+  transition: all var(--duration-quick) ease;
+}
+
+/* Flashing blue animation for active items */
+@keyframes pulse-blue {
+  0% {
+    opacity: 0.4;
+    color: rgba(74, 144, 226, 0.6);
+  }
+  50% {
+    opacity: 1;
+    color: rgba(74, 144, 226, 1);
+  }
+  100% {
+    opacity: 0.4;
+    color: rgba(74, 144, 226, 0.6);
+  }
+}
+
+@keyframes pulse-icon {
+  0% {
+    opacity: 0.4;
+    color: rgba(74, 144, 226, 0.6);
+  }
+  50% {
+    opacity: 1;
+    color: rgba(74, 144, 226, 1);
+  }
+  100% {
+    opacity: 0.4;
+    color: rgba(74, 144, 226, 0.6);
+  }
+}
+
+.progress-item.active {
+  animation: none;
+  background: transparent;
+}
+
+.progress-item.active .progress-icon {
+  animation: pulse-icon 1.5s ease-in-out infinite;
+}
+
+.progress-item.active .progress-label {
+  animation: pulse-blue 1.5s ease-in-out infinite;
+}
+
+.progress-item.completed {
+  border: none;
+  background: transparent;
+}
+
+/* Progress Icon - Default grey, blue when active/completed */
+.progress-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--space-md);
+  color: #888;
+  opacity: 0.5;
+  transition: all var(--duration-quick) ease;
+}
+
+.progress-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.progress-item.active .progress-icon {
+  /* Animation handles the coloring */
+}
+
+.progress-item.completed .progress-icon {
+  color: var(--accent-primary);
+  opacity: 1;
+}
+
+
+/* Progress Label */
+.progress-label {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  transition: color var(--duration-quick) ease;
+}
+
+.progress-item.active .progress-label {
+  /* Animation handles the coloring */
+}
+
+.progress-item.completed .progress-label {
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.modern-sidebar.collapsed .progress-label {
+  display: none;
+}
+
+/* Progress Status - Hide checkmarks since we're using border animation */
+.progress-status {
+  display: none;
+}
+
+.modern-sidebar.collapsed .progress-status {
+  display: none;
+}
+
+.modern-sidebar.collapsed .progress-section,
+.analysis-sidebar.collapsed .progress-section {
+  display: none;
+}
+
+.modern-sidebar.collapsed .analysis-timer,
+.analysis-sidebar.collapsed .analysis-timer {
+  display: none;
+}
+
+/* Analysis Details */
+.analysis-details {
+  padding: var(--space-lg);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.analysis-details h4 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-md);
+}
+
+.detail-content {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.detail-item {
+  padding: var(--space-xs) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  animation: slideIn var(--duration-quick) var(--spring-smooth);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.modern-sidebar.collapsed .analysis-details {
+  display: none;
+}
+
+/* Timer */
+.analysis-timer {
+  padding: var(--space-md) var(--space-lg);
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border-primary);
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.analysis-timer span:last-child {
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.modern-sidebar.collapsed .analysis-timer {
+  display: none;
+}
+
+/* Floating Toggle for Hidden State */
+.floating-toggle {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  background: var(--bg-primary);
+  border: none; /* removed border to prevent grey line */
+  border-radius: 0 8px 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  /* box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1); removed shadow */
+  transition: all var(--duration-quick) ease;
+  z-index: 1001;
+  opacity: 0;
+  pointer-events: none;
+  /* Ensure it's in the reserved 40px space */
+  margin: 0;
+}
+
+/* Show floating toggle when sidebar is hidden */
+.floating-toggle.visible {
+  opacity: 1;
+  pointer-events: all;
+  left: 0;
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.floating-toggle.visible svg {
+  color: white;
+}
+
+.floating-toggle:hover {
+  background: var(--bg-secondary);
+  transform: translateY(-50%) translateX(4px);
+  /* box-shadow: 4px 0 8px rgba(0, 0, 0, 0.15); removed shadow */
+}
+
+.floating-toggle svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text-primary);
+}
+
+/* Main UI Adjustment - sidebar is always visible at 320px */
+.tab-bar,
+.nav-bar {
+  margin-left: var(--sidebar-width); /* Always 320px */
+  transition: margin-left var(--duration-moderate) var(--spring-smooth);
+}
+
+/* Removed - no longer needed since sidebar is always expanded */
+
+/* Removed - no longer needed since sidebar is always expanded */
+
+/* Ensure collapsed sidebar has grey background */
+.analysis-sidebar.collapsed.active,
+.modern-sidebar.collapsed.active {
+  background: var(--bg-secondary) !important;
+}
+
+/* Also ensure the entire collapsed width has grey background */
+.analysis-sidebar.collapsed.active::after,
+.modern-sidebar.collapsed.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--sidebar-collapsed-width);
+  height: 100vh;
+  background: var(--bg-secondary);
+  z-index: -1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 280px;
+  }
+  
+  .modern-sidebar {
+    width: 100%;
+    transform: translateX(-100%);
+  }
+  
+  .modern-sidebar.active,
+.analysis-sidebar.active {
+    transform: translateX(0);
+  }
+}
+
+/* Micro-interactions */
+.clickable {
+  cursor: pointer;
+  transition: all var(--duration-instant) var(--spring-quick);
+}
+
+.clickable:hover {
+  transform: translateY(-1px);
+}
+
+.clickable:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Loading Animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--glass-border);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Success Animation */
+@keyframes success-check {
+  0% { transform: scale(0) rotate(45deg); opacity: 0; }
+  50% { transform: scale(1.2) rotate(45deg); }
+  100% { transform: scale(1) rotate(45deg); opacity: 1; }
+}
+
+.success-icon {
+  animation: success-check var(--duration-moderate) var(--spring-bounce);
+}
+
+/* Collapsible Sections */
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-sm) 0 var(--space-md) 0; /* Reduced top padding */
+}
+
+.collapsible-section {
+  margin-bottom: var(--space-md);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+/* Consistent styling for both sections */
+.collapsible-section.no-border {
+  border: none;
+  background: transparent;
+  margin-bottom: var(--space-md); /* Consistent spacing between sections */
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  padding: var(--space-md);
+  background: var(--bg-secondary);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--duration-quick) ease;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.section-header:hover {
+  background: var(--bg-tertiary);
+}
+
+/* No background for analysis progress header */
+.section-header.no-background {
+  background: transparent;
+  border-bottom: none;
+}
+
+.section-header.no-background:hover {
+  background: transparent;
+}
+
+.section-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  transition: transform var(--duration-quick) ease;
+  color: var(--text-secondary);
+  transform: rotate(90deg); /* Default: pointing down when open */
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* When section is collapsed, rotate to point right */
+.section-chevron.collapsed {
+  transform: rotate(0deg); /* Collapsed: pointing right */
+}
+
+.section-title {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-left: var(--space-sm);
+}
+
+.section-status {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.section-content {
+  max-height: 500px;
+  overflow: hidden;
+  transition: max-height var(--duration-moderate) ease, opacity var(--duration-quick) ease;
+  opacity: 1;
+}
+
+.section-content.collapsed {
+  max-height: 0;
+  opacity: 0; /* Hide content during collapse to prevent text alignment issues */
+}
+
+/* Analysis Progress Content - reduce top spacing */
+#analysis-progress-content {
+  padding-top: var(--space-xs);
+}
+
+/* Flow Variables Section Specific */
+#flow-variables-content {
+  padding: var(--space-md);
+  max-height: 600px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  transition: max-height var(--duration-moderate) ease, opacity var(--duration-quick) ease;
+  opacity: 1;
+}
+
+#flow-variables-content.collapsed {
+  max-height: 0;
+  padding: 0;
+  overflow: hidden;
+  opacity: 0; /* Hide content during collapse to prevent text alignment issues */
+}
+
+/* Ensure flow-actions stays visible */
+#flow-variables-content .flow-actions {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+#flow-info {
+  /* Removed background to show only text */
+  margin-bottom: var(--space-sm);
+}
+
+#variables-form {
+  margin-bottom: var(--space-md);
+}
+
+.variable-input-group {
+  margin-bottom: var(--space-md);
+}
+
+.variable-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.variable-input {
+  width: 100%;
+  padding: var(--space-sm);
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: border-color var(--duration-quick) ease;
+}
+
+.variable-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.flow-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.run-flow-btn,
+.save-flow-btn {
+  flex: 1;
+  padding: var(--space-sm) var(--space-md);
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-quick) ease;
+}
+
+.run-flow-btn {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.run-flow-btn:hover:not(:disabled) {
+  background: var(--accent-secondary);
+}
+
+.run-flow-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.save-flow-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+.save-flow-btn:hover {
+  background: var(--bg-secondary);
+}
+
+/* Vars Panel Status */
+.vars-panel-status {
+  padding: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.status-indicator {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 4px;
+  font-size: 13px;
+  animation: fadeIn var(--duration-quick) ease;
+}
+
+.status-info {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
+}
+
+.status-success {
+  background: rgba(76, 175, 80, 0.1);
+  color: var(--accent-success);
+  border: 1px solid var(--accent-success);
+}
+
+.status-error {
+  background: rgba(244, 67, 54, 0.1);
+  color: var(--accent-danger);
+  border: 1px solid var(--accent-danger);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

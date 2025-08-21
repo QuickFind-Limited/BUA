@@ -1,0 +1,104 @@
+{
+  "name": "electron-app",
+  "version": "1.0.0",
+  "description": "Electron application with Claude integration",
+  "main": "main-comprehensive.js",
+  "bin": {
+    "claude-code": "./dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && electron .",
+    "dev": "cross-env NODE_ENV=development npm run start",
+    "test:launch": "node launch-test.js",
+    "electron": "electron .",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:portable": "npm run build && electron-builder --win portable",
+    "test": "playwright test",
+    "test:fallback": "playwright test tests/execution-fallback.spec.ts",
+    "test:fallback:report": "node scripts/test-fallback.js",
+    "test:magnitude": "playwright test tests/magnitude-execution.spec.ts",
+    "test:error-handling": "node run-error-tests.js",
+    "test:error-network": "playwright test tests/error-handling-edge-cases.spec.ts -g \"Network Failure\"",
+    "test:error-resources": "playwright test tests/error-handling-edge-cases.spec.ts -g \"Resource Constraint\"",
+    "test:error-security": "playwright test tests/error-handling-edge-cases.spec.ts -g \"Invalid Input\"",
+    "test:error-ipc": "playwright test tests/ipc-api-error-handling.spec.ts",
+    "test:performance": "node scripts/run-performance-test.js",
+    "test:performance:raw": "playwright test tests/recording-performance.spec.ts",
+    "test:all": "npm run test:magnitude && npm run test:fallback && npm run test:error-handling && npm run test:performance"
+  },
+  "keywords": [
+    "electron",
+    "claude",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.0",
+    "cross-env": "^7.0.3",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-code": "^1.0.83",
+    "@anthropic-ai/sdk": "^0.24.0",
+    "@playwright/test": "^1.54.2",
+    "chokidar": "^4.0.3",
+    "chrome-remote-interface": "^0.33.3",
+    "commander": "^9.5.0",
+    "dotenv": "^16.0.0",
+    "magnitude-core": "^0.2.31",
+    "playwright": "^1.45.0",
+    "playwright-core": "^1.45.0",
+    "uuid": "^9.0.0",
+    "zod": "^3.25.76"
+  },
+  "build": {
+    "appId": "com.example.electron-app",
+    "productName": "Electron App",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "portable": {
+      "artifactName": "${productName}-Portable-${version}.exe"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow Variables Panel</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="vars-panel open">
+        <div class="vars-panel-header">
+            <div class="vars-panel-title">Flow Variables</div>
+            <div class="vars-panel-subtitle">Configure automation flow parameters</div>
+            <button class="btn btn-stop" onclick="closePanel()" style="position: absolute; top: 8px; right: 8px; padding: 4px 8px;">
+                &times;
+            </button>
+        </div>
+        
+        <div class="vars-panel-content" id="varsPanelContent">
+            <!-- Flow information will be inserted here -->
+            <div id="flowInfoContainer">
+                <div class="text-center text-muted">
+                    No flow loaded. Click "Load Flow" to get started.
+                </div>
+            </div>
+            
+            <!-- Variables form will be inserted here -->
+            <div id="variablesContainer">
+                <!-- Variables inputs will be dynamically generated here -->
+            </div>
+            
+            <!-- Action buttons -->
+            <div id="actionsContainer" class="mt-16">
+                <button class="btn btn-record" onclick="loadFlowFile()" style="width: 100%; margin-bottom: 8px;">
+                    📁 Load Flow File
+                </button>
+                
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <button 
+                        class="run-flow-btn btn-success" 
+                        id="runFlowBtn" 
+                        onclick="executeFlow()" 
+                        disabled
+                        style="flex: 1;"
+                    >
+                        Run Flow
+                    </button>
+                    <button 
+                        class="save-flow-btn btn-secondary" 
+                        id="saveFlowBtn" 
+                        onclick="saveFlow()"
+                        style="flex: 1;"
+                    >
+                        Save Flow
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Status and results -->
+            <div id="statusContainer" class="mt-16">
+                <!-- Status messages will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for loading flows -->
+    <input type="file" id="flowFileInput" accept=".json" style="display: none;" onchange="handleFlowFileLoad(event)">
+    
+    <!-- Flow details modal -->
+    <div id="flowDetailsModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Flow Details</h3>
+                <button class="modal-close" onclick="closeFlowDetails()">&times;</button>
+            </div>
+            <div class="modal-body" id="flowDetailsBody">
+                <!-- Flow steps and details will be shown here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="flow-executor.js"></script>
+    <script src="vars-panel.js"></script>
+</body>
+</html>

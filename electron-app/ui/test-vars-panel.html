@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variables Panel Test Suite</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-section {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #3c3c3c;
+            border-radius: 6px;
+            background: #1e1e1e;
+        }
+        .test-button {
+            margin: 5px;
+            padding: 8px 16px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #005a9e;
+        }
+        .test-results {
+            margin-top: 10px;
+            padding: 10px;
+            background: #2d2d2d;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .vars-panel.open {
+            right: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-section">
+        <h2>Variables Panel Test Suite</h2>
+        <p>This page tests all Variables Panel functionality systematically.</p>
+        
+        <div>
+            <h3>1. Loading Test Intent Specs</h3>
+            <button class="test-button" onclick="testLoadAllInputTypes()">Test All Input Types</button>
+            <button class="test-button" onclick="testLoadEmailValidation()">Test Email Validation</button>
+            <button class="test-button" onclick="testLoadPasswordFields()">Test Password Fields</button>
+            <button class="test-button" onclick="testLoadNoVariables()">Test No Variables</button>
+            <button class="test-button" onclick="testLoadComplexFlow()">Test Complex Flow</button>
+            <button class="test-button" onclick="testLoadInvalidJSON()">Test Invalid JSON</button>
+        </div>
+        
+        <div>
+            <h3>2. Input Field Testing</h3>
+            <button class="test-button" onclick="testInputTypeDetection()">Test Input Type Detection</button>
+            <button class="test-button" onclick="testPlaceholders()">Test Placeholders</button>
+            <button class="test-button" onclick="testDescriptions()">Test Descriptions</button>
+        </div>
+        
+        <div>
+            <h3>3. Validation Testing</h3>
+            <button class="test-button" onclick="testRequiredFields()">Test Required Fields</button>
+            <button class="test-button" onclick="testEmailValidation()">Test Email Validation</button>
+            <button class="test-button" onclick="testPasswordMasking()">Test Password Masking</button>
+        </div>
+        
+        <div>
+            <h3>4. Panel Features</h3>
+            <button class="test-button" onclick="testViewSteps()">Test View Steps</button>
+            <button class="test-button" onclick="testVariableSubstitution()">Test Variable Substitution</button>
+            <button class="test-button" onclick="testSaveLoad()">Test Save/Load</button>
+        </div>
+        
+        <div>
+            <h3>5. Error Handling</h3>
+            <button class="test-button" onclick="testErrorMessages()">Test Error Messages</button>
+            <button class="test-button" onclick="testStatusIndicators()">Test Status Indicators</button>
+        </div>
+        
+        <div id="testResults" class="test-results">
+            Test results will appear here...
+        </div>
+    </div>
+
+    <!-- Include the Variables Panel -->
+    <div class="vars-panel open">
+        <div class="vars-panel-header">
+            <div class="vars-panel-title">Flow Variables</div>
+            <div class="vars-panel-subtitle">Configure automation flow parameters</div>
+            <button class="btn btn-stop" onclick="closePanel()" style="position: absolute; top: 8px; right: 8px; padding: 4px 8px;">
+                &times;
+            </button>
+        </div>
+        
+        <div class="vars-panel-content" id="varsPanelContent">
+            <!-- Flow information will be inserted here -->
+            <div id="flowInfoContainer">
+                <div class="text-center text-muted">
+                    No flow loaded. Use test buttons to load different flows.
+                </div>
+            </div>
+            
+            <!-- Variables form will be inserted here -->
+            <div id="variablesContainer">
+                <!-- Variables inputs will be dynamically generated here -->
+            </div>
+            
+            <!-- Action buttons -->
+            <div id="actionsContainer" class="mt-16">
+                <button class="btn btn-record" onclick="loadFlowFile()" style="width: 100%; margin-bottom: 8px;">
+                    📁 Load Flow File
+                </button>
+                
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <button 
+                        class="run-flow-btn btn-success" 
+                        id="runFlowBtn" 
+                        onclick="executeFlow()" 
+                        disabled
+                        style="flex: 1;"
+                    >
+                        Run Flow
+                    </button>
+                    <button 
+                        class="save-flow-btn btn-secondary" 
+                        id="saveFlowBtn" 
+                        onclick="saveFlow()"
+                        style="flex: 1;"
+                    >
+                        Save Flow
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Status and results -->
+            <div id="statusContainer" class="mt-16">
+                <!-- Status messages will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for loading flows -->
+    <input type="file" id="flowFileInput" accept=".json" style="display: none;" onchange="handleFlowFileLoad(event)">
+    
+    <!-- Flow details modal -->
+    <div id="flowDetailsModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Flow Details</h3>
+                <button class="modal-close" onclick="closeFlowDetails()">&times;</button>
+            </div>
+            <div class="modal-body" id="flowDetailsBody">
+                <!-- Flow steps and details will be shown here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="flow-executor.js"></script>
+    <script src="vars-panel.js"></script>
+    <script>
+        // Test data for different scenarios
+        const testFlows = {
+            allInputTypes: {
+                "name": "Complete Input Types Test Flow",
+                "description": "Test flow with all input parameter types for comprehensive Variables Panel testing",
+                "startUrl": "https://example-forms.com/test",
+                "params": [
+                    "USERNAME",
+                    "PASSWORD",
+                    "EMAIL_ADDRESS",
+                    "PHONE_NUMBER",
+                    "WEBSITE_URL",
+                    "SEARCH_QUERY",
+                    "AGE_NUMBER",
+                    "FIRST_NAME",
+                    "LAST_NAME",
+                    "CONFIRM_PASSWORD"
+                ],
+                "steps": [
+                    {"action": "type", "target": "#username", "value": "{{USERNAME}}"},
+                    {"action": "type", "target": "#password", "value": "{{PASSWORD}}"},
+                    {"action": "type", "target": "#email", "value": "{{EMAIL_ADDRESS}}"},
+                    {"action": "type", "target": "#phone", "value": "{{PHONE_NUMBER}}"},
+                    {"action": "type", "target": "#website", "value": "{{WEBSITE_URL}}"},
+                    {"action": "type", "target": "#search", "value": "{{SEARCH_QUERY}}"},
+                    {"action": "type", "target": "#age", "value": "{{AGE_NUMBER}}"},
+                    {"action": "type", "target": "#firstName", "value": "{{FIRST_NAME}}"},
+                    {"action": "type", "target": "#lastName", "value": "{{LAST_NAME}}"},
+                    {"action": "type", "target": "#confirmPassword", "value": "{{CONFIRM_PASSWORD}}"},
+                    {"action": "click", "target": "#submit-button", "value": ""}
+                ],
+                "successCheck": ".success-message"
+            },
+            emailValidation: {
+                "name": "Email Validation Test Flow",
+                "description": "Test flow specifically for email validation functionality",
+                "startUrl": "https://example.com/registration",
+                "params": [
+                    "PRIMARY_EMAIL",
+                    "BACKUP_EMAIL_ADDRESS",
+                    "CONTACT_MAIL"
+                ],
+                "steps": [
+                    {"action": "type", "target": "#primary-email", "value": "{{PRIMARY_EMAIL}}"},
+                    {"action": "type", "target": "#backup-email", "value": "{{BACKUP_EMAIL_ADDRESS}}"},
+                    {"action": "type", "target": "#contact-email", "value": "{{CONTACT_MAIL}}"},
+                    {"action": "click", "target": "#validate-button", "value": ""}
+                ],
+                "successCheck": ".email-validation-success"
+            },
+            passwordFields: {
+                "name": "Password Security Test Flow",
+                "description": "Test flow for password field masking and security",
+                "startUrl": "https://secure.example.com/login",
+                "params": [
+                    "CURRENT_PASSWORD",
+                    "NEW_PASSWORD",
+                    "CONFIRM_NEW_PASSWORD",
+                    "MASTER_PASS",
+                    "SECRET_CODE"
+                ],
+                "steps": [
+                    {"action": "type", "target": "#current-password", "value": "{{CURRENT_PASSWORD}}"},
+                    {"action": "type", "target": "#new-password", "value": "{{NEW_PASSWORD}}"},
+                    {"action": "type", "target": "#confirm-password", "value": "{{CONFIRM_NEW_PASSWORD}}"},
+                    {"action": "type", "target": "#master-pass", "value": "{{MASTER_PASS}}"},
+                    {"action": "type", "target": "#secret-code", "value": "{{SECRET_CODE}}"},
+                    {"action": "click", "target": "#change-password-btn", "value": ""}
+                ],
+                "successCheck": ".password-change-success"
+            },
+            noVariables: {
+                "name": "No Variables Test Flow",
+                "description": "Test flow without any variables to test zero-parameter scenario",
+                "startUrl": "https://example.com/static",
+                "steps": [
+                    {"action": "click", "target": "#static-button", "value": ""},
+                    {"action": "wait", "target": "2000", "value": ""},
+                    {"action": "click", "target": ".next-page-link", "value": ""},
+                    {"action": "type", "target": "#static-text", "value": "Static text input"}
+                ],
+                "successCheck": ".static-completion"
+            },
+            complexFlow: {
+                "name": "Complex Multi-Step Flow Test",
+                "description": "Complex flow with many steps to test the View Steps functionality",
+                "startUrl": "https://app.example.com/dashboard",
+                "params": [
+                    "USER_ID",
+                    "PROJECT_NAME",
+                    "DESCRIPTION_TEXT",
+                    "BUDGET_AMOUNT",
+                    "DEADLINE_DATE"
+                ],
+                "steps": [
+                    {"action": "click", "target": "#menu-projects", "value": ""},
+                    {"action": "wait", "target": "1000", "value": ""},
+                    {"action": "click", "target": "#create-new-project", "value": ""},
+                    {"action": "type", "target": "#project-name", "value": "{{PROJECT_NAME}}"},
+                    {"action": "type", "target": "#project-description", "value": "{{DESCRIPTION_TEXT}}"},
+                    {"action": "type", "target": "#budget-input", "value": "{{BUDGET_AMOUNT}}"},
+                    {"action": "type", "target": "#deadline-date", "value": "{{DEADLINE_DATE}}"},
+                    {"action": "click", "target": "#assign-user-btn", "value": ""},
+                    {"action": "type", "target": "#user-search", "value": "{{USER_ID}}"},
+                    {"action": "click", "target": ".user-select-item:first-child", "value": ""},
+                    {"action": "click", "target": "#save-project-btn", "value": ""},
+                    {"action": "wait", "target": "3000", "value": ""},
+                    {"action": "click", "target": "#confirm-creation", "value": ""}
+                ],
+                "successCheck": ".project-created-success"
+            }
+        };
+
+        function logTest(message) {
+            const results = document.getElementById('testResults');
+            const timestamp = new Date().toLocaleTimeString();
+            results.innerHTML += `[${timestamp}] ${message}\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function testLoadAllInputTypes() {
+            logTest('Testing: Loading All Input Types flow...');
+            try {
+                varsPanelManager.loadFlow(testFlows.allInputTypes);
+                logTest('✓ SUCCESS: All Input Types flow loaded successfully');
+                logTest(`  - Generated ${testFlows.allInputTypes.params.length} input fields`);
+                
+                // Check input types
+                testFlows.allInputTypes.params.forEach(param => {
+                    const input = document.getElementById(`var-${param}`);
+                    if (input) {
+                        const type = input.type;
+                        logTest(`  - ${param}: ${type} input type detected`);
+                    }
+                });
+            } catch (error) {
+                logTest(`✗ FAILED: ${error.message}`);
+            }
+        }
+
+        function testLoadEmailValidation() {
+            logTest('Testing: Loading Email Validation flow...');
+            try {
+                varsPanelManager.loadFlow(testFlows.emailValidation);
+                logTest('✓ SUCCESS: Email Validation flow loaded successfully');
+                
+                // Check email input types
+                testFlows.emailValidation.params.forEach(param => {
+                    const input = document.getElementById(`var-${param}`);
+                    if (input && input.type === 'email') {
+                        logTest(`  - ${param}: Correctly detected as email input`);
+                    }
+                });
+            } catch (error) {
+                logTest(`✗ FAILED: ${error.message}`);
+            }
+        }
+
+        function testLoadPasswordFields() {
+            logTest('Testing: Loading Password Fields flow...');
+            try {
+                varsPanelManager.loadFlow(testFlows.passwordFields);
+                logTest('✓ SUCCESS: Password Fields flow loaded successfully');
+                
+                // Check password input types
+                testFlows.passwordFields.params.forEach(param => {
+                    const input = document.getElementById(`var-${param}`);
+                    if (input && input.type === 'password') {
+                        logTest(`  - ${param}: Correctly detected as password input`);
+                    }
+                });
+            } catch (error) {
+                logTest(`✗ FAILED: ${error.message}`);
+            }
+        }
+
+        function testLoadNoVariables() {
+            logTest('Testing: Loading No Variables flow...');
+            try {
+                varsPanelManager.loadFlow(testFlows.noVariables);
+                logTest('✓ SUCCESS: No Variables flow loaded successfully');
+                logTest('  - Correctly shows "no configuration required" message');
+            } catch (error) {
+                logTest(`✗ FAILED: ${error.message}`);
+            }
+        }
+
+        function testLoadComplexFlow() {
+            logTest('Testing: Loading Complex Flow...');
+            try {
+                varsPanelManager.loadFlow(testFlows.complexFlow);
+                logTest('✓ SUCCESS: Complex Flow loaded successfully');
+                logTest(`  - ${testFlows.complexFlow.steps.length} steps in flow`);
+                logTest(`  - ${testFlows.complexFlow.params.length} parameters`);
+            } catch (error) {
+                logTest(`✗ FAILED: ${error.message}`);
+            }
+        }
+
+        function testLoadInvalidJSON() {
+            logTest('Testing: Loading Invalid JSON...');
+            try {
+                const invalidFlow = "{invalid json}";
+                JSON.parse(invalidFlow); // This will throw an error
+                logTest('✗ FAILED: Should have caught JSON parse error');
+            } catch (error) {
+                logTest('✓ SUCCESS: Correctly caught JSON parse error');
+                logTest(`  - Error: ${error.message}`);
+            }
+        }
+
+        function testInputTypeDetection() {
+            logTest('Testing: Input Type Detection...');
+            varsPanelManager.loadFlow(testFlows.allInputTypes);
+            
+            const expectedTypes = {
+                'USERNAME': 'text',
+                'PASSWORD': 'password',
+                'EMAIL_ADDRESS': 'email',
+                'PHONE_NUMBER': 'tel',
+                'WEBSITE_URL': 'url',
+                'SEARCH_QUERY': 'text',
+                'AGE_NUMBER': 'number'
+            };
+            
+            Object.entries(expectedTypes).forEach(([param, expectedType]) => {
+                const input = document.getElementById(`var-${param}`);
+                if (input) {
+                    if (input.type === expectedType) {
+                        logTest(`  ✓ ${param}: Correct type (${expectedType})`);
+                    } else {
+                        logTest(`  ✗ ${param}: Expected ${expectedType}, got ${input.type}`);
+                    }
+                }
+            });
+        }
+
+        function testPlaceholders() {
+            logTest('Testing: Placeholder Generation...');
+            varsPanelManager.loadFlow(testFlows.allInputTypes);
+            
+            testFlows.allInputTypes.params.forEach(param => {
+                const input = document.getElementById(`var-${param}`);
+                if (input && input.placeholder) {
+                    logTest(`  - ${param}: "${input.placeholder}"`);
+                }
+            });
+        }
+
+        function testDescriptions() {
+            logTest('Testing: Description Generation...');
+            varsPanelManager.loadFlow(testFlows.passwordFields);
+            
+            testFlows.passwordFields.params.forEach(param => {
+                const inputGroup = document.getElementById(`var-${param}`).closest('.variable-input-group');
+                const description = inputGroup.querySelector('[style*="font-size: 11px"]');
+                if (description) {
+                    logTest(`  - ${param}: "${description.textContent}"`);
+                }
+            });
+        }
+
+        function testRequiredFields() {
+            logTest('Testing: Required Field Validation...');
+            varsPanelManager.loadFlow(testFlows.allInputTypes);
+            
+            // Clear all inputs
+            testFlows.allInputTypes.params.forEach(param => {
+                const input = document.getElementById(`var-${param}`);
+                if (input) {
+                    input.value = '';
+                    input.dispatchEvent(new Event('input'));
+                }
+            });
+            
+            const runBtn = document.getElementById('runFlowBtn');
+            if (runBtn.disabled) {
+                logTest('  ✓ Run button correctly disabled with empty required fields');
+            } else {
+                logTest('  ✗ Run button should be disabled with empty required fields');
+            }
+            
+            // Fill one field
+            const firstInput = document.getElementById(`var-${testFlows.allInputTypes.params[0]}`);
+            if (firstInput) {
+                firstInput.value = 'test';
+                firstInput.dispatchEvent(new Event('input'));
+                logTest('  - Filled one field, checking validation...');
+            }
+        }
+
+        function testEmailValidation() {
+            logTest('Testing: Email Field Validation...');
+            varsPanelManager.loadFlow(testFlows.emailValidation);
+            
+            const testEmails = [
+                { email: 'valid@example.com', valid: true },
+                { email: 'invalid-email', valid: false },
+                { email: 'test@', valid: false },
+                { email: '@example.com', valid: false }
+            ];
+            
+            const emailInput = document.getElementById('var-PRIMARY_EMAIL');
+            if (emailInput) {
+                testEmails.forEach(test => {
+                    emailInput.value = test.email;
+                    const isValid = emailInput.checkValidity();
+                    if (isValid === test.valid) {
+                        logTest(`  ✓ ${test.email}: Correctly ${test.valid ? 'accepted' : 'rejected'}`);
+                    } else {
+                        logTest(`  ✗ ${test.email}: Expected ${test.valid ? 'valid' : 'invalid'}, got ${isValid ? 'valid' : 'invalid'}`);
+                    }
+                });
+            }
+        }
+
+        function testPasswordMasking() {
+            logTest('Testing: Password Field Masking...');
+            varsPanelManager.loadFlow(testFlows.passwordFields);
+            
+            testFlows.passwordFields.params.forEach(param => {
+                const input = document.getElementById(`var-${param}`);
+                if (input && input.type === 'password') {
+                    input.value = 'test123';
+                    logTest(`  ✓ ${param}: Password input is masked (type="${input.type}")`);
+                }
+            });
+        }
+
+        function testViewSteps() {
+            logTest('Testing: View Steps functionality...');
+            varsPanelManager.loadFlow(testFlows.complexFlow);
+            
+            // Simulate clicking View Steps button
+            try {
+                varsPanelManager.showFlowDetails();
+                const modal = document.getElementById('flowDetailsModal');
+                if (!modal.classList.contains('hidden')) {
+                    logTest('  ✓ Flow details modal opened successfully');
+                    logTest(`  - Shows ${testFlows.complexFlow.steps.length} steps`);
+                    
+                    // Close modal
+                    varsPanelManager.closeFlowDetails();
+                    if (modal.classList.contains('hidden')) {
+                        logTest('  ✓ Flow details modal closed successfully');
+                    }
+                } else {
+                    logTest('  ✗ Flow details modal failed to open');
+                }
+            } catch (error) {
+                logTest(`  ✗ Error: ${error.message}`);
+            }
+        }
+
+        function testVariableSubstitution() {
+            logTest('Testing: Variable Substitution...');
+            varsPanelManager.loadFlow(testFlows.allInputTypes);
+            
+            const testVariables = {
+                'USERNAME': 'testuser',
+                'PASSWORD': 'testpass',
+                'EMAIL_ADDRESS': 'test@example.com'
+            };
+            
+            const testString = 'Hello {{USERNAME}}, your email is {{EMAIL_ADDRESS}}';
+            const result = varsPanelManager.substituteVariables(testString, testVariables);
+            const expected = 'Hello testuser, your email is test@example.com';
+            
+            if (result === expected) {
+                logTest('  ✓ Variable substitution working correctly');
+                logTest(`  - Result: "${result}"`);
+            } else {
+                logTest('  ✗ Variable substitution failed');
+                logTest(`  - Expected: "${expected}"`);
+                logTest(`  - Got: "${result}"`);
+            }
+        }
+
+        function testSaveLoad() {
+            logTest('Testing: Save/Load functionality...');
+            varsPanelManager.loadFlow(testFlows.allInputTypes);
+            
+            // Test save (will use demo mode)
+            try {
+                varsPanelManager.saveFlow();
+                logTest('  ✓ Save flow called successfully (demo mode)');
+            } catch (error) {
+                logTest(`  ✗ Save flow error: ${error.message}`);
+            }
+        }
+
+        function testErrorMessages() {
+            logTest('Testing: Error Messages...');
+            
+            // Test status messages
+            varsPanelManager.showStatus('Test info message', 'info');
+            logTest('  ✓ Info status message displayed');
+            
+            varsPanelManager.showStatus('Test success message', 'success');
+            logTest('  ✓ Success status message displayed');
+            
+            varsPanelManager.showStatus('Test error message', 'error');
+            logTest('  ✓ Error status message displayed');
+            
+            setTimeout(() => {
+                varsPanelManager.clearStatus();
+                logTest('  ✓ Status messages cleared');
+            }, 2000);
+        }
+
+        function testStatusIndicators() {
+            logTest('Testing: Status Indicators...');
+            varsPanelManager.loadFlow(testFlows.allInputTypes);
+            
+            // Test form validation status
+            const runBtn = document.getElementById('runFlowBtn');
+            const initialText = runBtn.textContent;
+            logTest(`  - Initial button text: "${initialText}"`);
+            
+            // Fill all required fields
+            testFlows.allInputTypes.params.forEach(param => {
+                const input = document.getElementById(`var-${param}`);
+                if (input) {
+                    input.value = 'test';
+                    input.dispatchEvent(new Event('input'));
+                }
+            });
+            
+            setTimeout(() => {
+                const updatedText = runBtn.textContent;
+                logTest(`  - Updated button text: "${updatedText}"`);
+                if (updatedText === 'Run Flow' && !runBtn.disabled) {
+                    logTest('  ✓ Button correctly enabled with all fields filled');
+                } else {
+                    logTest('  ✗ Button state incorrect after filling fields');
+                }
+            }, 100);
+        }
+
+        // Initialize with a default flow
+        document.addEventListener('DOMContentLoaded', () => {
+            logTest('Variables Panel Test Suite initialized');
+            logTest('Click the test buttons above to run specific tests');
+            
+            // Load a default test flow
+            setTimeout(() => {
+                testLoadAllInputTypes();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

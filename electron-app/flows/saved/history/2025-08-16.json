@@ -1,0 +1,127 @@
+[
+  {
+    "flowId": "test-storage-flow-1755345900635",
+    "flowName": "Test Storage Flow",
+    "execution": {
+      "id": "exec-1755345900635-kg5g47sqq",
+      "timestamp": "2025-08-16T12:05:00.635Z",
+      "variables": {
+        "test": "value"
+      },
+      "result": {
+        "success": true,
+        "logs": [
+          "Test log"
+        ],
+        "data": {
+          "extracted": "data"
+        }
+      },
+      "duration": 0,
+      "success": true
+    }
+  },
+  {
+    "flowId": "test-storage-flow-1755345900654",
+    "flowName": "Test Storage Flow",
+    "execution": {
+      "id": "exec-1755345900654-jb6wn7gf7",
+      "timestamp": "2025-08-16T12:05:00.654Z",
+      "variables": {},
+      "result": {
+        "success": true,
+        "logs": [
+          "Test log"
+        ],
+        "data": {}
+      },
+      "duration": 0,
+      "success": true
+    }
+  },
+  {
+    "flowId": "test-storage-flow-1755345900663",
+    "flowName": "Test Storage Flow",
+    "execution": {
+      "id": "exec-1755345900663-oploassgd",
+      "timestamp": "2025-08-16T12:05:00.663Z",
+      "variables": {},
+      "result": {
+        "success": true,
+        "logs": [
+          "Test log"
+        ],
+        "data": {}
+      },
+      "duration": 0,
+      "success": true
+    }
+  },
+  {
+    "flowId": "test-storage-flow-1755345900673",
+    "flowName": "Test Storage Flow",
+    "execution": {
+      "id": "exec-1755345900673-uzjktg2v8",
+      "timestamp": "2025-08-16T12:05:00.673Z",
+      "variables": {},
+      "result": {
+        "success": true,
+        "logs": [
+          "Test log"
+        ],
+        "data": {}
+      },
+      "duration": 0,
+      "success": true
+    }
+  },
+  {
+    "flowId": "test-storage-flow-1755345900681",
+    "flowName": "Test Storage Flow",
+    "execution": {
+      "id": "exec-1755345900681-1ku8s1uyf",
+      "timestamp": "2025-08-16T12:05:00.681Z",
+      "variables": {},
+      "result": {
+        "success": true,
+        "logs": [
+          "Test log"
+        ],
+        "data": {},
+        "metrics": {
+          "startTime": "2025-08-16T12:05:00.681Z",
+          "endTime": "2025-08-16T12:05:00.681Z",
+          "duration": 1000,
+          "stepsExecuted": 1,
+          "stepsTotal": 1,
+          "retryCount": 0,
+          "browserInteractions": 1,
+          "llmCalls": {
+            "act": 1,
+            "query": 0
+          }
+        }
+      },
+      "duration": 1000,
+      "success": true
+    }
+  },
+  {
+    "flowId": "test-storage-flow-1755345900695",
+    "flowName": "Test Storage Flow",
+    "execution": {
+      "id": "exec-1755345900695-ogh8be0dd",
+      "timestamp": "2025-08-16T12:05:00.695Z",
+      "variables": {},
+      "result": {
+        "success": true,
+        "logs": [
+          "Test log"
+        ],
+        "data": {}
+      },
+      "duration": 0,
+      "success": true
+    }
+  }
+]
