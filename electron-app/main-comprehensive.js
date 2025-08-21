@@ -140,6 +140,24 @@ function createWindow() {
   // Load Google with parameters to prevent sign-in prompts and redirects
   // gl=us - US region, hl=en - English, gws_rd=cr - stay on .com, pws=0 - no personalization
   webView.webContents.loadURL('https://www.google.com/webhp?gl=us&hl=en&gws_rd=cr&pws=0');
+  
+  // Inject CSS to hide sign-in prompts when page loads
+  webView.webContents.on('dom-ready', () => {
+    webView.webContents.insertCSS(`
+      /* Hide Google sign-in prompts */
+      div[jsname="V67aGc"], /* Sign in popup */
+      div[aria-label*="Sign in"],
+      div[role="dialog"][aria-label*="Sign in"],
+      .gb_Kd, /* Sign in button */
+      .gb_4, /* Sign in button container */
+      .gb_3, /* Account button */
+      div[data-ogsr-up],
+      div[jscontroller][data-ved][jsaction*="dismiss"] {
+        display: none !important;
+      }
+    `);
+  });
+  
   setupRecordingListeners();
 
   // Initialize default tab in the UI
@@ -917,17 +935,19 @@ ipcMain.handle('stop-enhanced-recording', async () => {
     performance: recordingData.performance,
     memory: recordingData.memory,
     
-    // Statistics
+    // Statistics (will calculate dataSizeMB after object creation)
     stats: {
       totalActions: pageData.actions?.length || 0,
       totalSnapshots: pageData.domSnapshots?.length || 0,
       totalMutations: pageData.mutations?.length || 0,
       totalNetworkEvents: Object.values(recordingData.network).flat().length,
       totalConsoleEvents: Object.values(recordingData.console).flat().length,
-      totalScreenshots: recordingData.screenshots.length,
-      dataSizeMB: JSON.stringify(finalData).length / 1024 / 1024
+      totalScreenshots: recordingData.screenshots.length
     }
   };
+  
+  // Add data size to stats
+  finalData.stats.dataSizeMB = JSON.stringify(finalData).length / 1024 / 1024;
   
   console.log('📊 Comprehensive recording summary:', finalData.stats);
   
@@ -973,23 +993,14 @@ ipcMain.handle('create-tab', async (event, url) => {
   // Use the same Google URL with parameters for new tabs
   const targetUrl = url || 'https://www.google.com/webhp?gl=us&hl=en&gws_rd=cr&pws=0';
   const tabId = `tab-${Date.now()}`;
+  const title = 'New Tab';
   
-  if (webView) {
-    console.log(`Creating new tab with URL: ${targetUrl}`);
-    
-    // Ensure Firefox user agent is maintained for new tabs
-    const firefoxUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0';
-    webView.webContents.setUserAgent(firefoxUserAgent);
-    
-    await webView.webContents.loadURL(targetUrl);
-    
-    // Wait a moment for page to start loading
-    setTimeout(() => {
-      const title = webView.webContents.getTitle() || 'New Tab';
-      
-      // Update the UI with the new tab
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.executeJavaScript(`
+  // Since we only have one webView, we'll track tabs in the UI only
+  console.log(`Creating new tab: ${tabId}`);
+  
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    // Add tab to UI
+    await mainWindow.webContents.executeJavaScript(`
           // Add the new tab to UI
           const newTab = {
             id: '${tabId}',
@@ -1036,8 +1047,13 @@ ipcMain.handle('create-tab', async (event, url) => {
           
           console.log('New tab created:', newTab);
         `);
-      }
-    }, 500);
+    
+    // Now navigate to the new tab's URL
+    if (webView) {
+      const firefoxUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0';
+      webView.webContents.setUserAgent(firefoxUserAgent);
+      await webView.webContents.loadURL(targetUrl);
+    }
   }
   
   return {
