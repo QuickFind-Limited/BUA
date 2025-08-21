@@ -3,6 +3,32 @@ const { app, BrowserWindow, ipcMain, WebContentsView } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 
+// Clean up old session directories on startup
+async function cleanupOldSessions() {
+  try {
+    const userDataBase = app.getPath('userData');
+    const files = await fs.readdir(userDataBase);
+    const sessionDirs = files.filter(f => f.startsWith('session-'));
+    
+    // Delete session directories older than 1 hour
+    const oneHourAgo = Date.now() - (60 * 60 * 1000);
+    for (const dir of sessionDirs) {
+      const dirPath = path.join(userDataBase, dir);
+      try {
+        const stats = await fs.stat(dirPath);
+        if (stats.mtime.getTime() < oneHourAgo) {
+          await fs.rm(dirPath, { recursive: true, force: true });
+          console.log(`🗑️ Cleaned up old session: ${dir}`);
+        }
+      } catch (e) {
+        // Ignore errors for individual directories
+      }
+    }
+  } catch (e) {
+    // Ignore cleanup errors
+  }
+}
+
 let mainWindow = null;
 let webView = null;
 let recordingActive = false;
@@ -50,9 +76,14 @@ let recordingData = {
   title: null
 };
 
-// Enable CDP for recording
-app.commandLine.appendSwitch('remote-debugging-port', '9335');
+// Enable CDP for recording - use dynamic port to avoid conflicts
+const CDP_PORT = 9335 + Math.floor(Math.random() * 100); // Random port between 9335-9435
+app.commandLine.appendSwitch('remote-debugging-port', String(CDP_PORT));
 app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
+
+// Set user data directory to avoid cache conflicts
+const userDataPath = path.join(app.getPath('userData'), `session-${Date.now()}`);
+app.setPath('userData', userDataPath);
 
 function updateWebViewBounds() {
   if (!webView || !mainWindow) return;
@@ -97,6 +128,8 @@ function createWindow() {
   // Initialize default tab in the UI
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('✅ Main window loaded, initializing default tab');
+    console.log(`📍 CDP endpoint available at: http://127.0.0.1:${CDP_PORT}`);
+    console.log(`📁 User data directory: ${userDataPath}`);
     // Send initial tab info to renderer
     mainWindow.webContents.executeJavaScript(`
       // Create initial tab
@@ -840,7 +873,7 @@ ipcMain.handle('enhanced-recording:status', async () => {
   return {
     isRecording: recordingActive,
     isPaused: false,
-    cdpPort: 9335,
+    cdpPort: CDP_PORT,
     webViewUrl: webView?.webContents.getURL(),
     captureMode: 'COMPREHENSIVE',
     debuggerAttached: debuggerAttached
@@ -1051,7 +1084,10 @@ ipcMain.handle('tabs:reload', async () => {
   return false;
 });
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // Clean up old sessions before starting
+  await cleanupOldSessions();
+  
   createWindow();
   console.log('🚀 Electron app ready with COMPREHENSIVE CDP recording');
   console.log('⚡ Aggressive capture mode available - will use more resources');
