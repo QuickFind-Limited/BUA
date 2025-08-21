@@ -1144,6 +1144,10 @@ let enhancedRecordingSessionId = null;
  */
 async function toggleEnhancedRecording() {
     const enhancedRecorderBtn = document.getElementById('enhanced-recorder-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const resumeBtn = document.getElementById('resume-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    
     if (!enhancedRecorderBtn) return;
     
     if (!isEnhancedRecording) {
@@ -1164,6 +1168,15 @@ async function toggleEnhancedRecording() {
                     console.log('Enhanced recording started successfully:', result.data?.sessionId);
                     
                     isEnhancedRecording = true;
+                    
+                    // Update record button to disabled state with "Recording" text
+                    enhancedRecorderBtn.disabled = true;
+                    enhancedRecorderBtn.classList.add('recording');
+                    enhancedRecorderBtn.querySelector('.enhanced-recorder-text').textContent = 'Recording';
+                    
+                    // Show control buttons
+                    if (pauseBtn) pauseBtn.style.display = 'flex';
+                    if (stopBtn) stopBtn.style.display = 'flex';
                     enhancedRecordingSessionId = result.data?.sessionId;
                     
                     // Update button to show recording state
@@ -1386,6 +1399,70 @@ if (window.electronAPI && window.electronAPI.onEnhancedActionRecorded) {
     });
 }
 
+// Pause recording
+async function pauseRecording() {
+    const pauseBtn = document.getElementById('pause-btn');
+    const resumeBtn = document.getElementById('resume-btn');
+    
+    if (window.electronAPI && window.electronAPI.pauseEnhancedRecording) {
+        const result = await window.electronAPI.pauseEnhancedRecording();
+        if (result.success) {
+            console.log('Recording paused');
+            if (pauseBtn) pauseBtn.style.display = 'none';
+            if (resumeBtn) resumeBtn.style.display = 'flex';
+        }
+    }
+}
+
+// Resume recording
+async function resumeRecording() {
+    const pauseBtn = document.getElementById('pause-btn');
+    const resumeBtn = document.getElementById('resume-btn');
+    
+    if (window.electronAPI && window.electronAPI.resumeEnhancedRecording) {
+        const result = await window.electronAPI.resumeEnhancedRecording();
+        if (result.success) {
+            console.log('Recording resumed');
+            if (resumeBtn) resumeBtn.style.display = 'none';
+            if (pauseBtn) pauseBtn.style.display = 'flex';
+        }
+    }
+}
+
+// Stop recording
+async function stopRecording() {
+    const enhancedRecorderBtn = document.getElementById('enhanced-recorder-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const resumeBtn = document.getElementById('resume-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    
+    if (window.electronAPI && window.electronAPI.stopEnhancedRecording) {
+        const result = await window.electronAPI.stopEnhancedRecording();
+        if (result.success) {
+            console.log('Recording stopped');
+            isEnhancedRecording = false;
+            
+            // Reset record button
+            if (enhancedRecorderBtn) {
+                enhancedRecorderBtn.disabled = false;
+                enhancedRecorderBtn.classList.remove('recording');
+                enhancedRecorderBtn.querySelector('.enhanced-recorder-text').textContent = 'Record';
+            }
+            
+            // Hide control buttons
+            if (pauseBtn) pauseBtn.style.display = 'none';
+            if (resumeBtn) resumeBtn.style.display = 'none';
+            if (stopBtn) stopBtn.style.display = 'none';
+            
+            // Handle the recorded session
+            if (result.data?.session) {
+                window.lastRecordingSession = result.data.session;
+                handleRecordingComplete({ session: result.data.session });
+            }
+        }
+    }
+}
+
 // Make functions globally available for onclick handlers and external access
 window.closeTab = closeTab;
 window.showVarsPanel = showVarsPanel;
@@ -1393,3 +1470,6 @@ window.hideVarsPanel = hideVarsPanel;
 window.handleRecordingComplete = handleRecordingComplete;
 window.analyzeLastRecording = analyzeLastRecording;
 window.openSettings = openSettings;
+window.pauseRecording = pauseRecording;
+window.resumeRecording = resumeRecording;
+window.stopRecording = stopRecording;

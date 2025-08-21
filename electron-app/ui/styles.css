@@ -190,17 +190,24 @@ body {
 
 /* Enhanced Recording Button Styles */
 .enhanced-recorder-btn {
-  background: #9C27B0; /* Purple theme for enhanced recording */
+  background: #2196F3; /* Blue theme for recording */
   color: white;
+  min-width: 80px;
 }
 
-.enhanced-recorder-btn:hover {
-  background: #7B1FA2;
+.enhanced-recorder-btn:hover:not(:disabled) {
+  background: #1976D2;
+}
+
+.enhanced-recorder-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .enhanced-recorder-btn.recording {
-  background: #f44336; /* Red when recording */
-  animation: pulse 1.5s infinite;
+  background: #2196F3; /* Stay blue when recording */
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .enhanced-recorder-btn.paused {
@@ -237,6 +244,70 @@ body {
 
 .settings-btn:hover {
   background: #5a6268;
+}
+
+/* Icon-only button styles */
+.settings-btn.icon-only {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.settings-btn.icon-only:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+/* Recording Action Buttons (icon-only) */
+.recording-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #607D8B;
+  color: white;
+  transition: background 0.2s;
+}
+
+.recording-action-btn:hover {
+  background: #455A64;
+}
+
+.recording-action-btn.pause-btn {
+  background: #FF9800;
+}
+
+.recording-action-btn.pause-btn:hover {
+  background: #F57C00;
+}
+
+.recording-action-btn.resume-btn {
+  background: #4CAF50;
+}
+
+.recording-action-btn.resume-btn:hover {
+  background: #388E3C;
+}
+
+.recording-action-btn.stop-btn {
+  background: #F44336;
+}
+
+.recording-action-btn.stop-btn:hover {
+  background: #D32F2F;
 }
 
 .begin-analysis-btn:hover {

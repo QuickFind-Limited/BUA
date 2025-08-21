@@ -25,14 +25,30 @@
         <input type="text" class="address-bar" id="address-bar" placeholder="Enter URL or search...">
         <button class="nav-btn" id="go-btn" title="Go">Go</button>
         <div class="recording-controls">
-            <button class="enhanced-recorder-btn" id="enhanced-recorder-btn" title="Start CDP Recording">
+            <button class="enhanced-recorder-btn" id="enhanced-recorder-btn" title="Start Recording">
                 <span class="enhanced-recorder-text">Record</span>
             </button>
-            <button class="capture-screenshot-btn" id="capture-screenshot-btn" title="Capture Success State" style="display: none;">
-                <span class="screenshot-text">📸 Capture Success State</span>
+            <button class="recording-action-btn pause-btn" id="pause-btn" title="Pause Recording" style="display: none;" onclick="pauseRecording()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+                    <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+                </svg>
             </button>
-            <button class="settings-btn" id="settings-btn" title="AI Error Recovery Settings">
-                <span class="settings-text">⚙️ Settings</span>
+            <button class="recording-action-btn resume-btn" id="resume-btn" title="Resume Recording" style="display: none;" onclick="resumeRecording()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+            </button>
+            <button class="recording-action-btn stop-btn" id="stop-btn" title="Stop Recording" style="display: none;" onclick="stopRecording()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                </svg>
+            </button>
+            <button class="settings-btn icon-only" id="settings-btn" title="Settings">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 1v6m0 6v6m10.392-6.866l-5.196 3-5.196-3-5.196 3L1.608 12l5.196-3 5.196 3 5.196-3L22.392 12z"></path>
+                </svg>
             </button>
         </div>
     </div>

@@ -103,6 +103,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
+    show: false, // Don't show until ready
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -111,6 +112,12 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, 'ui', 'tabbar.html'));
+  
+  // Maximize and show the window when ready
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.maximize();
+    mainWindow.show();
+  });
 
   webView = new WebContentsView({
     webPreferences: {
@@ -122,6 +129,10 @@ function createWindow() {
 
   mainWindow.contentView.addChildView(webView);
   updateWebViewBounds();
+  
+  // Set user agent to bypass Google sign-in prompt
+  const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+  webView.webContents.setUserAgent(userAgent);
   webView.webContents.loadURL('https://www.google.com');
   setupRecordingListeners();
 
