@@ -12,6 +12,7 @@ let webView = null;
 let recordingCollector = null;
 let debuggerAttached = false;
 let sidebarWidth = 320;
+let currentActiveTabId = 'tab-initial';
 
 // Track tabs and their URLs
 const tabsData = new Map();
@@ -38,6 +39,7 @@ async function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
+    show: false, // Don't show until ready
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -45,8 +47,9 @@ async function createWindow() {
     }
   });
 
-  mainWindow.maximize();
   await mainWindow.loadFile(path.join(__dirname, 'ui', 'tabbar.html'));
+  mainWindow.maximize();
+  mainWindow.show(); // Show after loading
 
   // Initialize WebView
   webView = new WebContentsView({
@@ -63,19 +66,14 @@ async function createWindow() {
   // Initialize recording collector
   initializeRecordingCollector();
 
-  // Setup navigation handling for tab context
-  setupNavigationHandling();
-
-  // Load initial page
-  webView.webContents.loadURL('https://www.google.com');
-  
-  // Initialize default tab
+  // Initialize default tab FIRST
   const initialTabId = 'tab-initial';
   tabsData.set(initialTabId, {
     id: initialTabId,
     url: 'https://www.google.com',
     title: 'Google'
   });
+  currentActiveTabId = initialTabId;
   
   // Register initial tab with collector
   recordingCollector.registerTabContext(initialTabId, {
@@ -85,10 +83,48 @@ async function createWindow() {
   });
 
   console.log('📑 Initial tab created:', initialTabId);
+
+  // Setup navigation handling for tab context
+  setupNavigationHandling();
+
+  // Load initial page
+  webView.webContents.loadURL('https://www.google.com');
+  
+  // Initialize notification to UI
+  mainWindow.on('resize', () => {
+    updateWebViewBounds();
+  });
+  
+  // Send initial tab data to UI immediately (UI is already loaded)
+  setTimeout(() => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      try {
+        const tabs = Array.from(tabsData.values());
+        console.log('Sending initial tabs-updated with tabs:', tabs);
+        mainWindow.webContents.send('tabs-updated', {
+          tabs: tabs,
+          activeTabId: initialTabId
+        });
+        
+        // Send initial navigation state
+        mainWindow.webContents.send('navigation-update', {
+          canGoBack: false,
+          canGoForward: false
+        });
+      } catch (error) {
+        console.error('Error sending initial data to UI:', error);
+      }
+    }
+  }, 100);
 }
 
 // Setup navigation handling with proper tab context
 function setupNavigationHandling() {
+  if (!webView || !webView.webContents) {
+    console.error('WebView not ready for navigation handling');
+    return;
+  }
+  
   webView.webContents.on('did-navigate', (event, url) => {
     const currentTabId = getCurrentTabId();
     console.log(`Navigation in tab ${currentTabId}: ${url}`);
@@ -100,9 +136,19 @@ function setupNavigationHandling() {
       recordingCollector.updateTabContext(currentTabId, { url });
     }
     
+    // Send navigation update to UI
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('tab-url-update', currentTabId, url);
+      mainWindow.webContents.send('navigation-update', {
+        canGoBack: webView.webContents.canGoBack(),
+        canGoForward: webView.webContents.canGoForward()
+      });
+    }
+    
     // Handle recording context during navigation
-    if (recordingCollector.hasActiveSession()) {
-      recordingCollector.addNavigationEvent({
+    if (recordingCollector.getActiveSessionId()) {
+      recordingCollector.addAction({
+        action: 'navigation',
         type: 'did-navigate',
         url: url,
         timestamp: Date.now()
@@ -116,7 +162,7 @@ function setupNavigationHandling() {
   webView.webContents.on('did-finish-load', () => {
     const currentTabId = getCurrentTabId();
     
-    if (recordingCollector.hasActiveSession()) {
+    if (recordingCollector.getActiveSessionId()) {
       // Capture DOM snapshot after page load
       captureDOMSnapshot(currentTabId, 'page-load');
     }
@@ -128,26 +174,31 @@ function setupNavigationHandling() {
     if (tabData) {
       tabData.title = title;
       recordingCollector.updateTabContext(currentTabId, { title });
+      
+      // Send title update to UI
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('tab-title-update', currentTabId, title);
+      }
     }
   });
 }
 
 // Get current active tab ID
 function getCurrentTabId() {
-  // In real implementation, this would track the active tab
-  // For now, return the most recently used tab
-  return Array.from(tabsData.keys()).pop() || 'tab-initial';
+  return currentActiveTabId;
 }
 
 // Update WebView bounds
 function updateWebViewBounds() {
   if (!mainWindow || !webView) return;
-  const bounds = mainWindow.getBounds();
+  const bounds = mainWindow.contentView.getBounds();
+  const navBarHeight = 88;
+  
   webView.setBounds({
-    x: 0,
-    y: 120, // Account for tab bar and navigation
+    x: sidebarWidth,
+    y: navBarHeight,
     width: bounds.width - sidebarWidth,
-    height: bounds.height - 180 // Account for status bar
+    height: bounds.height - navBarHeight
   });
 }
 
@@ -201,8 +252,8 @@ ipcMain.handle('start-enhanced-recording', async () => {
     // Initial DOM snapshot
     await captureDOMSnapshot(currentTabId, 'recording-start');
     
-    // Start screenshot interval
-    startScreenshotCapture(currentTabId, sessionId);
+    // Don't start interval screenshots - too large
+    // startScreenshotCapture(currentTabId, sessionId);
     
     return { success: true, sessionId };
     
@@ -242,10 +293,10 @@ async function injectRecordingScript(tabId, sessionId) {
 
 // Re-inject recording script after navigation
 async function reinjectRecordingScript(tabId) {
-  const activeSession = recordingCollector.getActiveSession();
-  if (!activeSession) return;
+  const activeSessionId = recordingCollector.getActiveSessionId();
+  if (!activeSessionId) return;
   
-  await injectRecordingScript(tabId, activeSession.sessionId);
+  await injectRecordingScript(tabId, activeSessionId);
 }
 
 // Setup CDP event listeners
@@ -271,20 +322,24 @@ function setupCDPEventListeners(sessionId) {
       }
     }
     
-    // Handle network events
+    // Handle network events - only log important ones
     if (method.startsWith('Network.')) {
-      recordingCollector.addNetworkEvent({
-        method: method,
-        params: params,
-        timestamp: Date.now()
-      }, currentTabId);
+      // Only log main frame navigations, not every resource
+      if (method === 'Network.requestWillBeSent' && params.type === 'Document') {
+        recordingCollector.addAction({
+          action: 'network',
+          method: method,
+          url: params.request.url,
+          timestamp: Date.now()
+        }, currentTabId);
+      }
     }
   });
 }
 
 // Handle recording events from page
 function handleRecordingEvent(event, tabId) {
-  if (!event || !recordingCollector.hasActiveSession()) return;
+  if (!event || !recordingCollector.getActiveSessionId()) return;
   
   // Ensure tab context
   event.tabId = event.tabId || tabId;
@@ -300,7 +355,10 @@ function handleRecordingEvent(event, tabId) {
       recordingCollector.addDOMMutation(event.data, tabId);
       break;
     case 'navigation':
-      recordingCollector.addNavigationEvent(event.data, tabId);
+      recordingCollector.addAction({
+        action: 'navigation',
+        ...event.data
+      }, tabId);
       break;
     default:
       recordingCollector.addAction(event, tabId);
@@ -348,7 +406,7 @@ async function captureDOMSnapshot(tabId, trigger = 'manual') {
 let screenshotInterval = null;
 function startScreenshotCapture(tabId, sessionId) {
   screenshotInterval = setInterval(async () => {
-    if (!recordingCollector.hasActiveSession()) {
+    if (!recordingCollector.getActiveSessionId()) {
       clearInterval(screenshotInterval);
       return;
     }
@@ -357,8 +415,9 @@ function startScreenshotCapture(tabId, sessionId) {
       const screenshot = await webView.webContents.capturePage();
       const data = screenshot.toDataURL();
       
-      recordingCollector.addScreenshot({
-        data: data,
+      recordingCollector.addAction({
+        action: 'screenshot',
+        screenshot: data,
         timestamp: Date.now()
       }, tabId);
       
@@ -371,8 +430,8 @@ function startScreenshotCapture(tabId, sessionId) {
 // Stop recording
 ipcMain.handle('stop-enhanced-recording', async () => {
   try {
-    const activeSession = recordingCollector.getActiveSession();
-    if (!activeSession) {
+    const activeSessionId = recordingCollector.getActiveSessionId();
+    if (!activeSessionId) {
       return { success: false, error: 'No active recording session' };
     }
     
@@ -387,8 +446,22 @@ ipcMain.handle('stop-enhanced-recording', async () => {
     // Final DOM snapshot
     await captureDOMSnapshot(getCurrentTabId(), 'recording-end');
     
+    // Capture final screenshot
+    try {
+      const screenshot = await webView.webContents.capturePage();
+      const screenshotData = screenshot.toDataURL();
+      recordingCollector.addAction({
+        action: 'final-screenshot',
+        screenshot: screenshotData,
+        timestamp: Date.now()
+      }, getCurrentTabId());
+      console.log('📸 Final screenshot captured');
+    } catch (error) {
+      console.error('Failed to capture final screenshot:', error);
+    }
+    
     // Stop session and get data
-    const recordingData = await recordingCollector.stopSession(activeSession.sessionId);
+    const recordingData = await recordingCollector.stopSession(activeSessionId);
     
     // Detach debugger
     if (debuggerAttached) {
@@ -433,8 +506,11 @@ ipcMain.handle('create-tab', async (event, url) => {
     title: 'New Tab'
   });
   
+  // Set as active tab
+  currentActiveTabId = tabId;
+  
   // Register with collector if recording
-  if (recordingCollector.hasActiveSession()) {
+  if (recordingCollector.getActiveSessionId()) {
     recordingCollector.registerTabContext(tabId, {
       url: targetUrl,
       title: 'New Tab',
@@ -454,12 +530,15 @@ ipcMain.handle('create-tab', async (event, url) => {
   // Navigate to URL
   await webView.webContents.loadURL(targetUrl);
   
-  // Update UI
+  // Update UI with all tabs
   if (mainWindow && !mainWindow.isDestroyed()) {
-    await mainWindow.webContents.send('tab-created', { id: tabId, url: targetUrl });
+    mainWindow.webContents.send('tabs-updated', {
+      tabs: Array.from(tabsData.values()),
+      activeTabId: tabId
+    });
   }
   
-  return tabId;
+  return { success: true, tabId };
 });
 
 ipcMain.handle('switch-tab', async (event, tabId) => {
@@ -467,8 +546,10 @@ ipcMain.handle('switch-tab', async (event, tabId) => {
   
   const tabData = tabsData.get(tabId);
   if (tabData && webView) {
+    // Update active tab
+    currentActiveTabId = tabId;
     // Track tab switch in recording
-    if (recordingCollector.hasActiveSession()) {
+    if (recordingCollector.getActiveSessionId()) {
       const previousTabId = getCurrentTabId();
       recordingCollector.addAction({
         action: 'tab-switch',
@@ -483,10 +564,115 @@ ipcMain.handle('switch-tab', async (event, tabId) => {
     
     // Navigate to tab URL
     await webView.webContents.loadURL(tabData.url);
+    
+    // Update UI to show active tab
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('tabs-updated', {
+        tabs: Array.from(tabsData.values()),
+        activeTabId: tabId
+      });
+    }
+    
     return true;
   }
   
   return false;
+});
+
+// Add missing IPC handlers for UI compatibility
+ipcMain.handle('navigate-tab', async (event, tabId, url) => {
+  const targetUrl = url.startsWith('http') ? url : `https://www.google.com/search?q=${encodeURIComponent(url)}`;
+  
+  if (recordingCollector.getActiveSessionId()) {
+    recordingCollector.addAction({
+      action: 'navigate',
+      url: targetUrl,
+      timestamp: Date.now()
+    }, tabId || getCurrentTabId());
+  }
+  
+  await webView.webContents.loadURL(targetUrl);
+  return { success: true };
+});
+
+ipcMain.handle('tab-back', async (event, tabId) => {
+  if (webView.webContents.canGoBack()) {
+    webView.webContents.goBack();
+    return { success: true };
+  }
+  return { success: false };
+});
+
+ipcMain.handle('tab-forward', async (event, tabId) => {
+  if (webView.webContents.canGoForward()) {
+    webView.webContents.goForward();
+    return { success: true };
+  }
+  return { success: false };
+});
+
+ipcMain.handle('reload-tab', async (event, tabId) => {
+  webView.webContents.reload();
+  return { success: true };
+});
+
+ipcMain.handle('close-tab', async (event, tabId) => {
+  tabsData.delete(tabId);
+  if (recordingCollector.getActiveSessionId()) {
+    recordingCollector.addAction({
+      action: 'close-tab',
+      tabId: tabId,
+      timestamp: Date.now()
+    }, tabId);
+  }
+  
+  // Update UI with remaining tabs
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    const remainingTabs = Array.from(tabsData.values());
+    const newActiveTab = remainingTabs.length > 0 ? remainingTabs[remainingTabs.length - 1].id : null;
+    
+    mainWindow.webContents.send('tabs-updated', {
+      tabs: remainingTabs,
+      activeTabId: newActiveTab
+    });
+    
+    // If there's an active tab, navigate to it
+    if (newActiveTab) {
+      const tabData = tabsData.get(newActiveTab);
+      if (tabData && webView) {
+        await webView.webContents.loadURL(tabData.url);
+      }
+    }
+  }
+  
+  return { success: true };
+});
+
+ipcMain.handle('sidebar:resize', async (event, width) => {
+  sidebarWidth = width;
+  updateWebViewBounds();
+  return { success: true };
+});
+
+// Enhanced recording status and pause/resume handlers
+ipcMain.handle('enhanced-recording-status', async () => {
+  const hasActiveSession = recordingCollector.getActiveSessionId();
+  return { 
+    success: true, 
+    data: { 
+      isRecording: hasActiveSession,
+      isPaused: false // We don't have pause functionality yet 
+    } 
+  };
+});
+
+// Pause/resume handlers - not implemented yet
+ipcMain.handle('pause-enhanced-recording', async () => {
+  return { success: false, message: 'Pause not implemented' };
+});
+
+ipcMain.handle('resume-enhanced-recording', async () => {
+  return { success: false, message: 'Resume not implemented' };
 });
 
 // Initialize app

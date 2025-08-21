@@ -12,10 +12,13 @@
   // Configuration
   const config = {
     debounceMs: 150,
+    throttleMs: 100,
     domSnapshotInterval: 3000,
     maxTextLength: 200,
     maxSelectorDepth: 5,
-    capturePasswords: false
+    capturePasswords: false,
+    captureMouseMove: true,
+    captureScroll: true
   };
   
   // State management
@@ -187,7 +190,9 @@
       button: e.button,
       ctrlKey: e.ctrlKey,
       shiftKey: e.shiftKey,
-      altKey: e.altKey
+      altKey: e.altKey,
+      x: e.clientX,
+      y: e.clientY
     };
     
     // Detect navigation potential
@@ -216,36 +221,121 @@
     );
   }
   
-  function handleKeyDown(e) {
-    if (['Enter', 'Tab', 'Escape'].includes(e.key)) {
-      sendAction('keydown', e.target, e.key, {
-        keyCode: e.keyCode,
+  function handleKeydown(e) {
+    // Only capture special keys and shortcuts
+    if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'Escape' || 
+        e.ctrlKey || e.metaKey || e.altKey) {
+      sendAction('keydown', e.target, null, {
+        key: e.key,
+        code: e.code,
         ctrlKey: e.ctrlKey,
         shiftKey: e.shiftKey,
-        altKey: e.altKey
+        altKey: e.altKey,
+        metaKey: e.metaKey
       });
     }
   }
   
-  function handleSubmit(e) {
-    sendAction('submit', e.target, null, {
-      action: e.target.action,
-      method: e.target.method
+  function handleScroll(e) {
+    if (!config.captureScroll) return;
+    
+    const scrollData = {
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      scrollHeight: document.documentElement.scrollHeight,
+      scrollWidth: document.documentElement.scrollWidth
+    };
+    
+    sendActionThrottled('scroll', 'scroll', null, null, scrollData);
+  }
+  
+  function handleMouseMove(e) {
+    if (!config.captureMouseMove) return;
+    
+    sendActionThrottled('mousemove', 'mousemove', null, null, {
+      x: e.clientX,
+      y: e.clientY
+    });
+  }
+  
+  function handleChange(e) {
+    const element = e.target;
+    let value = element.value;
+    
+    if (element.type === 'checkbox' || element.type === 'radio') {
+      value = element.checked;
+    } else if (element.tagName === 'SELECT') {
+      value = element.options[element.selectedIndex]?.text || element.value;
+    }
+    
+    sendAction('change', element, value, {
+      inputType: element.type || element.tagName.toLowerCase()
     });
   }
   
   function handleFocus(e) {
-    const element = e.target;
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName)) {
-      sendAction('focus', element, null, { inputType: element.type });
-    }
+    sendAction('focus', e.target, null, {});
   }
   
-  function handleScroll() {
-    sendActionDebounced('scroll', 'scroll', document.documentElement, null, {
-      scrollX: window.scrollX,
-      scrollY: window.scrollY
+  function handleBlur(e) {
+    sendAction('blur', e.target, null, {});
+  }
+  
+  function handleSubmit(e) {
+    const form = e.target;
+    const formData = {};
+    
+    // Collect form data (excluding passwords unless configured)
+    const inputs = form.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+      if (input.name) {
+        if (input.type === 'password' && !config.capturePasswords) {
+          formData[input.name] = '[HIDDEN]';
+        } else if (input.type === 'checkbox' || input.type === 'radio') {
+          formData[input.name] = input.checked;
+        } else {
+          formData[input.name] = input.value;
+        }
+      }
     });
+    
+    sendAction('submit', form, null, { formData });
+  }
+  
+  function handleResize() {
+    sendActionDebounced('resize', 'resize', null, null, {
+      width: window.innerWidth,
+      height: window.innerHeight
+    });
+  }
+  
+  function handleVisibilityChange() {
+    sendAction('visibility', null, null, {
+      visible: !document.hidden,
+      visibilityState: document.visibilityState
+    });
+  }
+  
+  function handleError(message, source, lineno, colno, error) {
+    sendAction('error', null, null, {
+      message: message,
+      source: source,
+      line: lineno,
+      column: colno,
+      stack: error?.stack
+    });
+    return true; // Prevent default error handling
+  }
+  
+  // Add throttling helper for mouse move and scroll
+  let throttleTimers = new Map();
+  function sendActionThrottled(key, type, element, value, extra) {
+    if (throttleTimers.has(key)) return;
+    
+    sendAction(type, element, value, extra);
+    throttleTimers.set(key, setTimeout(() => {
+      throttleTimers.delete(key);
+    }, config.throttleMs));
   }
   
   // Navigation handlers
@@ -271,10 +361,20 @@
     // Set up event listeners with passive where appropriate
     document.addEventListener('click', handleClick, true);
     document.addEventListener('input', handleInput, true);
-    document.addEventListener('keydown', handleKeyDown, true);
+    document.addEventListener('keydown', handleKeydown, true);
     document.addEventListener('submit', handleSubmit, true);
     document.addEventListener('focus', handleFocus, true);
+    document.addEventListener('blur', handleBlur, true);
+    document.addEventListener('change', handleChange, true);
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('error', handleError, true);
+    
+    // Optional mouse move tracking
+    if (config.captureMouseMove) {
+      document.addEventListener('mousemove', handleMouseMove, { passive: true });
+    }
     
     // Navigation detection
     let currentUrl = location.href;
@@ -295,6 +395,19 @@
     
     // Periodic DOM snapshots
     setInterval(captureDomSnapshot, config.domSnapshotInterval);
+    
+    // Capture performance metrics
+    if (window.performance && performance.timing) {
+      const timing = performance.timing;
+      const performanceData = {
+        domContentLoaded: timing.domContentLoadedEventEnd - timing.navigationStart,
+        loadComplete: timing.loadEventEnd - timing.navigationStart,
+        domInteractive: timing.domInteractive - timing.navigationStart,
+        firstPaint: performance.getEntriesByType('paint')[0]?.startTime || 0
+      };
+      
+      sendAction('performance', null, null, performanceData);
+    }
     
     // Send initialization signal
     sendAction('page-recording-init', document.documentElement, null, {
