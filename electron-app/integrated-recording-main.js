@@ -270,13 +270,22 @@ async function injectRecordingScript(tabId, sessionId) {
     'utf8'
   );
   
-  // Inject configuration with tab context
+  // Inject configuration with tab context and binding function
   const configScript = `
     window.__recordingConfig = {
       tabId: '${tabId}',
       sessionId: '${sessionId}',
       startTime: ${Date.now()}
     };
+    window.__tabId = '${tabId}';
+    
+    // Create the binding function for sending data to main process
+    window.__sendToMain = function(type, data) {
+      if (window.sendToMainProcess) {
+        window.sendToMainProcess(JSON.stringify([type, data]));
+      }
+    };
+    
     ${script}
   `;
   
@@ -308,7 +317,17 @@ function setupCDPEventListeners(sessionId) {
     if (method === 'Runtime.bindingCalled' && params.name === 'sendToMainProcess') {
       try {
         const payload = JSON.parse(params.payload);
-        handleRecordingEvent(payload, currentTabId);
+        // Handle events from page-recording-script.js
+        if (payload[0] === 'page-recording:action') {
+          const actionData = payload[1];
+          // Store the raw action with all its data
+          recordingCollector.addAction({
+            type: actionData.type,
+            ...actionData
+          }, currentTabId);
+        } else {
+          handleRecordingEvent(payload, currentTabId);
+        }
       } catch (error) {
         console.error('Failed to parse binding payload:', error);
       }
