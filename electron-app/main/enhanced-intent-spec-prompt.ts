@@ -1,21 +1,34 @@
 /**
  * Enhanced Intent Spec Prompt Generator
- * Emphasizes snippet-first strategy with AI fallback
+ * Leverages rich captured data including multiple selectors, DOM snapshots, 
+ * network patterns, timing, and 40+ event types for resilient automation
  */
 
 /**
- * Generate enhanced prompt that produces Intent Specs optimized for snippet-first execution
+ * Generate enhanced prompt that produces Intent Specs optimized for resilient execution
+ * using the comprehensive data captured by our enhanced recording system
  */
 export function generateEnhancedIntentSpecPrompt(serializedRecording: string): string {
-  return `# Recording Analysis Task - Snippet-First Strategy
+  return `# Advanced Recording Analysis with Rich Context Data
 
-You are an expert at analyzing UI interactions to create HIGHLY RELIABLE automation patterns that prioritize Playwright code snippets over AI interpretation.
+You are analyzing a recording that captures COMPREHENSIVE interaction data including:
+- 40+ event types (clicks, double-clicks, drag-drop, clipboard, touch, media, storage)
+- Multiple selector strategies per element (8-10 alternatives)
+- DOM structure snapshots every 3 seconds
+- Network request patterns (main document loads)
+- Performance metrics (LCP, CLS, INP)
+- Timing intelligence between actions
+- Final screenshot capture
+- Tab context attribution
 
-## Critical Execution Strategy
+## Leverage Rich Data for Maximum Resilience
 
-Your Intent Spec will be executed using this priority:
-1. **90% Snippet-First**: Direct Playwright code for predictable actions
-2. **10% AI Fallback**: Only for complex reasoning, validation, or error recovery
+Use the comprehensive data to create automation that:
+1. **Uses multiple selector strategies** - Elements have 8-10 selector alternatives
+2. **Understands page flow** - DOM snapshots show state transitions
+3. **Handles timing intelligently** - Use actual wait times between actions
+4. **Detects patterns** - Network requests reveal navigation patterns
+5. **Validates thoroughly** - Performance metrics indicate page readiness
 
 ## Input Recording
 
@@ -25,9 +38,9 @@ ${serializedRecording}
 
 Generate an Intent Spec with EXECUTABLE Playwright snippets that will work reliably without AI assistance.
 
-## Enhanced Intent Spec Format
+## Enhanced Intent Spec Format with Rich Context
 
-Return ONLY valid JSON matching this schema:
+Return ONLY valid JSON that leverages all captured data:
 
 \`\`\`json
 {
@@ -56,9 +69,19 @@ Return ONLY valid JSON matching this schema:
       "skipNavigationStates": ["dashboard", "app", "home"],
       "preFlightChecks": [
         {
-          "selector": "CSS selector to verify exists",
+          "selector": "primary CSS selector from recording",
           "required": true,
-          "alternativeSelectors": ["backup selector 1", "backup selector 2"]
+          "alternativeSelectors": [
+            "// USE ALL 8-10 SELECTORS FROM RECORDING DATA",
+            "#id-selector if available",
+            "[data-testid] if available",
+            "[aria-label] if available",
+            ":nth-child() position selector",
+            "text-based selector",
+            "class combination selector",
+            "parent > child selector",
+            "sibling + selector"
+          ]
         }
       ],
       "errorRecovery": {
@@ -80,18 +103,30 @@ Return ONLY valid JSON matching this schema:
 }
 \`\`\`
 
-## Snippet Generation Rules
+## Smart Snippet Generation Using Rich Data
 
-### MUST Use Snippets (snippet) for:
+### Generate Snippets That Use Recording Intelligence:
 1. **Navigation** (100% reliable):
    \`\`\`javascript
    await page.goto('https://example.com/login')
    \`\`\`
 
-2. **Form Fields** with stable selectors:
+2. **Form Fields** with multiple selector fallbacks:
    \`\`\`javascript
-   await page.fill('#username', '{{USERNAME}}')
-   await page.fill('#password', '{{PASSWORD}}')
+   // Try primary selector first, then alternatives from recording
+   const usernameSelectors = [
+     '#username',  // from recording data
+     '[name="username"]',  // alternative from recording
+     'input[placeholder*="user"]',  // text-based from recording
+   ];
+   for (const selector of usernameSelectors) {
+     try {
+       await page.fill(selector, '{{USERNAME}}');
+       break;
+     } catch (e) {
+       continue;
+     }
+   }
    \`\`\`
 
 3. **Clicks** on predictable elements:
@@ -185,23 +220,33 @@ For each snippet-based step, define recovery:
 6. **Text content**: \`page.getByText('Continue')\`
 7. **XPath**: AVOID unless absolutely necessary
 
-## Variable Replacement
+## Intelligent Variable Detection from Recording
 
-Use {{VARIABLE}} syntax for dynamic values:
-- Credentials: {{USERNAME}}, {{PASSWORD}}
-- Data: {{SEARCH_TERM}}, {{AMOUNT}}
-- IDs: {{ORDER_ID}}, {{CUSTOMER_ID}}
+Analyze the recording's typed values and form interactions to detect:
+- **Credentials**: Look for password fields, email inputs → {{USERNAME}}, {{PASSWORD}}, {{EMAIL_ADDRESS}}
+- **Personal Data**: Analyze form field names/labels → {{FIRST_NAME}}, {{LAST_NAME}}, {{PHONE_NUMBER}}
+- **Business Data**: Detect patterns in typed text → {{COMPANY_NAME}}, {{DEPARTMENT}}, {{EMPLOYEE_ID}}
+- **Dynamic Values**: Identify changing data → {{SEARCH_QUERY}}, {{DATE}}, {{AMOUNT}}
+- **System IDs**: Find unique identifiers → {{ORDER_ID}}, {{TRANSACTION_ID}}, {{SESSION_ID}}
 
-## Quality Checklist
+IMPORTANT: Use exact variable names that match UI detection patterns:
+- PASSWORD (not PASS or PWD)
+- EMAIL_ADDRESS (not EMAIL or MAIL)
+- PHONE_NUMBER (not PHONE or TEL)
+- FIRST_NAME and LAST_NAME (not NAME)
+
+## Rich Data Quality Checklist
 
 Before returning the Intent Spec, verify:
-✅ 90%+ steps use "snippet" executionMethod
-✅ Every snippet is valid, executable Playwright code
-✅ Alternative selectors provided for critical elements
-✅ Skip conditions prevent redundant actions
-✅ Error recovery defined for critical paths
-✅ AI only used for complex reasoning tasks
-✅ No unnecessary AI usage for simple clicks/navigation
+✅ **Selector Resilience**: Used ALL 8-10 selector alternatives from recording
+✅ **Timing Accuracy**: Incorporated actual wait times between actions
+✅ **DOM State Awareness**: Used snapshots to understand page transitions
+✅ **Network Intelligence**: Identified navigation patterns from requests
+✅ **Event Completeness**: Captured all interaction types (not just clicks)
+✅ **Performance Readiness**: Used metrics to ensure page stability
+✅ **Variable Detection**: Properly identified all dynamic values
+✅ **Tab Context**: Maintained proper tab/window attribution
+✅ **Final Validation**: Used screenshot data for success verification
 
 ## Example High-Quality Step
 
@@ -227,7 +272,97 @@ Before returning the Intent Spec, verify:
 }
 \`\`\`
 
-Remember: The goal is MAXIMUM RELIABILITY through snippet-first execution. Only use AI when absolutely necessary.`;
+## Analyze Recording Structure
+
+The recording contains these rich data points per action:
+- **action**: The specific event type (click, dblclick, input, paste, drag, etc.)
+- **selectors**: Array of 8-10 alternative selectors
+- **elementInfo**: Tag, attributes, text content, position
+- **timing**: Timestamp and duration since last action
+- **context**: Page URL, title, viewport, tab ID
+- **dom_snapshot**: Full page structure at time of action
+- **network_activity**: Document loads and API calls
+- **performance**: LCP, CLS, INP metrics
+
+Use ALL this data to create the most resilient automation possible.`;
+}
+
+/**
+ * Generate a prompt specifically for analyzing complex interactions
+ * like drag-drop, clipboard operations, and media playback
+ */
+export function generateComplexInteractionPrompt(recording: string): string {
+  return `# Analyze Complex User Interactions
+
+This recording contains advanced interaction types. Generate automation that handles:
+
+1. **Drag and Drop Operations**:
+   - Source and target element selectors
+   - File information if files were dropped
+   - Coordinate-based movements
+
+2. **Clipboard Operations**:
+   - Copy/Paste/Cut events with actual content
+   - Cross-application data transfer
+   - Format preservation
+
+3. **Media Interactions**:
+   - Play/Pause/Seek operations
+   - Volume and playback rate changes
+   - Fullscreen transitions
+
+4. **Touch/Mobile Events**:
+   - Swipe gestures
+   - Pinch/zoom operations
+   - Long press interactions
+
+5. **Storage Events**:
+   - LocalStorage/SessionStorage changes
+   - Cookie modifications
+   - IndexedDB operations
+
+Recording:
+${recording}
+
+Generate snippets that accurately reproduce these complex interactions.`;
+}
+
+/**
+ * Generate a prompt for creating flow understanding from DOM snapshots
+ */
+export function generateFlowAnalysisPrompt(domSnapshots: any[]): string {
+  return `# Analyze Application Flow from DOM Snapshots
+
+You have DOM snapshots taken every 3 seconds during the recording. Use these to:
+
+1. **Identify Page States**:
+   - Login screens vs authenticated states
+   - Form states (empty, partial, complete)
+   - Loading vs loaded states
+   - Error vs success states
+
+2. **Detect Dynamic Content**:
+   - Elements that appear/disappear
+   - Content that changes between snapshots
+   - AJAX-loaded sections
+   - Progressive disclosure patterns
+
+3. **Find Validation Points**:
+   - Success messages
+   - Error indicators
+   - Progress indicators
+   - State confirmations
+
+4. **Map Navigation Flow**:
+   - URL changes
+   - Single-page app transitions
+   - Modal/dialog sequences
+   - Tab/accordion expansions
+
+DOM Snapshots:
+${JSON.stringify(domSnapshots, null, 2)}
+
+Return a flow analysis with key transition points and validation selectors.`;
 }
 
 /**
@@ -274,6 +409,54 @@ Check and report on:
 }
 \`\`\`
 `;
+}
+
+/**
+ * Generate a prompt for extracting variables with proper naming from recording
+ */
+export function generateVariableExtractionPrompt(recording: string): string {
+  return `# Extract Variables with UI-Compatible Names
+
+Analyze this recording and identify all dynamic values that should become variables.
+
+CRITICAL: Use these exact variable names for UI compatibility:
+- PASSWORD (for password fields)
+- EMAIL_ADDRESS (for email inputs)  
+- USERNAME (for username/login fields)
+- FIRST_NAME (for first name fields)
+- LAST_NAME (for last name fields)
+- PHONE_NUMBER (for phone inputs)
+- COMPANY_NAME (for company/organization)
+- DEPARTMENT (for department/division)
+- EMPLOYEE_ID (for employee identifiers)
+- ORDER_ID (for order numbers)
+- TRANSACTION_ID (for transaction references)
+- SEARCH_QUERY (for search inputs)
+- DATE (for date inputs)
+- AMOUNT (for monetary values)
+- QUANTITY (for numeric quantities)
+
+Recording:
+${recording}
+
+Return JSON with detected variables:
+{
+  "variables": [
+    {
+      "name": "EMAIL_ADDRESS",
+      "detectedValue": "user@example.com",
+      "fieldSelector": "#email-input",
+      "fieldType": "email",
+      "isRequired": true,
+      "description": "User's email address for login"
+    }
+  ],
+  "flowContext": "Login flow with email and password authentication",
+  "suggestedDefaults": {
+    "EMAIL_ADDRESS": "test@example.com",
+    "PASSWORD": "SecurePass123"
+  }
+}`;
 }
 
 /**

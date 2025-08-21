@@ -1,9 +1,16 @@
 /**
- * Intent Spec Generator - Generates Intent Specifications with both AI and snippet paths
+ * Intent Spec Generator - Generates Intent Specifications leveraging rich recording data
+ * including multiple selectors, DOM snapshots, timing, and 40+ event types
  */
 
 import { IntentSpec, IntentStep } from '../flows/types';
 import { serializeRecording } from './recording-serializer';
+import { 
+  generateEnhancedIntentSpecPrompt,
+  generateVariableExtractionPrompt,
+  generateComplexInteractionPrompt,
+  generateFlowAnalysisPrompt 
+} from './enhanced-intent-spec-prompt';
 import fs from 'fs';
 import path from 'path';
 
@@ -362,21 +369,75 @@ export class IntentSpecGenerator {
   }
 
   /**
-   * Parameterizes step values by replacing common patterns with variables
+   * Parameterizes step values using UI-compatible variable names
    * @param value Original value
+   * @param fieldContext Additional context about the field
    * @returns Parameterized value with {{VARIABLE}} syntax
    */
-  private parameterizeValue(value?: string): string {
+  private parameterizeValue(value?: string, fieldContext?: any): string {
     if (!value) return '';
     
-    // Common parameterization patterns
+    // Check field context for hints (if available)
+    if (fieldContext) {
+      const fieldName = (fieldContext.name || fieldContext.id || '').toLowerCase();
+      const fieldType = (fieldContext.type || '').toLowerCase();
+      const placeholder = (fieldContext.placeholder || '').toLowerCase();
+      
+      // Password fields
+      if (fieldType === 'password' || fieldName.includes('password') || fieldName.includes('pass')) {
+        return '{{PASSWORD}}';
+      }
+      
+      // Email fields
+      if (fieldType === 'email' || fieldName.includes('email') || placeholder.includes('email')) {
+        return '{{EMAIL_ADDRESS}}';
+      }
+      
+      // Username fields
+      if (fieldName.includes('username') || fieldName.includes('user') || placeholder.includes('username')) {
+        return '{{USERNAME}}';
+      }
+      
+      // Phone fields
+      if (fieldType === 'tel' || fieldName.includes('phone') || fieldName.includes('tel')) {
+        return '{{PHONE_NUMBER}}';
+      }
+      
+      // Name fields
+      if (fieldName.includes('firstname') || fieldName.includes('first_name')) {
+        return '{{FIRST_NAME}}';
+      }
+      if (fieldName.includes('lastname') || fieldName.includes('last_name')) {
+        return '{{LAST_NAME}}';
+      }
+      
+      // Company fields
+      if (fieldName.includes('company') || fieldName.includes('organization')) {
+        return '{{COMPANY_NAME}}';
+      }
+      
+      // Department fields
+      if (fieldName.includes('department') || fieldName.includes('dept')) {
+        return '{{DEPARTMENT}}';
+      }
+      
+      // Search fields
+      if (fieldName.includes('search') || fieldName.includes('query')) {
+        return '{{SEARCH_QUERY}}';
+      }
+    }
+    
+    // Pattern-based detection for UI-compatible variable names
     const patterns: { [key: string]: string } = {
-      '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$': '{{EMAIL}}',
+      '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$': '{{EMAIL_ADDRESS}}',
       '^[\\w\\s]{2,50}$': '{{USERNAME}}',
-      '^.{8,}$': '{{PASSWORD}}', // Only if looks like password field
+      '^.{8,}$': '{{PASSWORD}}', // Only if looks like password
       '^\\d{10,15}$': '{{PHONE_NUMBER}}',
       '^\\d{4}-\\d{2}-\\d{2}$': '{{DATE}}',
-      '^\\d+\\.?\\d*$': '{{AMOUNT}}'
+      '^\\d+\\.?\\d*$': '{{AMOUNT}}',
+      '^\\d{5,10}$': '{{EMPLOYEE_ID}}',
+      '^[A-Z]{2,}-\\d{4,}$': '{{ORDER_ID}}',
+      '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$': '{{TRANSACTION_ID}}'
     };
     
     for (const [pattern, variable] of Object.entries(patterns)) {
@@ -386,8 +447,10 @@ export class IntentSpecGenerator {
     }
     
     // If value looks like it should be parameterized but doesn't match patterns
-    if (value.length > 3 && !/^(submit|login|search|ok|cancel|yes|no)$/i.test(value)) {
-      return `{{${value.toUpperCase().replace(/\s+/g, '_')}}}`;
+    if (value.length > 3 && !/^(submit|login|search|ok|cancel|yes|no|continue|next|back)$/i.test(value)) {
+      // Generate UI-compatible variable name
+      const varName = value.toUpperCase().replace(/\s+/g, '_').replace(/[^A-Z0-9_]/g, '');
+      return `{{${varName}}}`;
     }
     
     return value;
@@ -475,6 +538,70 @@ export class IntentSpecGenerator {
   }
 }
 
+  /**
+   * Process rich recording data with multiple selectors and DOM snapshots
+   * @param recordingData Rich recording data from enhanced system
+   * @returns Processed recording with resilient selectors
+   */
+  private processRichRecordingData(recordingData: any): any {
+    const processedSteps = [];
+    
+    for (const action of recordingData.actions || []) {
+      const step: any = {
+        type: action.action || action.type,
+        timestamp: action.timestamp,
+        url: action.url,
+        tabId: action.tabId
+      };
+      
+      // Extract multiple selectors if available
+      if (action.selectors && Array.isArray(action.selectors)) {
+        step.selector = action.selectors[0]; // Primary selector
+        step.alternativeSelectors = action.selectors.slice(1); // All alternatives
+      } else if (action.selector) {
+        step.selector = action.selector;
+      }
+      
+      // Extract element info for context
+      if (action.elementInfo) {
+        step.target = {
+          selector: step.selector,
+          text: action.elementInfo.text,
+          placeholder: action.elementInfo.placeholder,
+          tagName: action.elementInfo.tag,
+          attributes: action.elementInfo.attributes || {},
+          name: action.elementInfo.attributes?.name,
+          id: action.elementInfo.attributes?.id,
+          type: action.elementInfo.attributes?.type
+        };
+      }
+      
+      // Extract typed values for parameterization
+      if (action.value !== undefined) {
+        step.value = action.value;
+      }
+      
+      // Add timing information
+      if (action.timeSinceLastAction) {
+        step.waitBefore = Math.min(action.timeSinceLastAction, 5000); // Cap at 5 seconds
+      }
+      
+      // Store DOM snapshot reference
+      if (action.dom_snapshot) {
+        step.domSnapshotAvailable = true;
+      }
+      
+      processedSteps.push(step);
+    }
+    
+    return {
+      steps: processedSteps,
+      metadata: recordingData.metadata || {},
+      domSnapshots: recordingData.domSnapshots || [],
+      performanceMetrics: recordingData.performanceMetrics || {}
+    };
+  }
+
 /**
  * Convenience function to generate Intent Spec from recording
  * @param recordingPath Path to recording file
@@ -495,4 +622,50 @@ export function generateIntentSpecFromRecording(
   };
   
   return generator.generateFromRecording(recordingPath, fullOptions);
+}
+
+/**
+ * Generate Intent Spec from rich recording data (enhanced system)
+ * @param recordingData Rich recording data with multiple selectors
+ * @param options Generation options
+ * @returns Generated Intent Spec with resilient automation
+ */
+export function generateIntentSpecFromRichRecording(
+  recordingData: any,
+  options?: Partial<GenerationOptions>
+): IntentSpec {
+  const generator = new IntentSpecGenerator();
+  
+  // Process the rich recording data
+  const processed = generator['processRichRecordingData'](recordingData);
+  
+  // Use enhanced prompt for generation
+  const serialized = JSON.stringify(processed, null, 2);
+  const enhancedPrompt = generateEnhancedIntentSpecPrompt(serialized);
+  
+  // Generate the Intent Spec (would normally call Claude here)
+  console.log('Enhanced prompt generated for rich recording data');
+  
+  // For now, return a structured Intent Spec based on the data
+  const steps = generator['generateSteps'](processed.steps, {
+    withFallback: true,
+    preferSnippetFor: ['form_interactions'],
+    preferAIFor: ['validation'],
+    defaultPreference: 'snippet',
+    ...options
+  });
+  
+  const params = generator['extractParameters'](steps);
+  
+  return {
+    name: recordingData.name || 'Enhanced Recording Flow',
+    description: 'Generated from rich recording with multiple selectors and DOM snapshots',
+    url: processed.steps[0]?.url || '',
+    params: params,
+    steps: steps,
+    preferences: {
+      dynamic_elements: 'snippet',
+      simple_steps: 'snippet'
+    }
+  };
 }
