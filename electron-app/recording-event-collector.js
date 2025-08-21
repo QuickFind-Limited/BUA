@@ -261,6 +261,15 @@ class RecordingEventCollector extends EventEmitter {
       session.events.push(validatedEvent);
       session.statistics.totalEvents++;
       session.statistics.eventsByType[validatedEvent.type]++;
+      
+      // Track specific action types
+      if (validatedEvent.type === EVENT_TYPES.ACTION && validatedEvent.data.action) {
+        const actionType = validatedEvent.data.action;
+        if (!session.statistics.eventsByType[actionType]) {
+          session.statistics.eventsByType[actionType] = 0;
+        }
+        session.statistics.eventsByType[actionType]++;
+      }
 
       // Update tab context if provided
       if (tabId) {
@@ -322,20 +331,22 @@ class RecordingEventCollector extends EventEmitter {
    * Add user action event
    */
   addAction(actionData, tabId = null) {
+    // Preserve the actual event type (click, scroll, etc.) in the data
     return this.addEvent({
       type: EVENT_TYPES.ACTION,
-      timestamp: Date.now(),
+      timestamp: actionData.timestamp || Date.now(),
       priority: EVENT_PRIORITY.CRITICAL,
       data: {
-        action: actionData.action,
-        target: actionData.target,
+        action: actionData.action || actionData.type,  // The actual event type
+        element: actionData.element,
+        selector: actionData.selector,
         value: actionData.value,
-        coordinates: actionData.coordinates,
-        modifiers: actionData.modifiers,
-        screenshot: actionData.screenshot
+        url: actionData.url,
+        // Preserve all event-specific data
+        ...actionData
       },
       context: {
-        tabId,
+        tabId: actionData.tabContext?.tabId || tabId,
         sessionId: this.activeSessionId,
         userInitiated: true
       }
