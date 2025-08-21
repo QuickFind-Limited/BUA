@@ -82,7 +82,19 @@ let recordingData = {
 // Enable CDP for recording - use dynamic port to avoid conflicts
 const CDP_PORT = 9335 + Math.floor(Math.random() * 100); // Random port between 9335-9435
 app.commandLine.appendSwitch('remote-debugging-port', String(CDP_PORT));
+
+// Aggressive stealth settings based on Playwright research
 app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
+app.commandLine.appendSwitch('disable-features', 'site-per-process,TranslateUI');
+app.commandLine.appendSwitch('disable-infobars');
+app.commandLine.appendSwitch('disable-extensions');
+app.commandLine.appendSwitch('disable-dev-shm-usage');
+app.commandLine.appendSwitch('no-first-run');
+app.commandLine.appendSwitch('no-default-browser-check');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-features', 'IsolateOrigins,site-per-process');
+app.commandLine.appendSwitch('disable-web-security');
 
 // Set user data directory to avoid cache conflicts
 const userDataPath = path.join(app.getPath('userData'), `session-${Date.now()}`);
@@ -122,13 +134,22 @@ function createWindow() {
     mainWindow.show();
   });
 
+  // Use incognito-like session without persistence
+  // This prevents Google from tracking sign-in state
+  const sessionPartition = `session-${Date.now()}`;
+  
   webView = new WebContentsView({
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
-      partition: 'persist:default',
-      webSecurity: false
+      partition: sessionPartition, // Non-persistent session (no 'persist:' prefix)
+      webSecurity: false,
+      // Additional privacy settings
+      webgl: false,
+      plugins: false,
+      images: true,
+      javascript: true
     }
   });
 
@@ -167,8 +188,8 @@ function createWindow() {
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('✅ Main window loaded, initializing default tab');
     
-    // Store the initial tab
-    const initialTabId = 'tab-' + Date.now();
+    // Store the initial tab with a consistent ID
+    const initialTabId = 'tab-initial';
     tabsData.set(initialTabId, { 
       id: initialTabId, 
       url: 'https://www.google.com/webhp?gl=us&hl=en&gws_rd=cr&pws=0',
@@ -176,14 +197,16 @@ function createWindow() {
     });
     console.log(`📍 CDP endpoint available at: http://127.0.0.1:${CDP_PORT}`);
     console.log(`📁 User data directory: ${userDataPath}`);
+    console.log(`📑 Initial tab created: ${initialTabId}`);
+    
     // Send initial tab info to renderer
     mainWindow.webContents.executeJavaScript(`
       // Create initial tab
       if (typeof initializeDefaultTab === 'function') {
         initializeDefaultTab('https://www.google.com', 'Google');
       } else {
-        // Fallback: manually create tab
-        const tabId = 'tab-' + Date.now();
+        // Fallback: manually create tab with same ID as main process
+        const tabId = 'tab-initial';
         const tab = {
           id: tabId,
           title: 'Google',
@@ -206,6 +229,15 @@ function createWindow() {
             <span class="tab-title">Google</span>
             <button class="tab-close" onclick="closeTab('\${tabId}')">×</button>
           \`;
+          
+          // Add click handler for tab switching
+          tabElement.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('tab-close')) {
+              if (typeof switchToTab === 'function') {
+                switchToTab(tabId);
+              }
+            }
+          });
           
           const newTabBtn = document.getElementById('new-tab-btn');
           if (newTabBtn && newTabBtn.parentNode === tabsContainer) {
