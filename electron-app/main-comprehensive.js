@@ -34,6 +34,7 @@ let webView = null;
 let recordingActive = false;
 let debuggerAttached = false;
 let sidebarWidth = 320;
+let comprehensiveScript = ''; // Store the script at module level
 
 // Track tabs and their URLs
 const tabsData = new Map();
@@ -83,21 +84,12 @@ let recordingData = {
 const CDP_PORT = 9335 + Math.floor(Math.random() * 100); // Random port between 9335-9435
 app.commandLine.appendSwitch('remote-debugging-port', String(CDP_PORT));
 
-// Aggressive stealth settings based on Playwright research
+// Enable CDP for recording
+app.commandLine.appendSwitch('remote-debugging-port', String(CDP_PORT));
 app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
-app.commandLine.appendSwitch('disable-features', 'site-per-process,TranslateUI');
-app.commandLine.appendSwitch('disable-infobars');
-app.commandLine.appendSwitch('disable-extensions');
-app.commandLine.appendSwitch('disable-dev-shm-usage');
-app.commandLine.appendSwitch('no-first-run');
-app.commandLine.appendSwitch('no-default-browser-check');
-app.commandLine.appendSwitch('disable-background-timer-throttling');
-app.commandLine.appendSwitch('disable-renderer-backgrounding');
-app.commandLine.appendSwitch('disable-features', 'IsolateOrigins,site-per-process');
-app.commandLine.appendSwitch('disable-web-security');
 
-// Set user data directory to avoid cache conflicts
-const userDataPath = path.join(app.getPath('userData'), `session-${Date.now()}`);
+// Use incognito-like session to avoid sign-in persistence
+const userDataPath = path.join(app.getPath('temp'), `chrome-session-${Date.now()}`);
 app.setPath('userData', userDataPath);
 
 function updateWebViewBounds() {
@@ -156,14 +148,9 @@ function createWindow() {
   mainWindow.contentView.addChildView(webView);
   updateWebViewBounds();
   
-  // Use Firefox user agent to bypass Google's Electron detection
-  // This prevents the "Stay signed out" prompt
-  const firefoxUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0';
-  webView.webContents.setUserAgent(firefoxUserAgent);
   
-  // Load Google with parameters to prevent sign-in prompts and redirects
-  // gl=us - US region, hl=en - English, gws_rd=cr - stay on .com, pws=0 - no personalization
-  webView.webContents.loadURL('https://www.google.com/webhp?gl=us&hl=en&gws_rd=cr&pws=0');
+  // Load Google
+  webView.webContents.loadURL('https://www.google.com');
   
   // Inject CSS to hide sign-in prompts when page loads
   webView.webContents.on('dom-ready', () => {
@@ -192,7 +179,7 @@ function createWindow() {
     const initialTabId = 'tab-initial';
     tabsData.set(initialTabId, { 
       id: initialTabId, 
-      url: 'https://www.google.com/webhp?gl=us&hl=en&gws_rd=cr&pws=0',
+      url: 'https://www.google.com/webhp?hl=en&gl=us&authuser=0&pws=0&gws_rd=cr',
       title: 'Google'
     });
     console.log(`📍 CDP endpoint available at: http://127.0.0.1:${CDP_PORT}`);
@@ -357,6 +344,31 @@ function setupRecordingListeners() {
   });
 
   webView.webContents.on('did-finish-load', () => {
+    // Re-inject recording script after navigation
+    if (recordingActive && debuggerAttached) {
+      const currentTab = recordingData.currentTabId || 'tab-initial';
+      console.log(`🔄 Re-injecting recording script for tab: ${currentTab}`);
+      
+      // Re-inject the comprehensive script via debugger
+      webView.webContents.debugger.sendCommand('Runtime.evaluate', {
+        expression: comprehensiveScript,
+        userGesture: true
+      }).then(() => {
+        // Update tab context
+        return webView.webContents.debugger.sendCommand('Runtime.evaluate', {
+          expression: `
+            if (window.__comprehensiveRecording) {
+              window.__comprehensiveRecording.currentTabId = '${currentTab}';
+              window.__comprehensiveRecording.currentUrl = window.location.href;
+              console.log('Recording context updated for tab:', '${currentTab}');
+            }
+          `
+        });
+      }).catch(err => {
+        console.error('Failed to re-inject recording script:', err);
+      });
+    }
+    
     if (recordingActive) {
       capturePageState();
     }
@@ -428,6 +440,8 @@ ipcMain.handle('start-enhanced-recording', async () => {
     viewportStates: [],
     performance: [],
     memory: [],
+    tabSwitches: [], // Track tab switches during recording
+    currentTabId: 'tab-initial', // Track current tab
     startTime: Date.now(),
     url: webView?.webContents.getURL(),
     title: await webView?.webContents.getTitle()
@@ -449,7 +463,7 @@ ipcMain.handle('start-enhanced-recording', async () => {
       await webView.webContents.debugger.sendCommand('Performance.enable');
       
       // COMPREHENSIVE script that captures EVERYTHING
-      const comprehensiveScript = `
+      comprehensiveScript = `
         // Initialize comprehensive recording
         window.__comprehensiveRecording = {
           actions: [],
@@ -460,6 +474,8 @@ ipcMain.handle('start-enhanced-recording', async () => {
           scrollEvents: [],
           mouseMovements: [],
           keystrokes: [],
+          currentTabId: 'tab-initial',
+          currentUrl: window.location.href,
           
           // Capture complete DOM structure
           captureDOMStructure: function() {
@@ -735,14 +751,19 @@ ipcMain.handle('start-enhanced-recording', async () => {
             // Initial comprehensive snapshot
             this.domSnapshots.push(this.captureDOMStructure());
             
-            // Regular comprehensive snapshots (aggressive - every 500ms)
+            // Regular comprehensive snapshots (every 2 seconds)
             setInterval(() => {
-              const snapshot = this.captureDOMStructure();
-              this.domSnapshots.push(snapshot);
-              
-              // Keep only last 100 snapshots in memory
-              if (this.domSnapshots.length > 100) {
-                this.domSnapshots.shift();
+              if (this.captureDOMStructure) {
+                const snapshot = this.captureDOMStructure();
+                snapshot.tabId = this.currentTabId || 'unknown';
+                snapshot.recordedUrl = window.location.href;
+                this.domSnapshots.push(snapshot);
+                console.log('DOM snapshot captured, total:', this.domSnapshots.length);
+                
+                // Keep only last 100 snapshots in memory
+                if (this.domSnapshots.length > 100) {
+                  this.domSnapshots.shift();
+                }
               }
               
               console.log('Comprehensive snapshot captured:', {
@@ -964,9 +985,15 @@ ipcMain.handle('stop-enhanced-recording', async () => {
   // Combine all data
   const finalData = {
     sessionId: `comprehensive-${recordingData.startTime}`,
+    startTime: recordingData.startTime,
+    endTime: recordingData.endTime,
     duration: recordingData.endTime - recordingData.startTime,
     url: recordingData.url,
     title: recordingData.title,
+    
+    // Multi-tab workflow tracking
+    tabSwitches: recordingData.tabSwitches || [],
+    tabsUsed: Array.from(tabsData.keys()),
     
     // User interactions
     actions: pageData.actions || [],
@@ -1040,6 +1067,18 @@ ipcMain.handle('close-tab', async (event, tabId) => {
 ipcMain.handle('switch-tab', async (event, tabId) => {
   console.log(`Switch to tab: ${tabId}`);
   
+  // Track tab switch in recording
+  if (recordingActive && recordingData) {
+    recordingData.tabSwitches.push({
+      fromTab: recordingData.currentTabId,
+      toTab: tabId,
+      timestamp: Date.now() - recordingData.startTime,
+      url: tabsData.get(tabId)?.url
+    });
+    recordingData.currentTabId = tabId;
+    console.log(`📑 Recording tab switch: ${recordingData.tabSwitches.length} switches recorded`);
+  }
+  
   // Get the tab's URL and navigate to it
   const tabData = tabsData.get(tabId);
   if (tabData && webView) {
@@ -1055,12 +1094,23 @@ ipcMain.handle('switch-tab', async (event, tabId) => {
 
 ipcMain.handle('create-tab', async (event, url) => {
   // Use the same Google URL with parameters for new tabs
-  const targetUrl = url || 'https://www.google.com/webhp?gl=us&hl=en&gws_rd=cr&pws=0';
+  const targetUrl = url || 'https://www.google.com';
   const tabId = `tab-${Date.now()}`;
   const title = 'New Tab';
   
   // Store tab data
   tabsData.set(tabId, { id: tabId, url: targetUrl, title });
+  
+  // Track new tab creation in recording
+  if (recordingActive && recordingData) {
+    recordingData.tabSwitches.push({
+      action: 'new-tab',
+      tabId: tabId,
+      url: targetUrl,
+      timestamp: Date.now() - recordingData.startTime
+    });
+    console.log(`📑 Recording new tab creation: ${tabId}`);
+  }
   
   console.log(`Creating new tab: ${tabId}`);
   
@@ -1150,7 +1200,7 @@ ipcMain.handle('navigate-tab', async (event, tabId, url) => {
       // Check if it looks like a search query or a domain
       if (url.includes(' ') || !url.includes('.')) {
         // It's a search query - use Google with parameters
-        url = `https://www.google.com/search?q=${encodeURIComponent(url)}&gl=us&hl=en&pws=0`;
+        url = `https://www.google.com/search?q=${encodeURIComponent(url)}&hl=en&gl=us&authuser=0&pws=0`;
       } else {
         // It's a domain
         url = 'https://' + url;
