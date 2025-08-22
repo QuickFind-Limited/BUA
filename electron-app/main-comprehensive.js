@@ -679,7 +679,9 @@ ipcMain.handle('start-enhanced-recording', async () => {
                     tagName: e.target.tagName,
                     id: e.target.id,
                     className: e.target.className,
-                    selector: this.getCSSPath(e.target)
+                    selector: this.getCSSPath(e.target),
+                    // Capture the actual value for input/textarea elements
+                    value: (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') ? e.target.value : undefined
                   } : null,
                   
                   // Event-specific data
@@ -690,6 +692,9 @@ ipcMain.handle('start-enhanced-recording', async () => {
                   shiftKey: e.shiftKey,
                   altKey: e.altKey,
                   metaKey: e.metaKey,
+                  
+                  // For input/change events, also capture the value at the event level
+                  value: (eventType === 'input' || eventType === 'change') && e.target ? e.target.value : undefined,
                   
                   // Context
                   url: window.location.href,
