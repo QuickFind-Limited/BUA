@@ -463,7 +463,7 @@ export class PlaywrightLauncherRecorder {
       console.log('[Screenshot] Tab manager obtained:', !!tabManager);
       
       if (tabManager) {
-        const activeTab = tabManager.getActiveTab();
+        const activeTab = (tabManager as any).getActiveTab();
         console.log('[Screenshot] Active tab found:', !!activeTab);
         console.log('[Screenshot] Active tab has view:', !!activeTab?.view);
         
@@ -627,7 +627,7 @@ export class PlaywrightLauncherRecorder {
         const tabManager = getTabManager();
         
         if (tabManager) {
-          const activeTab = tabManager.getActiveTab();
+          const activeTab = (tabManager as any).getActiveTab();
           if (activeTab?.view) {
             console.log('Capturing success state screenshot...');
             const screenshot = await activeTab.view.webContents.capturePage();

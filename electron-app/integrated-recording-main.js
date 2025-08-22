@@ -564,51 +564,45 @@ ipcMain.handle('stop-enhanced-recording', async () => {
           suggestedVariables: workflowAnalysis.suggestedVariables
         });
         
-        // Generate the Intent Spec using AI or fallback to hardcoded
+        // Generate the Intent Spec using AI
         let intentSpec;
-        const useAI = process.env.USE_AI_ANALYSIS !== 'false'; // Default to true unless explicitly disabled
         
-        if (useAI) {
-          try {
-            console.log('🤖 Using AI to analyze recording and generate Intent Spec...');
-            
-            // Send progress update
-            if (mainWindow && !mainWindow.isDestroyed()) {
-              mainWindow.webContents.send('analysis-progress', {
-                status: 'analyzing',
-                message: 'AI is analyzing your recording to understand the workflow...'
-              });
-            }
-            
-            // Call Claude to analyze the recording
-            intentSpec = await analyzeRecording(recordingData);
-            console.log('✅ AI analysis complete');
-            
-            // Enhance with workflow metadata
-            intentSpec.workflow = {
-              type: workflowAnalysis.type,
-              context: workflowAnalysis.context.domain,
-              processType: workflowAnalysis.context.processType,
-              isMultiStep: workflowAnalysis.context.isMultiStep
-            };
-            
-          } catch (aiError) {
-            console.error('❌ AI analysis failed, falling back to rule-based generation:', aiError.message);
-            
-            // Send progress update about fallback
-            if (mainWindow && !mainWindow.isDestroyed()) {
-              mainWindow.webContents.send('analysis-progress', {
-                status: 'processing',
-                message: 'Using rule-based analysis as fallback...'
-              });
-            }
-            
-            // Fallback to hardcoded generation
-            intentSpec = generateIntentSpecFromRichRecording(recordingData);
+        try {
+          console.log('🤖 Using AI to analyze recording and generate Intent Spec...');
+          
+          // Send progress update
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('analysis-progress', {
+              status: 'analyzing',
+              message: 'AI is analyzing your recording to understand the workflow...'
+            });
           }
-        } else {
-          console.log('📋 Using rule-based Intent Spec generation (AI disabled)');
-          intentSpec = generateIntentSpecFromRichRecording(recordingData);
+          
+          // Call Claude to analyze the recording
+          intentSpec = await analyzeRecording(recordingData);
+          console.log('✅ AI analysis complete');
+          
+          // Enhance with workflow metadata
+          intentSpec.workflow = {
+            type: workflowAnalysis.type,
+            context: workflowAnalysis.context.domain,
+            processType: workflowAnalysis.context.processType,
+            isMultiStep: workflowAnalysis.context.isMultiStep
+          };
+          
+        } catch (aiError) {
+          console.error('❌ AI analysis failed:', aiError.message);
+          
+          // Send error to UI
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('analysis-progress', {
+              status: 'error',
+              message: `AI analysis failed: ${aiError.message}. Please ensure Claude Code SDK is properly configured.`
+            });
+          }
+          
+          // Re-throw to prevent continuing with empty spec
+          throw new Error(`AI analysis required but failed: ${aiError.message}`);
         }
         
         // Extract variables with UI-compatible names

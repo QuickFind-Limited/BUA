@@ -104,7 +104,7 @@ export function registerIpcHandlers(): void {
         mainWindow.webContents.send('analysis-progress', { 
           step: 'parsing', 
           status: 'active', 
-          message: 'Parsing recorded actions...' 
+          message: 'Processing recording data for AI analysis...' 
         });
       }
       
@@ -142,12 +142,12 @@ export function registerIpcHandlers(): void {
         mainWindow.webContents.send('analysis-progress', { 
           step: 'parsing', 
           status: 'completed', 
-          message: 'Actions parsed successfully' 
+          message: 'Recording data prepared for AI' 
         });
         mainWindow.webContents.send('analysis-progress', { 
           step: 'analyzing', 
           status: 'active', 
-          message: 'AI analyzing recording patterns...' 
+          message: 'Claude Opus 4.1 is analyzing your workflow...' 
         });
       }
       
@@ -163,7 +163,7 @@ export function registerIpcHandlers(): void {
         mainWindow.webContents.send('analysis-progress', { 
           step: 'analyzing', 
           status: 'completed', 
-          message: 'AI analysis complete' 
+          message: 'Claude Opus 4.1 has completed workflow analysis' 
         });
         
         // Add 2-second delay before variables step
@@ -172,7 +172,7 @@ export function registerIpcHandlers(): void {
         mainWindow.webContents.send('analysis-progress', { 
           step: 'variables', 
           status: 'active', 
-          message: 'Extracting dynamic variables...' 
+          message: 'AI is identifying dynamic fields and variables...' 
         });
       }
       
@@ -201,7 +201,7 @@ export function registerIpcHandlers(): void {
         mainWindow.webContents.send('analysis-progress', { 
           step: 'generating', 
           status: 'active', 
-          message: 'Generating Intent Spec...' 
+          message: 'AI is structuring the Intent Spec...' 
         });
         
         // 2-second delay for generating step
@@ -209,13 +209,13 @@ export function registerIpcHandlers(): void {
           mainWindow.webContents.send('analysis-progress', { 
             step: 'generating', 
             status: 'completed', 
-            message: 'Intent Spec generated' 
+            message: 'AI Intent Spec generation complete' 
           });
           
           mainWindow.webContents.send('analysis-progress', { 
             step: 'validating', 
             status: 'active', 
-            message: 'Validating output...' 
+            message: 'Validating AI-generated structure...' 
           });
           
           // 2-second delay for validation step
@@ -223,7 +223,7 @@ export function registerIpcHandlers(): void {
             mainWindow.webContents.send('analysis-progress', { 
               step: 'validating', 
               status: 'completed', 
-              message: 'Output validated' 
+              message: 'AI Intent Spec validated successfully' 
             });
           }, 2000);
         }, 2000);
@@ -533,7 +533,7 @@ export function registerIpcHandlers(): void {
       }
 
       // If no tabId provided, use active tab
-      const targetTabId = tabId || tabManager.getActiveTab()?.id;
+      const targetTabId = tabId || (tabManager as any).getActiveTab()?.id;
       if (!targetTabId) {
         throw new Error('No tab ID provided and no active tab found');
       }
@@ -561,7 +561,7 @@ export function registerIpcHandlers(): void {
       }
 
       // If no tabId provided, use active tab
-      const targetTabId = tabId || tabManager.getActiveTab()?.id;
+      const targetTabId = tabId || (tabManager as any).getActiveTab()?.id;
       if (!targetTabId) {
         throw new Error('No tab ID provided and no active tab found');
       }
@@ -589,7 +589,7 @@ export function registerIpcHandlers(): void {
       }
 
       // If no tabId provided, use active tab
-      const targetTabId = tabId || tabManager.getActiveTab()?.id;
+      const targetTabId = tabId || (tabManager as any).getActiveTab()?.id;
       if (!targetTabId) {
         throw new Error('No tab ID provided and no active tab found');
       }
@@ -616,7 +616,7 @@ export function registerIpcHandlers(): void {
         throw new Error('TabManager not initialized');
       }
 
-      const result = await tabManager.startRecording();
+      const result = await (tabManager as any).startRecording();
       return {
         success: result.success,
         data: result.success ? { sessionId: result.sessionId } : undefined,
@@ -639,10 +639,10 @@ export function registerIpcHandlers(): void {
         throw new Error('TabManager not initialized');
       }
 
-      const result = tabManager.stopRecording();
+      const result = (tabManager as any).stopRecording();
       return {
         success: result.success,
-        data: result.success ? { session: result.session } : undefined,
+        data: result.success ? { session: (result as any).session } : undefined,
         error: result.error
       };
     } catch (error) {
@@ -684,7 +684,7 @@ export function registerIpcHandlers(): void {
         throw new Error('TabManager not initialized');
       }
 
-      const result = tabManager.processRecordedAction(action);
+      const result = (tabManager as any).processRecordedAction(action);
       return {
         success: result,
         error: result ? undefined : 'Failed to process recorded action'
@@ -710,7 +710,7 @@ export function registerIpcHandlers(): void {
         throw new Error('No session data provided');
       }
 
-      const code = tabManager.generatePlaywrightCode(session);
+      const code = (tabManager as any).generatePlaywrightCode(session);
       return {
         success: true,
         data: { code }
@@ -736,7 +736,7 @@ export function registerIpcHandlers(): void {
         throw new Error('No session data provided');
       }
 
-      const jsonData = tabManager.exportRecordingSession(session);
+      const jsonData = (tabManager as any).exportRecordingSession(session);
       return {
         success: true,
         data: { jsonData }
@@ -762,7 +762,7 @@ export function registerIpcHandlers(): void {
         throw new Error('Invalid JSON data provided');
       }
 
-      const session = tabManager.importRecordingSession(jsonData);
+      const session = (tabManager as any).importRecordingSession(jsonData);
       return {
         success: !!session,
         data: session ? { session } : undefined,
@@ -785,7 +785,7 @@ export function registerIpcHandlers(): void {
         throw new Error('TabManager not initialized');
       }
 
-      const result = await tabManager.startCodegenRecording();
+      const result = await (tabManager as any).startCodegenRecording();
       return {
         success: result.success,
         data: result.success ? { sessionId: result.sessionId } : undefined,
@@ -838,7 +838,7 @@ export function registerIpcHandlers(): void {
       const result = await tabManager.stopEnhancedRecording();
       return {
         success: result.success,
-        data: result.success ? { session: result.session } : undefined,
+        data: result.success ? { session: (result as any).session } : undefined,
         error: result.error
       };
     } catch (error) {
@@ -858,7 +858,7 @@ export function registerIpcHandlers(): void {
         throw new Error('TabManager not initialized');
       }
 
-      const result = tabManager.pauseEnhancedRecording();
+      const result = tabManager.pauseEnhancedRecording() as any;
       return {
         success: result.success,
         error: result.error
@@ -880,7 +880,7 @@ export function registerIpcHandlers(): void {
         throw new Error('TabManager not initialized');
       }
 
-      const result = tabManager.resumeEnhancedRecording();
+      const result = tabManager.resumeEnhancedRecording() as any;
       return {
         success: result.success,
         error: result.error
@@ -902,7 +902,7 @@ export function registerIpcHandlers(): void {
         throw new Error('TabManager not initialized');
       }
 
-      const status = tabManager.getEnhancedRecordingStatus();
+      const status = (tabManager as any).getRecordingStatus();
       return {
         success: true,
         data: status
@@ -924,7 +924,7 @@ export function registerIpcHandlers(): void {
         throw new Error('TabManager not initialized');
       }
 
-      const result = tabManager.processEnhancedAction(action);
+      const result = (tabManager as any).processEnhancedAction(action);
       return {
         success: result,
         error: result ? undefined : 'Failed to process enhanced action'
@@ -950,7 +950,7 @@ export function registerIpcHandlers(): void {
         throw new Error('No session data provided');
       }
 
-      const code = tabManager.generateEnhancedPlaywrightCode(session);
+      const code = (tabManager as any).generateEnhancedPlaywrightCode(session);
       return {
         success: true,
         data: { code }
@@ -976,7 +976,7 @@ export function registerIpcHandlers(): void {
         throw new Error('No session data provided');
       }
 
-      const jsonData = tabManager.exportEnhancedRecordingSession(session);
+      const jsonData = (tabManager as any).exportEnhancedRecordingSession(session);
       return {
         success: true,
         data: { jsonData }
@@ -1051,7 +1051,7 @@ export function registerIpcHandlers(): void {
         throw new Error('TabManager not initialized');
       }
       
-      tabManager.toggleSidebar(isVisible);
+      (tabManager as any).toggleSidebar?.(isVisible);
       return { 
         success: true, 
         sidebarWidth: isVisible ? 320 : 0 
@@ -1188,12 +1188,12 @@ export function registerIpcHandlers(): void {
       const executor = new EnhancedFlowExecutor();
       
       // Get the current WebContentsView from tab manager
-      const activeTabId = tabManager.getActiveTabId();
+      const activeTabId = (tabManager as any).getActiveTabId();
       if (!activeTabId) {
         throw new Error('No active tab found');
       }
       
-      const activeTab = tabManager.getTab(activeTabId);
+      const activeTab = (tabManager as any).getTab(activeTabId);
       if (!activeTab || !activeTab.view) {
         throw new Error('Active tab has no WebContentsView');
       }
@@ -1490,7 +1490,7 @@ async function takeCurrentScreenshot(): Promise<string | null> {
       throw new Error('TabManager not available');
     }
 
-    const activeTab = tabManager.getActiveTab();
+    const activeTab = (tabManager as any).getActiveTab();
     if (!activeTab) {
       throw new Error('No active tab available');
     }

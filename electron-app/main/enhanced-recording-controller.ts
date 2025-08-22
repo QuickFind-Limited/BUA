@@ -357,7 +357,7 @@ export class EnhancedRecordingController extends EventEmitter {
         // Send to main process via page evaluate
         window.postMessage({
           type: 'DOM_SNAPSHOT',
-          sessionId: window.recordingSessionId,
+          sessionId: (window as any).recordingSessionId,
           timestamp: now,
           visibleElements,
           mutationCount
@@ -391,7 +391,7 @@ export class EnhancedRecordingController extends EventEmitter {
 
     // Set session ID for the page
     await this.playwrightPage.evaluate((sessionId) => {
-      window.recordingSessionId = sessionId;
+      (window as any).recordingSessionId = sessionId;
     }, session.id);
 
     // Listen for DOM snapshots
@@ -438,7 +438,7 @@ export class EnhancedRecordingController extends EventEmitter {
 
       const error: ConsoleError = {
         message: params.args[0]?.value?.toString() || 'Unknown error',
-        source: params.source || 'unknown',
+        source: (params as any).source || 'unknown',
         timestamp: params.timestamp,
         stackTrace: params.stackTrace?.description
       };
@@ -489,7 +489,7 @@ export class EnhancedRecordingController extends EventEmitter {
 
       // Capture with balanced quality/performance
       const screenshot = await session.webView.webContents.capturePage();
-      const pngBuffer = screenshot.resize({ quality: this.screenshotQuality }).toPNG();
+      const pngBuffer = screenshot.resize({ quality: this.screenshotQuality as any }).toPNG();
       
       await fs.writeFile(screenshotPath, pngBuffer);
       

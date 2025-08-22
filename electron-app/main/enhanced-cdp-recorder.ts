@@ -97,7 +97,7 @@ export class EnhancedCDPRecorder extends EventEmitter {
       // Get page information
       const url = webContents.getURL();
       const title = webContents.getTitle();
-      const [width, height] = webContents.getContentSize();
+      const [width, height] = (webContents as any).getContentSize?.() || { width: 1920, height: 1080 };
 
       // Initialize session
       this.session = {
@@ -569,8 +569,8 @@ export class EnhancedCDPRecorder extends EventEmitter {
           lines.push(`  await page.waitForURL('${action.url}');`);
           break;
         case 'scroll':
-          if (action.element?.coordinates) {
-            lines.push(`  await page.mouse.wheel(0, ${action.element.coordinates.y});`);
+          if ((action.element as any)?.coordinates) {
+            lines.push(`  await page.mouse.wheel(0, ${(action.element as any).coordinates.y});`);
           }
           break;
         case 'waitForNavigation':

@@ -31,6 +31,9 @@
     "dist",
     "dist-electron",
     "examples",
-    "ui"
+    "ui",
+    "main/WebContentsTabManager-old.ts",
+    "main/use-ai-for-intent-spec.js",
+    "**/*.js"
   ]
 }

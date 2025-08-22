@@ -219,13 +219,13 @@ test.describe('Recording Performance Tests', () => {
     console.log('🔴 Starting enhanced recording...');
     try {
       const recordingResult = await page.evaluate(async () => {
-        return await window.electronAPI.startRecording();
+        return await (window as any).electronAPI.startRecording();
       });
       
       if (!recordingResult.success) {
         console.log('⚠️  Standard recording not available, starting Playwright codegen recording...');
         const codegenResult = await page.evaluate(async () => {
-          return await window.electronAPI.startCodegenRecording();
+          return await (window as any).electronAPI.startCodegenRecording();
         });
         expect(codegenResult.success).toBe(true);
       }
@@ -343,17 +343,17 @@ test.describe('Recording Performance Tests', () => {
     try {
       // Try to get recording status first
       const recordingStatus = await page.evaluate(async () => {
-        return await window.electronAPI.getRecordingStatus();
+        return await (window as any).electronAPI.getRecordingStatus();
       });
       
       // Try to stop recording
       const stopResult = await page.evaluate(async () => {
-        return await window.electronAPI.stopRecording();
+        return await (window as any).electronAPI.stopRecording();
       });
       
       // Get last recording data if available
       const lastRecording = await page.evaluate(async () => {
-        return await window.electronAPI.getLastRecording();
+        return await (window as any).electronAPI.getLastRecording();
       });
       
       if (lastRecording && lastRecording.specCode) {

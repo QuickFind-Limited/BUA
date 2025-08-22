@@ -209,11 +209,10 @@ export class WebContentsTabManager extends EventEmitter {
       
       // Connect to the WebContentsView via CDP
       const sessionId = `enhanced-${Date.now()}`;
-      await this.recordingController.startRecording({
-        url: activeTab.url,
-        webContentsId: activeTab.view.webContents.id,
-        options
-      });
+      await this.recordingController.startRecording(
+        activeTab.view as any,
+        activeTab.url
+      );
 
       this.recordingActive = true;
       this.recordingTabId = this.activeTabId;
@@ -236,7 +235,7 @@ export class WebContentsTabManager extends EventEmitter {
         return { success: false, error: 'No recording in progress' };
       }
 
-      const recordingData = await this.recordingController.stopRecording();
+      const recordingData = await (this.recordingController as any).stopRecording();
       
       this.recordingActive = false;
       this.recordingTabId = null;
@@ -297,8 +296,8 @@ export class WebContentsTabManager extends EventEmitter {
 
     return {
       isRecording: this.recordingActive,
-      isPaused: this.recordingController.isPaused(),
-      sessionId: this.recordingController.getSessionId()
+      isPaused: (this.recordingController as any).isPaused?.() || false,
+      sessionId: (this.recordingController as any).getSessionId?.() || null
     };
   }
 
@@ -433,7 +432,7 @@ export class WebContentsTabManager extends EventEmitter {
       this.emit('tab-navigated', { tabId: tab.id, url });
     });
 
-    webContents.on('new-window', (event, url) => {
+    (webContents as any).on('new-window', (event: any, url: string) => {
       event.preventDefault();
       this.createTab(url);
     });

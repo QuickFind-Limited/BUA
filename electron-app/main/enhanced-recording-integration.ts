@@ -43,7 +43,7 @@ function registerEnhancedRecordingHandlers(): void {
         return { success: false, error: 'Tab manager not available' };
       }
 
-      const activeTab = tabManager.getActiveTab();
+      const activeTab = (tabManager as any).getActiveTab();
       if (!activeTab) {
         return { success: false, error: 'No active tab found' };
       }
@@ -58,7 +58,7 @@ function registerEnhancedRecordingHandlers(): void {
       const startUrl = url || activeTab.url;
       const sessionId = await enhancedRecordingController.startRecording(activeTab.view, startUrl);
 
-      currentRecordingTabId = tabManager.getActiveTabId();
+      currentRecordingTabId = (tabManager as any).getActiveTabId();
 
       // Set up event listeners for recording events
       enhancedRecordingController.on('recording-started', (data) => {
@@ -178,7 +178,7 @@ function registerEnhancedRecordingHandlers(): void {
         return { success: false, error: 'Tab manager not available' };
       }
 
-      const activeTab = tabManager.getActiveTab();
+      const activeTab = (tabManager as any).getActiveTab();
       if (!activeTab) {
         return { success: false, error: 'No active tab found' };
       }

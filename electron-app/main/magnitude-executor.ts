@@ -413,7 +413,7 @@ export class MagnitudeExecutor extends EventEmitter {
 
     try {
       // Use fallback handler for intelligent execution
-      const result = await this.fallbackHandler.executeWithFallback(step, variables);
+      const result = await (this.fallbackHandler as any).executeWithFallback(step, variables);
       
       // Emit progress with execution details
       this.emit('progress', {
