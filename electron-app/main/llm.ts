@@ -355,8 +355,18 @@ CRITICAL RULES:
 2. Detect patterns that should be variables (usernames, passwords, search terms, etc.)
 3. Each action should become a step in the Intent Spec
 4. Use the actual selectors from the recording
-5. Set prefer="ai" for form fields and user inputs (they may move or change)
-6. Set prefer="snippet" for navigation and stable buttons
+5. SELECTOR STRATEGY:
+   - Provide multiple selectors when possible: ["#id", "[name='field']", "text=Label"]
+   - Order selectors from most to least specific
+6. PREFER/FALLBACK STRATEGY:
+   - Navigation: prefer="snippet", fallback="snippet" (with retry)
+   - Login/Auth fields: prefer="ai", fallback="snippet" (security sensitive)
+   - Dynamic content: prefer="ai", fallback="snippet" (may change)
+   - Form inputs: prefer="snippet", fallback="ai" (stable but may move)
+   - Static buttons: prefer="snippet", fallback="ai"
+   - Search/Filter: prefer="ai", fallback="snippet" (context matters)
+   - Date pickers: prefer="ai", fallback="none" (complex interaction)
+   - File uploads: prefer="snippet", fallback="none" (system specific)
 
 Output this EXACT JSON structure:
 {
@@ -371,9 +381,10 @@ Output this EXACT JSON structure:
       "name": "Step description",
       "ai_instruction": "Natural language instruction",
       "snippet": "await page.ACTION('selector', 'value');",
-      "prefer": "snippet or ai",
-      "fallback": "ai or snippet",
-      "selector": "The actual selector from recording",
+      "prefer": "snippet or ai based on rules above",
+      "fallback": "ai, snippet, or none based on rules",
+      "selectors": ["primary selector", "fallback selector", "text selector"],
+      "selector": "The primary selector (for backwards compatibility)",
       "value": "The actual value or {{VARIABLE}}"
     }
   ],
@@ -405,8 +416,19 @@ CRITICAL RULES:
 4. Convert each await page.* action to an Intent Spec step
 5. Detect variables (values that should be parameterized like usernames, passwords, search terms)
 6. DO NOT invent or hallucinate steps that aren't in the code
-7. Set prefer="ai" for form inputs (email, password, search) as they may change position
-8. Set prefer="snippet" for navigation (goto) and stable elements
+7. PREFER="ai" FIRST scenarios:
+   - Login credentials (security sensitive)
+   - Dynamic search/filter fields
+   - Content that changes based on context
+   - Date/time pickers
+   - Complex interactions (drag & drop)
+8. MULTIPLE SELECTORS:
+   - Always provide array of selectors when possible
+   - Include: ID, name, role, text, data attributes
+9. FALLBACK="none" only for:
+   - File system operations
+   - Very specific wait conditions
+   - One-time setup steps
 
 Output this EXACT JSON structure:
 {

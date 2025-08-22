@@ -1,0 +1,272 @@
+{
+  "recording": {
+    "sessionId": "test-1755851687633",
+    "startTime": 1755851597633,
+    "endTime": 1755851687633,
+    "duration": 90000,
+    "url": "https://inventory.example.com/login",
+    "events": [
+      {
+        "type": "action",
+        "data": {
+          "action": "input",
+          "selector": "input#username",
+          "value": "admin@example.com",
+          "url": "https://inventory.example.com/login",
+          "timestamp": 1755851607633,
+          "element": {
+            "tagName": "INPUT",
+            "attributes": {
+              "id": "username",
+              "type": "email",
+              "placeholder": "Enter username or email"
+            }
+          }
+        }
+      },
+      {
+        "type": "action",
+        "data": {
+          "action": "input",
+          "selector": "input#password",
+          "value": "SecurePass123",
+          "url": "https://inventory.example.com/login",
+          "timestamp": 1755851612633,
+          "element": {
+            "tagName": "INPUT",
+            "attributes": {
+              "id": "password",
+              "type": "password",
+              "placeholder": "Enter password"
+            }
+          }
+        }
+      },
+      {
+        "type": "action",
+        "data": {
+          "action": "click",
+          "selector": "button.login-btn",
+          "url": "https://inventory.example.com/login",
+          "timestamp": 1755851617633,
+          "element": {
+            "tagName": "BUTTON",
+            "textContent": "Sign In",
+            "attributes": {
+              "class": "login-btn btn-primary"
+            }
+          }
+        }
+      },
+      {
+        "type": "action",
+        "data": {
+          "action": "click",
+          "selector": "button.add-product",
+          "url": "https://inventory.example.com/products",
+          "timestamp": 1755851637633,
+          "element": {
+            "tagName": "BUTTON",
+            "textContent": "Add New Product",
+            "attributes": {
+              "class": "add-product btn-primary"
+            }
+          }
+        }
+      },
+      {
+        "type": "action",
+        "data": {
+          "action": "input",
+          "selector": "input#product-name",
+          "value": "Test Item 77",
+          "url": "https://inventory.example.com/products/new",
+          "timestamp": 1755851647633,
+          "element": {
+            "tagName": "INPUT",
+            "attributes": {
+              "id": "product-name",
+              "placeholder": "Enter product name",
+              "type": "text"
+            }
+          }
+        }
+      },
+      {
+        "type": "action",
+        "data": {
+          "action": "input",
+          "selector": "input#selling-price",
+          "value": "299.99",
+          "url": "https://inventory.example.com/products/new",
+          "timestamp": 1755851652633,
+          "element": {
+            "tagName": "INPUT",
+            "attributes": {
+              "id": "selling-price",
+              "placeholder": "Selling Price",
+              "type": "number"
+            }
+          }
+        }
+      },
+      {
+        "type": "action",
+        "data": {
+          "action": "input",
+          "selector": "input#cost-price",
+          "value": "150.00",
+          "url": "https://inventory.example.com/products/new",
+          "timestamp": 1755851657633,
+          "element": {
+            "tagName": "INPUT",
+            "attributes": {
+              "id": "cost-price",
+              "placeholder": "Cost Price",
+              "type": "number"
+            }
+          }
+        }
+      },
+      {
+        "type": "action",
+        "data": {
+          "action": "click",
+          "selector": "button.save-product",
+          "url": "https://inventory.example.com/products/new",
+          "timestamp": 1755851667633,
+          "element": {
+            "tagName": "BUTTON",
+            "textContent": "Save Product",
+            "attributes": {
+              "class": "save-product btn-success"
+            }
+          }
+        }
+      }
+    ],
+    "domSnapshots": [
+      {
+        "timestamp": 1755851642633,
+        "html": "<form><input id=\"product-name\"><input id=\"selling-price\"><input id=\"cost-price\"></form>"
+      }
+    ]
+  },
+  "intentSpec": {
+    "name": "Inventory Product Creation",
+    "description": "Automated login and product creation in inventory management system",
+    "url": "https://inventory.example.com/login",
+    "params": [
+      "EMAIL",
+      "PASSWORD",
+      "PRODUCT_NAME",
+      "SELLING_PRICE",
+      "COST_PRICE"
+    ],
+    "steps": [
+      {
+        "name": "Navigate to login page",
+        "ai_instruction": "Navigate to the inventory login page",
+        "snippet": "await page.goto('https://inventory.example.com/login');",
+        "prefer": "snippet",
+        "fallback": "none"
+      },
+      {
+        "name": "Enter email",
+        "ai_instruction": "Enter email address in the username field",
+        "snippet": "await page.fill('input#username', '{{EMAIL}}');",
+        "prefer": "snippet",
+        "fallback": "ai",
+        "selector": "input#username",
+        "value": "{{EMAIL}}",
+        "skipConditions": [
+          {
+            "requiredState": "authenticated_area"
+          }
+        ]
+      },
+      {
+        "name": "Enter password",
+        "ai_instruction": "Enter password in the password field",
+        "snippet": "await page.fill('input#password', '{{PASSWORD}}');",
+        "prefer": "snippet",
+        "fallback": "ai",
+        "selector": "input#password",
+        "value": "{{PASSWORD}}",
+        "skipConditions": [
+          {
+            "requiredState": "authenticated_area"
+          }
+        ]
+      },
+      {
+        "name": "Click sign in",
+        "ai_instruction": "Click the Sign In button to login",
+        "snippet": "await page.click('button.login-btn');",
+        "prefer": "snippet",
+        "fallback": "ai",
+        "selector": "button.login-btn",
+        "skipConditions": [
+          {
+            "requiredState": "authenticated_area"
+          }
+        ]
+      },
+      {
+        "name": "Wait for products page",
+        "ai_instruction": "Wait for the products page to load",
+        "snippet": "await page.waitForURL('**/products', { timeout: 10000 });",
+        "prefer": "snippet",
+        "fallback": "ai"
+      },
+      {
+        "name": "Click add new product",
+        "ai_instruction": "Click the Add New Product button",
+        "snippet": "await page.click('button.add-product');",
+        "prefer": "snippet",
+        "fallback": "ai",
+        "selector": "button.add-product"
+      },
+      {
+        "name": "Enter product name",
+        "ai_instruction": "Enter the product name in the product name field",
+        "snippet": "await page.fill('input#product-name', '{{PRODUCT_NAME}}');",
+        "prefer": "snippet",
+        "fallback": "ai",
+        "selector": "input#product-name",
+        "value": "{{PRODUCT_NAME}}"
+      },
+      {
+        "name": "Enter selling price",
+        "ai_instruction": "Enter the selling price for the product",
+        "snippet": "await page.fill('input#selling-price', '{{SELLING_PRICE}}');",
+        "prefer": "snippet",
+        "fallback": "ai",
+        "selector": "input#selling-price",
+        "value": "{{SELLING_PRICE}}"
+      },
+      {
+        "name": "Enter cost price",
+        "ai_instruction": "Enter the cost price for the product",
+        "snippet": "await page.fill('input#cost-price', '{{COST_PRICE}}');",
+        "prefer": "snippet",
+        "fallback": "ai",
+        "selector": "input#cost-price",
+        "value": "{{COST_PRICE}}"
+      },
+      {
+        "name": "Save product",
+        "ai_instruction": "Click the Save Product button to create the product",
+        "snippet": "await page.click('button.save-product');",
+        "prefer": "snippet",
+        "fallback": "ai",
+        "selector": "button.save-product"
+      }
+    ],
+    "preferences": {
+      "dynamic_elements": "ai",
+      "simple_steps": "snippet"
+    }
+  },
+  "analysisTime": 33884
+}
