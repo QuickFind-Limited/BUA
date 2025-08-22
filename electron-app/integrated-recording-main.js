@@ -559,38 +559,119 @@ ipcMain.handle('stop-enhanced-recording', async () => {
         const serializedRecording = JSON.stringify(recordingData, null, 2);
         const variablePrompt = generateVariableExtractionPrompt(serializedRecording);
         
-        // For now, use simple extraction based on input values
+        // Extract variables based on input values and context
         const extractedVariables = [];
+        const seenVariables = new Set();
+        const fieldLastValue = {}; // Track final value for each field
+        
+        // First pass: collect the final value for each field
         if (recordingData.events) {
           recordingData.events.forEach(event => {
             if (event.type === 'action' && event.data) {
               const action = event.data;
-              if (action.action === 'input' && action.value) {
-                // Detect variable type based on field context
-                let varName = 'VALUE';
-                const elementInfo = action.elementInfo || {};
-                const fieldType = elementInfo.type || '';
-                const fieldName = (elementInfo.name || elementInfo.id || '').toLowerCase();
-                
-                if (fieldType === 'password' || fieldName.includes('password')) {
-                  varName = 'PASSWORD';
-                } else if (fieldType === 'email' || fieldName.includes('email')) {
-                  varName = 'EMAIL_ADDRESS';
-                } else if (fieldName.includes('username') || fieldName.includes('user')) {
-                  varName = 'USERNAME';
-                } else if (fieldType === 'tel' || fieldName.includes('phone')) {
-                  varName = 'PHONE_NUMBER';
-                } else if (fieldName.includes('search') || fieldName.includes('query')) {
-                  varName = 'SEARCH_QUERY';
-                }
-                
-                if (!extractedVariables.includes(varName)) {
-                  extractedVariables.push(varName);
-                }
+              if (action.action === 'input' && action.value && action.selector) {
+                // Keep updating with the latest value for this field
+                fieldLastValue[action.selector] = {
+                  value: action.value,
+                  url: action.url,
+                  element: action.element || action.elementInfo || {},
+                  timestamp: action.timestamp
+                };
               }
             }
           });
         }
+        
+        // Second pass: process only the final values for variable detection
+        console.log(`🔍 Processing ${Object.keys(fieldLastValue).length} fields with final values`);
+        Object.keys(fieldLastValue).forEach(selector => {
+          const fieldData = fieldLastValue[selector];
+          const action = {
+            value: fieldData.value,
+            url: fieldData.url,
+            selector: selector
+          };
+          const elementInfo = fieldData.element;
+          
+          console.log(`  Field ${selector}: "${action.value}" on ${action.url}`);
+          
+          if (action.value) {
+                let varName = 'VALUE';
+                
+                // elementInfo already defined above
+                const fieldType = elementInfo.type || '';
+                const fieldName = (elementInfo.name || elementInfo.id || '').toLowerCase();
+                const placeholder = (elementInfo.placeholder || '').toLowerCase();
+                
+                // Try to get field label from text or aria-label
+                const fieldText = (elementInfo.text || elementInfo['aria-label'] || '').toLowerCase();
+                
+                // Check URL context for business-specific detection
+                const url = action.url || '';
+                const isInventoryPage = url.includes('inventory') || url.includes('product') || url.includes('item');
+                
+                // Generic field detection based on context
+                if (fieldType === 'password' || fieldName.includes('password') || placeholder.includes('password')) {
+                  varName = 'PASSWORD';
+                } else if (fieldType === 'email' || fieldName.includes('email') || placeholder.includes('email')) {
+                  varName = 'EMAIL_ADDRESS';
+                } else if (fieldName.includes('username') || fieldName.includes('user') || placeholder.includes('username')) {
+                  varName = 'USERNAME';
+                } else if (fieldType === 'tel' || fieldName.includes('phone') || placeholder.includes('phone')) {
+                  varName = 'PHONE_NUMBER';
+                } else if (fieldName.includes('search') || fieldName.includes('query') || placeholder.includes('search')) {
+                  varName = 'SEARCH_QUERY';
+                } else if (isInventoryPage) {
+                  // Context-aware detection for inventory/product pages
+                  // Use field text, placeholder, or position to determine type
+                  if (fieldText.includes('name') || placeholder.includes('name') || fieldName.includes('name')) {
+                    varName = 'ITEM_NAME';
+                  } else if (fieldText.includes('selling') || fieldText.includes('sell') || placeholder.includes('selling')) {
+                    varName = 'SELLING_PRICE';
+                  } else if (fieldText.includes('cost') || fieldText.includes('buy') || placeholder.includes('cost')) {
+                    varName = 'COST_PRICE';
+                  } else if (fieldText.includes('sku') || placeholder.includes('sku')) {
+                    varName = 'SKU';
+                  } else if (fieldText.includes('quantity') || fieldText.includes('qty')) {
+                    varName = 'QUANTITY';
+                  } else if (fieldText.includes('description')) {
+                    varName = 'DESCRIPTION';
+                  } else if (/^\d+(\.\d+)?$/.test(action.value)) {
+                    // Numeric value on inventory page - likely a price
+                    if (!seenVariables.has('SELLING_PRICE')) {
+                      varName = 'SELLING_PRICE';
+                    } else if (!seenVariables.has('COST_PRICE')) {
+                      varName = 'COST_PRICE';
+                    } else {
+                      varName = 'AMOUNT';
+                    }
+                  } else if (action.value.length > 3) {
+                    // Text value on inventory page - likely item name
+                    if (!seenVariables.has('ITEM_NAME')) {
+                      varName = 'ITEM_NAME';
+                    }
+                  }
+                } else {
+                  // Generic detection for other contexts
+                  if (fieldName.includes('first') || placeholder.includes('first name')) {
+                    varName = 'FIRST_NAME';
+                  } else if (fieldName.includes('last') || placeholder.includes('last name')) {
+                    varName = 'LAST_NAME';
+                  } else if (fieldName.includes('company') || placeholder.includes('company')) {
+                    varName = 'COMPANY_NAME';
+                  } else if (fieldName.includes('amount') || fieldName.includes('price')) {
+                    varName = 'AMOUNT';
+                  }
+                }
+                
+                // Add to variables list if not already present
+                if (!seenVariables.has(varName)) {
+                  console.log(`    ✅ Detected variable: ${varName}`);
+                  extractedVariables.push(varName);
+                  seenVariables.add(varName);
+                }
+              }
+        });
         
         // Update Intent Spec with extracted variables
         intentSpec.params = extractedVariables.length > 0 ? extractedVariables : ['USERNAME', 'PASSWORD'];
