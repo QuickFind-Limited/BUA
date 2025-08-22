@@ -9,7 +9,8 @@ export interface EnhancedRecordingData {
   endTime: number;
   duration: number;
   url: string;
-  events: any[];
+  events?: any[];  // Some recordings use 'events'
+  actions?: any[];  // Some recordings use 'actions'
   domSnapshots?: any[];
   networkRequests?: any[];
   consoleErrors?: any[];
@@ -36,8 +37,8 @@ export function generateBulletproofIntentSpecPrompt(recording: EnhancedRecording
   // Analyze console errors for potential issues
   const errorPatterns = analyzeErrorPatterns(recording.consoleErrors || []);
   
-  // Analyze timing for wait conditions
-  const timingInsights = analyzeTimingPatterns(recording.events || []);
+  // Analyze timing for wait conditions (use events or actions)
+  const timingInsights = analyzeTimingPatterns(recording.events || recording.actions || []);
   
   // Analyze viewport for responsive behavior
   const viewportInsights = analyzeViewport(recording.viewport);
@@ -55,8 +56,8 @@ Start URL: ${recording.url}
 Viewport: ${JSON.stringify(recording.viewport || { width: 1920, height: 1080 })}
 User Agent: ${recording.userAgent || 'Not captured'}
 
-RECORDED EVENTS (${recording.events?.length || 0}):
-${JSON.stringify(recording.events || [], null, 2)}
+RECORDED EVENTS/ACTIONS (${recording.events?.length || recording.actions?.length || 0}):
+${JSON.stringify(recording.events || recording.actions || [], null, 2)}
 
 DOM SNAPSHOTS (${recording.domSnapshots?.length || 0}):
 ${JSON.stringify(recording.domSnapshots?.slice(0, 3) || [], null, 2)}

@@ -825,8 +825,8 @@ ipcMain.handle('start-enhanced-recording', async () => {
       
       console.log('✅ Comprehensive recording scripts injected and all CDP domains enabled');
       
-      // Start taking periodic screenshots (aggressive)
-      startScreenshotCapture();
+      // Screenshots are only captured when stopping recording
+      // startScreenshotCapture(); // Disabled - only capture on stop
       
     } catch (err) {
       console.error('Error attaching debugger:', err);
@@ -946,6 +946,22 @@ ipcMain.handle('stop-enhanced-recording', async () => {
   console.log('⏹️ Stopping comprehensive recording...');
   recordingActive = false;
   recordingData.endTime = Date.now();
+  
+  // Capture final screenshot before stopping
+  if (webView) {
+    try {
+      const finalScreenshot = await webView.webContents.capturePage();
+      recordingData.screenshots.push({
+        timestamp: Date.now() - recordingData.startTime,
+        type: 'final',
+        data: finalScreenshot.toDataURL(),
+        size: finalScreenshot.getSize()
+      });
+      console.log('📸 Final screenshot captured on stop');
+    } catch (e) {
+      console.error('Failed to capture final screenshot:', e);
+    }
+  }
   
   // Collect all captured data
   let pageData = { actions: [], domSnapshots: [], mutations: [], visibilityChanges: [] };

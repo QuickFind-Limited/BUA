@@ -1,0 +1,95 @@
+{
+  "sessionId": "comprehensive-1755858369659",
+  "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new",
+  "duration": 71812,
+  "events": [],
+  "actions": [
+    {
+      "type": "input",
+      "action": "input",
+      "timestamp": 1755858639494,
+      "selector": "#ab1feb6bb",
+      "value": "Test Items 238",
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new",
+      "element": {
+        "tagName": "INPUT",
+        "id": "ab1feb6bb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#ab1feb6bb"
+      }
+    },
+    {
+      "type": "input",
+      "action": "input",
+      "timestamp": 1755858649494,
+      "selector": "#a0f8c352f",
+      "value": "24",
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new",
+      "element": {
+        "tagName": "INPUT",
+        "id": "a0f8c352f",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a0f8c352f"
+      }
+    },
+    {
+      "type": "input",
+      "action": "input",
+      "timestamp": 1755858659494,
+      "selector": "#a721f3f4b",
+      "value": "21",
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new",
+      "element": {
+        "tagName": "INPUT",
+        "id": "a721f3f4b",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a721f3f4b"
+      }
+    },
+    {
+      "type": "input",
+      "action": "input",
+      "timestamp": 1755858659494,
+      "selector": "#item_name",
+      "value": "Test Item 28",
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new",
+      "element": {
+        "tagName": "INPUT",
+        "type": "text",
+        "id": "item_name",
+        "name": "item_name",
+        "placeholder": "Item Name"
+      }
+    },
+    {
+      "type": "input",
+      "action": "input",
+      "timestamp": 1755858664494,
+      "selector": "#selling_price",
+      "value": "299.99",
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new",
+      "element": {
+        "tagName": "INPUT",
+        "type": "number",
+        "id": "selling_price",
+        "name": "selling_price",
+        "placeholder": "Selling Price"
+      }
+    },
+    {
+      "type": "input",
+      "action": "input",
+      "timestamp": 1755858669494,
+      "selector": "#cost_price",
+      "value": "150.00",
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new",
+      "element": {
+        "tagName": "INPUT",
+        "type": "number",
+        "id": "cost_price",
+        "name": "cost_price",
+        "placeholder": "Cost Price"
+      }
+    }
+  ]
+}

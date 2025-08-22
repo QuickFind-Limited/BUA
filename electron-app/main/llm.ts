@@ -72,19 +72,6 @@ async function getQueryFunction() {
   return queryFunction;
 }
 
-/**
- * Determine if we should use enhanced prompt based on data richness
- */
-function shouldUseEnhancedPrompt(recordingData: any): boolean {
-  // Use enhanced if we have rich data
-  return !!(recordingData.domSnapshots || 
-           recordingData.networkRequests || 
-           recordingData.mutations || 
-           recordingData.viewport ||
-           recordingData.consoleErrors ||
-           recordingData.tabSessions);
-}
-
 import Anthropic from '@anthropic-ai/sdk';
 import { startBrowserAgent } from 'magnitude-core';
 import { z } from 'zod';
@@ -495,14 +482,16 @@ function createAnalysisPrompt(recordingData: any): string {
     }
   }
   
-  // Check if it's a recording session with actions array
-  if (actualRecordingData && actualRecordingData.actions && Array.isArray(actualRecordingData.actions)) {
-    return createSessionAnalysisPrompt(actualRecordingData);
-  }
-  
-  // Check if we should use enhanced prompt for bulletproof Intent Specs
-  if (actualRecordingData && shouldUseEnhancedPrompt(actualRecordingData)) {
-    console.log('Using enhanced bulletproof prompt with rich recording data');
+  // ALWAYS use enhanced bulletproof prompt for ALL recordings
+  // This prompt utilizes all available data for robust Intent Specs
+  if (actualRecordingData && typeof actualRecordingData === 'object') {
+    console.log('🚀 Using ENHANCED BULLETPROOF prompt for comprehensive Intent Spec generation');
+    console.log('📊 Data includes:', {
+      hasActions: !!actualRecordingData.actions,
+      hasDomSnapshots: !!actualRecordingData.domSnapshots,
+      hasNetworkData: !!actualRecordingData.networkRequests,
+      hasMutations: !!actualRecordingData.mutations
+    });
     return generateBulletproofIntentSpecPrompt(actualRecordingData);
   }
   
