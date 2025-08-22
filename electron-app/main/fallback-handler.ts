@@ -19,7 +19,7 @@ export class FallbackHandler {
     // Determine if AI should be preferred for this step
     const preferAI = step.prefer === 'ai' || shouldPreferAI(step);
     
-    console.log(`Executing: ${step.name || 'unnamed step'} (prefer: ${preferAI ? 'ai' : 'snippet'})`;
+    console.log(`Executing: ${step.name || 'unnamed step'} (prefer: ${preferAI ? 'ai' : 'snippet'})`);
     
     // Try primary method
     try {

@@ -72,6 +72,19 @@ async function getQueryFunction() {
   return queryFunction;
 }
 
+/**
+ * Determine if we should use enhanced prompt based on data richness
+ */
+function shouldUseEnhancedPrompt(recordingData: any): boolean {
+  // Use enhanced if we have rich data
+  return !!(recordingData.domSnapshots || 
+           recordingData.networkRequests || 
+           recordingData.mutations || 
+           recordingData.viewport ||
+           recordingData.consoleErrors ||
+           recordingData.tabSessions);
+}
+
 import Anthropic from '@anthropic-ai/sdk';
 import { startBrowserAgent } from 'magnitude-core';
 import { z } from 'zod';
@@ -79,6 +92,7 @@ import { IntentSpec } from '../flows/types';
 import { validateIntentSpec, sanitizeIntentSpec } from './intent-spec-validator';
 import { serializeRecording } from './recording-serializer';
 import { generateIntentSpecPrompt, generateSimpleIntentSpecPrompt, generateValidationPrompt as generatePromptForValidation } from './intent-spec-prompt';
+import { generateBulletproofIntentSpecPrompt } from './enhanced-prompt-generator';
 
 // Model configuration per spec
 const OPUS_MODEL = 'claude-opus-4-1-20250805';
@@ -484,6 +498,12 @@ function createAnalysisPrompt(recordingData: any): string {
   // Check if it's a recording session with actions array
   if (actualRecordingData && actualRecordingData.actions && Array.isArray(actualRecordingData.actions)) {
     return createSessionAnalysisPrompt(actualRecordingData);
+  }
+  
+  // Check if we should use enhanced prompt for bulletproof Intent Specs
+  if (actualRecordingData && shouldUseEnhancedPrompt(actualRecordingData)) {
+    console.log('Using enhanced bulletproof prompt with rich recording data');
+    return generateBulletproofIntentSpecPrompt(actualRecordingData);
   }
   
   // For Playwright specs and all other cases, use the general prompt that allows inference

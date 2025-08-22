@@ -1,0 +1,361 @@
+{
+  "recording": {
+    "sessionId": "comprehensive-1755853118657",
+    "startTime": 1755852998657,
+    "endTime": 1755853118657,
+    "duration": 120000,
+    "url": "https://app.example.com/login",
+    "events": [
+      {
+        "type": "action",
+        "timestamp": 1755853003657,
+        "data": {
+          "action": "navigate",
+          "url": "https://app.example.com/login",
+          "timestamp": 1755853003657
+        }
+      },
+      {
+        "type": "action",
+        "timestamp": 1755853008657,
+        "data": {
+          "action": "input",
+          "selector": "input[type=\"email\"]",
+          "value": "user@example.com",
+          "url": "https://app.example.com/login",
+          "timestamp": 1755853008657,
+          "element": {
+            "tagName": "INPUT",
+            "attributes": {
+              "type": "email",
+              "name": "email",
+              "id": "login-email",
+              "placeholder": "Enter your email",
+              "aria-label": "Email address"
+            }
+          }
+        }
+      },
+      {
+        "type": "action",
+        "timestamp": 1755853013657,
+        "data": {
+          "action": "input",
+          "selector": "input[type=\"password\"]",
+          "value": "SecurePassword123!",
+          "url": "https://app.example.com/login",
+          "timestamp": 1755853013657,
+          "element": {
+            "tagName": "INPUT",
+            "attributes": {
+              "type": "password",
+              "name": "password",
+              "id": "login-password",
+              "placeholder": "Enter password",
+              "aria-label": "Password"
+            }
+          }
+        }
+      },
+      {
+        "type": "action",
+        "timestamp": 1755853018657,
+        "data": {
+          "action": "click",
+          "selector": "button[type=\"submit\"]",
+          "url": "https://app.example.com/login",
+          "timestamp": 1755853018657,
+          "element": {
+            "tagName": "BUTTON",
+            "textContent": "Sign In",
+            "attributes": {
+              "type": "submit",
+              "class": "btn btn-primary login-button",
+              "data-testid": "login-submit"
+            }
+          }
+        }
+      },
+      {
+        "type": "action",
+        "timestamp": 1755853023657,
+        "data": {
+          "action": "wait",
+          "duration": 3000,
+          "reason": "page-load",
+          "timestamp": 1755853023657
+        }
+      },
+      {
+        "type": "action",
+        "timestamp": 1755853028657,
+        "data": {
+          "action": "click",
+          "selector": "a[href=\"/products\"]",
+          "url": "https://app.example.com/dashboard",
+          "timestamp": 1755853028657,
+          "element": {
+            "tagName": "A",
+            "textContent": "Products",
+            "attributes": {
+              "href": "/products",
+              "class": "nav-link"
+            }
+          }
+        }
+      }
+    ],
+    "domSnapshots": [
+      {
+        "timestamp": 1755853010657,
+        "url": "https://app.example.com/login",
+        "title": "Login - Example App",
+        "visibleElements": [
+          {
+            "selector": "#login-email",
+            "tagName": "INPUT",
+            "isVisible": true,
+            "isInteractable": true
+          },
+          {
+            "selector": "#login-password",
+            "tagName": "INPUT",
+            "isVisible": true,
+            "isInteractable": true
+          },
+          {
+            "selector": ".login-button",
+            "tagName": "BUTTON",
+            "isVisible": true,
+            "isInteractable": true
+          }
+        ],
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        }
+      },
+      {
+        "timestamp": 1755853030657,
+        "url": "https://app.example.com/dashboard",
+        "title": "Dashboard - Example App",
+        "visibleElements": [
+          {
+            "selector": ".nav-link",
+            "tagName": "A",
+            "isVisible": true,
+            "isInteractable": true
+          },
+          {
+            "selector": ".user-menu",
+            "tagName": "DIV",
+            "isVisible": true,
+            "isInteractable": true
+          }
+        ],
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        }
+      }
+    ],
+    "networkRequests": [
+      {
+        "url": "https://app.example.com/api/auth/login",
+        "method": "POST",
+        "statusCode": 200,
+        "timestamp": 1755853019657,
+        "responseSize": 1024,
+        "timing": {
+          "start": 1755853019657,
+          "end": 1755853020157
+        }
+      },
+      {
+        "url": "https://app.example.com/api/user/profile",
+        "method": "GET",
+        "statusCode": 200,
+        "timestamp": 1755853024657,
+        "responseSize": 2048,
+        "timing": {
+          "start": 1755853024657,
+          "end": 1755853024857
+        }
+      },
+      {
+        "url": "https://app.example.com/api/products",
+        "method": "GET",
+        "statusCode": 200,
+        "timestamp": 1755853031657,
+        "responseSize": 8192,
+        "timing": {
+          "start": 1755853031657,
+          "end": 1755853032157
+        }
+      }
+    ],
+    "consoleErrors": [
+      {
+        "message": "Failed to load resource: 404",
+        "source": "network",
+        "timestamp": 1755853033657,
+        "stackTrace": "at loadResource (app.js:123)"
+      }
+    ],
+    "mutations": [
+      {
+        "type": "childList",
+        "timestamp": 1755853025657,
+        "target": {
+          "id": "user-menu-dropdown"
+        },
+        "addedNodes": [
+          "<li>Profile</li>",
+          "<li>Settings</li>"
+        ]
+      },
+      {
+        "type": "attributes",
+        "timestamp": 1755853026657,
+        "target": {
+          "id": "loading-spinner"
+        },
+        "attributeName": "style",
+        "oldValue": "display: block",
+        "newValue": "display: none"
+      }
+    ],
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "cookies": [
+      {
+        "name": "session_id",
+        "value": "abc123",
+        "domain": "app.example.com",
+        "secure": true
+      },
+      {
+        "name": "user_pref",
+        "value": "dark_mode",
+        "domain": "app.example.com"
+      }
+    ],
+    "localStorage": {
+      "auth_token": "jwt_token_here",
+      "user_id": "12345",
+      "theme": "dark"
+    },
+    "performance": {
+      "timing": {
+        "navigationStart": 1755852998657,
+        "domContentLoaded": 1755853000657,
+        "loadEventEnd": 1755853002657
+      },
+      "memory": {
+        "usedJSHeapSize": 10485760,
+        "totalJSHeapSize": 20971520
+      }
+    },
+    "tabSessions": {
+      "tab-1": {
+        "id": "tab-1",
+        "url": "https://app.example.com/login",
+        "title": "Login",
+        "active": false
+      },
+      "tab-2": {
+        "id": "tab-2",
+        "url": "https://app.example.com/dashboard",
+        "title": "Dashboard",
+        "active": true
+      }
+    }
+  },
+  "intentSpec": {
+    "name": "Example App Login and Navigate to Products",
+    "description": "Automated login to Example App and navigation to Products page",
+    "url": "https://app.example.com/login",
+    "params": [
+      "EMAIL",
+      "PASSWORD"
+    ],
+    "steps": [
+      {
+        "name": "Navigate to login page",
+        "ai_instruction": "Navigate to the Example App login page",
+        "snippet": "await page.goto('https://app.example.com/login');",
+        "prefer": "snippet",
+        "fallback": "none"
+      },
+      {
+        "name": "Enter email address",
+        "ai_instruction": "Enter email address in the email input field",
+        "snippet": "await page.fill('#login-email', '{{EMAIL}}');",
+        "prefer": "snippet",
+        "fallback": "ai",
+        "selector": "#login-email",
+        "value": "{{EMAIL}}",
+        "skipConditions": [
+          {
+            "requiredState": "authenticated_area"
+          }
+        ]
+      },
+      {
+        "name": "Enter password",
+        "ai_instruction": "Enter password in the password input field",
+        "snippet": "await page.fill('#login-password', '{{PASSWORD}}');",
+        "prefer": "snippet",
+        "fallback": "ai",
+        "selector": "#login-password",
+        "value": "{{PASSWORD}}",
+        "skipConditions": [
+          {
+            "requiredState": "authenticated_area"
+          }
+        ]
+      },
+      {
+        "name": "Click Sign In button",
+        "ai_instruction": "Click the Sign In button to submit login credentials",
+        "snippet": "await page.click('[data-testid=\"login-submit\"]');",
+        "prefer": "snippet",
+        "fallback": "ai",
+        "selector": "[data-testid=\"login-submit\"]",
+        "skipConditions": [
+          {
+            "requiredState": "authenticated_area"
+          }
+        ]
+      },
+      {
+        "name": "Wait for dashboard to load",
+        "ai_instruction": "Wait for the dashboard page to fully load",
+        "snippet": "await page.waitForLoadState('networkidle');",
+        "prefer": "snippet",
+        "fallback": "none"
+      },
+      {
+        "name": "Navigate to Products",
+        "ai_instruction": "Click on the Products link in the navigation menu",
+        "snippet": "await page.click('a[href=\"/products\"]');",
+        "prefer": "snippet",
+        "fallback": "ai",
+        "selector": "a[href=\"/products\"]"
+      }
+    ],
+    "preferences": {
+      "dynamic_elements": "ai",
+      "simple_steps": "snippet"
+    }
+  },
+  "analysisTime": 26222,
+  "bulletproofFeatures": {
+    "hasMultipleSelectors": false,
+    "hasWaitConditions": false,
+    "hasValidations": false
+  }
+}
