@@ -756,27 +756,60 @@ ipcMain.handle('start-enhanced-recording', async () => {
             // Initial comprehensive snapshot
             this.domSnapshots.push(this.captureDOMStructure());
             
-            // Regular comprehensive snapshots (every 2 seconds)
-            setInterval(() => {
-              if (this.captureDOMStructure) {
+            // Smart event-driven snapshots instead of aggressive time-based
+            this.lastSnapshotTime = Date.now();
+            this.minSnapshotInterval = 500; // Min 500ms between snapshots
+            
+            this.captureSnapshotIfNeeded = (reason) => {
+              const now = Date.now();
+              if (now - this.lastSnapshotTime >= this.minSnapshotInterval && this.captureDOMStructure) {
                 const snapshot = this.captureDOMStructure();
                 snapshot.tabId = this.currentTabId || 'unknown';
                 snapshot.recordedUrl = window.location.href;
+                snapshot.reason = reason; // Track why snapshot was taken
                 this.domSnapshots.push(snapshot);
-                console.log('DOM snapshot captured, total:', this.domSnapshots.length);
+                
+                console.log('DOM snapshot captured:', {
+                  reason: reason,
+                  total: this.domSnapshots.length,
+                  elements: snapshot.counts.total,
+                  interactive: snapshot.counts.interactive
+                });
+                
+                this.lastSnapshotTime = now;
                 
                 // Keep only last 100 snapshots in memory
                 if (this.domSnapshots.length > 100) {
                   this.domSnapshots.shift();
                 }
               }
-              
-              console.log('Comprehensive snapshot captured:', {
-                elements: snapshot.counts.total,
-                interactive: snapshot.counts.interactive,
-                timestamp: snapshot.timestamp
-              });
-            }, 500); // Aggressive capture every 500ms
+            };
+            
+            // Capture snapshots on significant events
+            ['click', 'submit', 'load', 'DOMContentLoaded', 'popstate', 'hashchange'].forEach(eventType => {
+              window.addEventListener(eventType, () => this.captureSnapshotIfNeeded(eventType), true);
+            });
+            
+            // Capture after form changes
+            document.addEventListener('change', (e) => {
+              if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) {
+                this.captureSnapshotIfNeeded('form-change');
+              }
+            }, true);
+            
+            // Capture after navigation
+            const originalPushState = history.pushState;
+            history.pushState = function() {
+              originalPushState.apply(history, arguments);
+              window.__comprehensiveRecording.captureSnapshotIfNeeded('navigation');
+            };
+            
+            // Fallback: Capture every 5 seconds during idle
+            setInterval(() => {
+              if (Date.now() - this.lastSnapshotTime >= 5000) {
+                this.captureSnapshotIfNeeded('periodic-idle');
+              }
+            }, 5000);
           }
         };
         
