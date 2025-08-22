@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { WorkflowAnalyzer } = require('./main/workflow-analyzer.js');
 
 // Import the Intent Spec generator functions
 const { generateIntentSpecFromRichRecording } = require('./main/intent-spec-generator.js');
@@ -62,19 +63,43 @@ function findMostRecentRecording() {
 // Extract variables from recording data
 function extractVariables(recordingData) {
   const variables = new Map();
+  const fieldLastValue = {}; // Track final value for each field
   
+  // First pass: collect the final value for each field
   if (recordingData.events) {
     recordingData.events.forEach(event => {
       if (event.type === 'action' && event.data) {
         const action = event.data;
         
         // Look for input actions with values
-        if (action.action === 'input' && action.value) {
+        if (action.action === 'input' && action.value && action.selector) {
+          // Store the last (most complete) value for each field
+          fieldLastValue[action.selector] = {
+            value: action.value,
+            element: action.elementInfo || action.element || {},
+            url: action.url,
+            timestamp: action.timestamp
+          };
+        }
+      }
+    });
+  }
+  
+  // Second pass: process only the final values
+  Object.keys(fieldLastValue).forEach(selector => {
+    const fieldData = fieldLastValue[selector];
+    const action = {
+      value: fieldData.value,
+      selector: selector,
+      url: fieldData.url
+    };
+    const elementInfo = fieldData.element;
+    
+    if (action.value) {
           let varName = 'VALUE';
           let varValue = action.value;
           
-          // Get element info for context
-          const elementInfo = action.elementInfo || action.element || {};
+          // elementInfo already extracted above
           const fieldType = elementInfo.type || '';
           const fieldName = (elementInfo.name || elementInfo.id || '').toLowerCase();
           const placeholder = (elementInfo.placeholder || '').toLowerCase();
@@ -101,6 +126,32 @@ function extractVariables(recordingData) {
             varName = 'AMOUNT';
           }
           
+          // Context-aware detection for inventory/product pages
+          const url = action.url || '';
+          const isInventoryPage = url.includes('inventory') || url.includes('product') || url.includes('item');
+          if (isInventoryPage && varName === 'VALUE') {
+            // Try to detect business fields on inventory pages
+            if (fieldName.includes('name') || placeholder.includes('name')) {
+              varName = 'ITEM_NAME';
+            } else if (fieldName.includes('sell') || placeholder.includes('selling')) {
+              varName = 'SELLING_PRICE';
+            } else if (fieldName.includes('cost') || placeholder.includes('cost')) {
+              varName = 'COST_PRICE';
+            } else if (fieldName.includes('sku')) {
+              varName = 'SKU';
+            } else if (/^\d+(\.\d+)?$/.test(action.value)) {
+              // Numeric value - likely a price
+              if (!variables.has('SELLING_PRICE')) {
+                varName = 'SELLING_PRICE';
+              } else if (!variables.has('COST_PRICE')) {
+                varName = 'COST_PRICE';
+              }
+            } else if (action.value.length > 3 && !variables.has('ITEM_NAME')) {
+              // Text value - likely item name
+              varName = 'ITEM_NAME';
+            }
+          }
+          
           // Store variable with its value and context
           if (!variables.has(varName)) {
             variables.set(varName, {
@@ -115,9 +166,7 @@ function extractVariables(recordingData) {
             variables.get(varName).count++;
           }
         }
-      }
-    });
-  }
+  });
   
   return variables;
 }
@@ -178,6 +227,26 @@ async function testIntentSpecGeneration() {
     log(`   Name: ${intentSpec.name}`, colors.gray);
     log(`   URL: ${intentSpec.url || 'Not detected'}`, colors.gray);
     log(`   Steps: ${intentSpec.steps.length}`, colors.gray);
+    
+    // Analyze workflow
+    logSection('WORKFLOW ANALYSIS');
+    
+    const analyzer = new WorkflowAnalyzer();
+    const workflowAnalysis = analyzer.analyzeWorkflow(recordingData.events || []);
+    
+    log(`\n📊 Workflow Type: ${workflowAnalysis.type}`, colors.cyan);
+    log(`🎯 Business Context: ${workflowAnalysis.context.domain}`, colors.cyan);
+    log(`📝 Process Type: ${workflowAnalysis.context.processType}`, colors.cyan);
+    if (workflowAnalysis.context.isMultiStep) {
+      log(`⚡ Multi-step Process Detected`, colors.yellow);
+    }
+    
+    if (Object.keys(workflowAnalysis.suggestedVariables).length > 0) {
+      log(`\n💡 Workflow-based Variable Suggestions:`, colors.green);
+      Object.entries(workflowAnalysis.suggestedVariables).forEach(([key, value]) => {
+        log(`   ${key} → ${value}`, colors.gray);
+      });
+    }
     
     // Extract and analyze variables
     logSection('VARIABLE DETECTION');

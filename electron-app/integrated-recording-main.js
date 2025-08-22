@@ -534,6 +534,7 @@ ipcMain.handle('stop-enhanced-recording', async () => {
         // Import the generator functions (use .js extension for compiled files)
         const { generateIntentSpecFromRichRecording } = require('./main/intent-spec-generator.js');
         const { generateEnhancedIntentSpecPrompt, generateVariableExtractionPrompt } = require('./main/enhanced-intent-spec-prompt.js');
+        const { WorkflowAnalyzer } = require('./main/workflow-analyzer.js');
         
         // Send progress update
         if (mainWindow && !mainWindow.isDestroyed()) {
@@ -552,6 +553,16 @@ ipcMain.handle('stop-enhanced-recording', async () => {
           keys: Object.keys(recordingData)
         });
         
+        // Analyze the workflow to understand context
+        const analyzer = new WorkflowAnalyzer();
+        const workflowAnalysis = analyzer.analyzeWorkflow(recordingData.events || []);
+        
+        console.log('🧠 Workflow Analysis:', {
+          type: workflowAnalysis.type,
+          context: workflowAnalysis.context,
+          suggestedVariables: workflowAnalysis.suggestedVariables
+        });
+        
         // Generate the Intent Spec
         const intentSpec = generateIntentSpecFromRichRecording(recordingData);
         
@@ -563,6 +574,7 @@ ipcMain.handle('stop-enhanced-recording', async () => {
         const extractedVariables = [];
         const seenVariables = new Set();
         const fieldLastValue = {}; // Track final value for each field
+        const workflowSuggestions = workflowAnalysis.suggestedVariables || {};
         
         // First pass: collect the final value for each field
         if (recordingData.events) {
@@ -610,8 +622,19 @@ ipcMain.handle('stop-enhanced-recording', async () => {
                 const url = action.url || '';
                 const isInventoryPage = url.includes('inventory') || url.includes('product') || url.includes('item');
                 
-                // Generic field detection based on context
-                if (fieldType === 'password' || fieldName.includes('password') || placeholder.includes('password')) {
+                // First check workflow suggestions for intelligent naming
+                let workflowSuggestion = null;
+                for (const [key, value] of Object.entries(workflowSuggestions)) {
+                  if (fieldName.includes(key) || placeholder.includes(key) || fieldText.includes(key)) {
+                    workflowSuggestion = value;
+                    break;
+                  }
+                }
+                
+                if (workflowSuggestion) {
+                  console.log(`    📊 Using workflow suggestion: ${workflowSuggestion} for field ${selector}`);
+                  varName = workflowSuggestion;
+                } else if (fieldType === 'password' || fieldName.includes('password') || placeholder.includes('password')) {
                   varName = 'PASSWORD';
                 } else if (fieldType === 'email' || fieldName.includes('email') || placeholder.includes('email')) {
                   varName = 'EMAIL_ADDRESS';
@@ -673,8 +696,16 @@ ipcMain.handle('stop-enhanced-recording', async () => {
               }
         });
         
-        // Update Intent Spec with extracted variables
+        // Update Intent Spec with extracted variables and workflow context
         intentSpec.params = extractedVariables.length > 0 ? extractedVariables : ['USERNAME', 'PASSWORD'];
+        
+        // Add workflow metadata to Intent Spec
+        intentSpec.workflow = {
+          type: workflowAnalysis.type,
+          context: workflowAnalysis.context.domain,
+          processType: workflowAnalysis.context.processType,
+          isMultiStep: workflowAnalysis.context.isMultiStep
+        };
         
         // Send progress update
         if (mainWindow && !mainWindow.isDestroyed()) {
