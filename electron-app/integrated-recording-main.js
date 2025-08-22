@@ -535,6 +535,7 @@ ipcMain.handle('stop-enhanced-recording', async () => {
         const { generateIntentSpecFromRichRecording } = require('./main/intent-spec-generator.js');
         const { generateEnhancedIntentSpecPrompt, generateVariableExtractionPrompt } = require('./main/enhanced-intent-spec-prompt.js');
         const { WorkflowAnalyzer } = require('./main/workflow-analyzer.js');
+        const { analyzeRecording } = require('./dist/main/llm.js');
         
         // Send progress update
         if (mainWindow && !mainWindow.isDestroyed()) {
@@ -563,8 +564,52 @@ ipcMain.handle('stop-enhanced-recording', async () => {
           suggestedVariables: workflowAnalysis.suggestedVariables
         });
         
-        // Generate the Intent Spec
-        const intentSpec = generateIntentSpecFromRichRecording(recordingData);
+        // Generate the Intent Spec using AI or fallback to hardcoded
+        let intentSpec;
+        const useAI = process.env.USE_AI_ANALYSIS !== 'false'; // Default to true unless explicitly disabled
+        
+        if (useAI) {
+          try {
+            console.log('🤖 Using AI to analyze recording and generate Intent Spec...');
+            
+            // Send progress update
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              mainWindow.webContents.send('analysis-progress', {
+                status: 'analyzing',
+                message: 'AI is analyzing your recording to understand the workflow...'
+              });
+            }
+            
+            // Call Claude to analyze the recording
+            intentSpec = await analyzeRecording(recordingData);
+            console.log('✅ AI analysis complete');
+            
+            // Enhance with workflow metadata
+            intentSpec.workflow = {
+              type: workflowAnalysis.type,
+              context: workflowAnalysis.context.domain,
+              processType: workflowAnalysis.context.processType,
+              isMultiStep: workflowAnalysis.context.isMultiStep
+            };
+            
+          } catch (aiError) {
+            console.error('❌ AI analysis failed, falling back to rule-based generation:', aiError.message);
+            
+            // Send progress update about fallback
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              mainWindow.webContents.send('analysis-progress', {
+                status: 'processing',
+                message: 'Using rule-based analysis as fallback...'
+              });
+            }
+            
+            // Fallback to hardcoded generation
+            intentSpec = generateIntentSpecFromRichRecording(recordingData);
+          }
+        } else {
+          console.log('📋 Using rule-based Intent Spec generation (AI disabled)');
+          intentSpec = generateIntentSpecFromRichRecording(recordingData);
+        }
         
         // Extract variables with UI-compatible names
         const serializedRecording = JSON.stringify(recordingData, null, 2);
@@ -696,16 +741,23 @@ ipcMain.handle('stop-enhanced-recording', async () => {
               }
         });
         
-        // Update Intent Spec with extracted variables and workflow context
-        intentSpec.params = extractedVariables.length > 0 ? extractedVariables : ['USERNAME', 'PASSWORD'];
+        // Update Intent Spec with variables (prefer AI-detected, fallback to extracted)
+        if (!intentSpec.params || intentSpec.params.length === 0) {
+          // Only override if AI didn't provide variables
+          intentSpec.params = extractedVariables.length > 0 ? extractedVariables : ['USERNAME', 'PASSWORD'];
+        } else {
+          console.log('📝 Using AI-detected variables:', intentSpec.params);
+        }
         
-        // Add workflow metadata to Intent Spec
-        intentSpec.workflow = {
-          type: workflowAnalysis.type,
-          context: workflowAnalysis.context.domain,
-          processType: workflowAnalysis.context.processType,
-          isMultiStep: workflowAnalysis.context.isMultiStep
-        };
+        // Add workflow metadata if not already present
+        if (!intentSpec.workflow) {
+          intentSpec.workflow = {
+            type: workflowAnalysis.type,
+            context: workflowAnalysis.context.domain,
+            processType: workflowAnalysis.context.processType,
+            isMultiStep: workflowAnalysis.context.isMultiStep
+          };
+        }
         
         // Send progress update
         if (mainWindow && !mainWindow.isDestroyed()) {

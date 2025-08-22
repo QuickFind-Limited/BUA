@@ -268,12 +268,9 @@ export async function analyzeRecording(recordingData: any): Promise<IntentSpec> 
       let result = '';
       
       // Use Claude Code SDK with Opus 4.1 (default)
-      // Note: maxTurns of 2 allows for system message + assistant response
+      // Don't set maxTurns - let Opus 4.1 complete its reasoning
       for await (const message of query({
-        prompt: promptText,
-        options: {
-          maxTurns: 2
-        }
+        prompt: promptText
       })) {
         if (message.type === 'result' && message.subtype === 'success') {
           result = message.result;
