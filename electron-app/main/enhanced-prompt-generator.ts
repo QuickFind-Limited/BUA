@@ -57,10 +57,10 @@ Viewport: ${JSON.stringify(recording.viewport || { width: 1920, height: 1080 })}
 User Agent: ${recording.userAgent || 'Not captured'}
 
 RECORDED EVENTS/ACTIONS (${recording.events?.length || recording.actions?.length || 0}):
-${JSON.stringify(recording.events || recording.actions || [], null, 2)}
+${summarizeActions(recording.events || recording.actions || [])}
 
 DOM SNAPSHOTS (${recording.domSnapshots?.length || 0}):
-${JSON.stringify(recording.domSnapshots?.slice(0, 3) || [], null, 2)}
+${summarizeDomSnapshots(recording.domSnapshots || [])}
 
 NETWORK INSIGHTS:
 ${networkPatterns}
@@ -371,4 +371,111 @@ export function generatePerformanceExpectations(recording: EnhancedRecordingData
     criticalPath: criticalSteps,
     maxAcceptableDuration: recording.duration * 2 // 2x buffer
   };
+}
+
+/**
+ * Summarize actions to avoid huge prompts
+ */
+function summarizeActions(actions: any[]): string {
+  if (!actions || !actions.length) return 'No actions captured';
+  
+  // Group actions by type
+  const actionGroups: Record<string, any[]> = {};
+  const inputFields: Record<string, string> = {};
+  
+  actions.forEach(action => {
+    const type = action.type || 'unknown';
+    if (!actionGroups[type]) actionGroups[type] = [];
+    
+    // For input actions, track the field and value
+    if (type === 'input' && action.target) {
+      const fieldId = action.target.id || action.target.name || action.target.placeholder || 'field';
+      inputFields[fieldId] = action.value || action.target.value || '';
+    } else if (type === 'click' || type === 'submit') {
+      // Keep important actions
+      actionGroups[type].push({
+        selector: action.target?.selector || action.selector,
+        text: action.target?.text,
+        url: action.url
+      });
+    }
+  });
+  
+  let summary = `Action Summary (${actions.length} total):\n`;
+  
+  // Show input fields
+  if (Object.keys(inputFields).length > 0) {
+    summary += '\nInput Fields Detected:\n';
+    Object.entries(inputFields).forEach(([field, value]) => {
+      summary += `  - ${field}: "${value}"\n`;
+    });
+  }
+  
+  // Show click/submit actions
+  if (actionGroups.click) {
+    summary += `\nClicks (${actionGroups.click.length}):\n`;
+    actionGroups.click.slice(0, 5).forEach((a: any) => {
+      summary += `  - ${a.selector || 'unknown'}\n`;
+    });
+  }
+  
+  // Show action type counts
+  summary += '\nAction Type Counts:\n';
+  Object.entries(actionGroups).forEach(([type, items]) => {
+    summary += `  - ${type}: ${items.length}\n`;
+  });
+  
+  return summary;
+}
+
+/**
+ * Summarize DOM snapshots to avoid huge prompts
+ */
+function summarizeDomSnapshots(snapshots: any[]): string {
+  if (!snapshots || !snapshots.length) return 'No DOM snapshots captured';
+  
+  let summary = `DOM Snapshot Summary (${snapshots.length} total):\n`;
+  
+  // Analyze first, middle, and last snapshots
+  const keySnapshots = [
+    snapshots[0],
+    snapshots[Math.floor(snapshots.length / 2)],
+    snapshots[snapshots.length - 1]
+  ].filter(Boolean);
+  
+  keySnapshots.forEach((snapshot, i) => {
+    if (!snapshot) return;
+    
+    const label = i === 0 ? 'First' : i === 1 ? 'Middle' : 'Last';
+    summary += `\n${label} Snapshot:\n`;
+    summary += `  - URL: ${snapshot.url || 'unknown'}\n`;
+    summary += `  - Title: ${snapshot.title || 'unknown'}\n`;
+    
+    // Find form elements
+    if (snapshot.interactables) {
+      const inputs = snapshot.interactables.filter((el: any) => 
+        el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'
+      );
+      const buttons = snapshot.interactables.filter((el: any) => 
+        el.tagName === 'BUTTON'
+      );
+      
+      if (inputs.length > 0) {
+        summary += `  - Input fields: ${inputs.length}\n`;
+        inputs.slice(0, 3).forEach((input: any) => {
+          summary += `    • ${input.id || input.name || input.placeholder || 'unnamed'}\n`;
+        });
+      }
+      
+      if (buttons.length > 0) {
+        summary += `  - Buttons: ${buttons.length}\n`;
+      }
+    }
+    
+    if (snapshot.forms && snapshot.forms.length > 0) {
+      summary += `  - Forms detected: ${snapshot.forms.length}\n`;
+    }
+  });
+  
+  return summary;
 }

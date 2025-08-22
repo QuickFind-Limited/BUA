@@ -1,0 +1,4224 @@
+{
+  "sessionId": "comprehensive-1755859714471",
+  "startTime": 1755859714471,
+  "endTime": 1755859778590,
+  "duration": 64119,
+  "url": "https://www.google.com/?zx=1755859683190&no_sw_cr=1",
+  "title": "Google",
+  "actions": [
+    {
+      "type": "blur",
+      "timestamp": 1755859744285,
+      "target": {
+        "tagName": "DIV",
+        "id": "skip-to-element",
+        "className": "no-outline",
+        "selector": "div#skip-to-element"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/home/gettingstarted"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859744288,
+      "target": {
+        "tagName": "BUTTON",
+        "id": "e25e2ab6-2925-4b85-9ec0-c771f7d1d36a",
+        "className": "accordion-button ",
+        "selector": "button#e25e2ab6-2925-4b85-9ec0-c771f7d1d36a"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/home/gettingstarted"
+    },
+    {
+      "type": "click",
+      "timestamp": 1755859744376,
+      "target": {
+        "tagName": "SPAN",
+        "id": "c0fea9da-02ac-434f-8ff4-c7ca2e1b9074",
+        "className": "nav-name translatex-8 nav-text ",
+        "selector": "span#c0fea9da-02ac-434f-8ff4-c7ca2e1b9074"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/home/gettingstarted"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859745118,
+      "target": {
+        "tagName": "BUTTON",
+        "id": "e25e2ab6-2925-4b85-9ec0-c771f7d1d36a",
+        "className": "accordion-button ",
+        "selector": "button#e25e2ab6-2925-4b85-9ec0-c771f7d1d36a"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/home/gettingstarted"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859745120,
+      "target": {
+        "tagName": "A",
+        "id": "cd11e819-9b85-4b87-afa0-8dec7fdd4887",
+        "className": "ember-view dropdown-item nav-link ",
+        "selector": "a#cd11e819-9b85-4b87-afa0-8dec7fdd4887"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/home/gettingstarted"
+    },
+    {
+      "type": "click",
+      "timestamp": 1755859745217,
+      "target": {
+        "tagName": "SPAN",
+        "id": "e5947552-c2dc-4cda-ab58-5d170b71d48f",
+        "className": "sub-tab-name white-space-normal translatex-8 nav-text has-element-right",
+        "selector": "span#e5947552-c2dc-4cda-ab58-5d170b71d48f"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/home/gettingstarted"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859745381,
+      "target": {
+        "tagName": "A",
+        "id": "cd11e819-9b85-4b87-afa0-8dec7fdd4887",
+        "className": "ember-view ember-transitioning-in dropdown-item nav-link ",
+        "selector": "a#cd11e819-9b85-4b87-afa0-8dec7fdd4887"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859745382,
+      "target": {
+        "tagName": "DIV",
+        "id": "skip-to-element",
+        "className": "no-outline",
+        "selector": "div#skip-to-element"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859749520,
+      "target": {
+        "tagName": "DIV",
+        "id": "skip-to-element",
+        "className": "no-outline",
+        "selector": "div#skip-to-element"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859749522,
+      "target": {
+        "tagName": "BUTTON",
+        "id": "",
+        "className": "btn btn-primary d-flex align-items-center ",
+        "selector": "span#d5010890-15d7-40dc-902b-cbd44bdf3803 > button"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D"
+    },
+    {
+      "type": "click",
+      "timestamp": 1755859749608,
+      "target": {
+        "tagName": "svg",
+        "id": "Layer_1",
+        "className": {},
+        "selector": "svg#Layer_1"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859749626,
+      "target": {
+        "tagName": "BUTTON",
+        "id": "",
+        "className": "btn btn-primary d-flex align-items-center ",
+        "selector": "span#d5010890-15d7-40dc-902b-cbd44bdf3803 > button"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859749826,
+      "target": {
+        "tagName": "DIV",
+        "id": "skip-to-element",
+        "className": "no-outline",
+        "selector": "div#skip-to-element"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859750005,
+      "target": {
+        "tagName": "DIV",
+        "id": "skip-to-element",
+        "className": "no-outline",
+        "selector": "div#skip-to-element"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859750006,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859751369,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859751615,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859751805,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859751886,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859751972,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859752660,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859753052,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859753252,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859753338,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859753583,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859755803,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859756319,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859756750,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859757460,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859757770,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859758208,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859758777,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859758889,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "change",
+      "timestamp": 1755859760565,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859760567,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5c9a0ebb",
+        "className": "form-control ember-text-field ember-view",
+        "selector": "input#a5c9a0ebb"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859760569,
+      "target": {
+        "tagName": "INPUT",
+        "id": "ember423",
+        "className": "ember-text-field form-control ac-search-txt ember-view",
+        "selector": "input#ember423"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "click",
+      "timestamp": 1755859760644,
+      "target": {
+        "tagName": "INPUT",
+        "id": "ember423",
+        "className": "ember-text-field form-control ac-search-txt ember-view",
+        "selector": "input#ember423"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859761348,
+      "target": {
+        "tagName": "INPUT",
+        "id": "ember423",
+        "className": "ember-text-field form-control ac-search-txt ember-view",
+        "selector": "input#ember423"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859761348,
+      "target": {
+        "tagName": "UL",
+        "id": "ac-listbox",
+        "className": "ac-dropdown-results dropdown-menu left-align-options  ",
+        "selector": "ul#ac-listbox"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "click",
+      "timestamp": 1755859761423,
+      "target": {
+        "tagName": "DIV",
+        "id": "",
+        "className": "over-flow",
+        "selector": "li#acOption_0 > div > div > div > div"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859761437,
+      "target": {
+        "tagName": "UL",
+        "id": "ac-listbox",
+        "className": "ac-dropdown-results dropdown-menu left-align-options  ",
+        "selector": "ul#ac-listbox"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859761449,
+      "target": {
+        "tagName": "INPUT",
+        "id": "ember423",
+        "className": "ember-text-field form-control ac-search-txt ember-view",
+        "selector": "input#ember423"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859763165,
+      "target": {
+        "tagName": "INPUT",
+        "id": "ember423",
+        "className": "ember-text-field form-control ac-search-txt ember-view",
+        "selector": "input#ember423"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859763167,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5791eca7",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a5791eca7"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "click",
+      "timestamp": 1755859763220,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5791eca7",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a5791eca7"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859763833,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5791eca7",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a5791eca7"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859764202,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5791eca7",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a5791eca7"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859764420,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5791eca7",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a5791eca7"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859764856,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5791eca7",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a5791eca7"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "change",
+      "timestamp": 1755859765951,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5791eca7",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a5791eca7"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859765956,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a5791eca7",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a5791eca7"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859765957,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a8c87ee61",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a8c87ee61"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "click",
+      "timestamp": 1755859766085,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a8c87ee61",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a8c87ee61"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859766514,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a8c87ee61",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a8c87ee61"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859767125,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a8c87ee61",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a8c87ee61"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859767297,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a8c87ee61",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a8c87ee61"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "input",
+      "timestamp": 1755859767451,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a8c87ee61",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a8c87ee61"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "change",
+      "timestamp": 1755859769466,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a8c87ee61",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a8c87ee61"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859769471,
+      "target": {
+        "tagName": "INPUT",
+        "id": "a8c87ee61",
+        "className": "ember-text-field text-start ember-view form-control",
+        "selector": "input#a8c87ee61"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859769472,
+      "target": {
+        "tagName": "DIV",
+        "id": "ac-ember452",
+        "className": "ac-box ",
+        "selector": "div#ac-ember452"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "click",
+      "timestamp": 1755859769549,
+      "target": {
+        "tagName": "SPAN",
+        "id": "",
+        "className": "placeholder-text me-0 ac-selected-label",
+        "selector": "div#ac-ember452 > div > span"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859769563,
+      "target": {
+        "tagName": "DIV",
+        "id": "ac-ember452",
+        "className": "ac-box ac-box-open",
+        "selector": "div#ac-ember452"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859769564,
+      "target": {
+        "tagName": "INPUT",
+        "id": "",
+        "className": "ember-text-field form-control",
+        "selector": "div#ember477 > input"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859770613,
+      "target": {
+        "tagName": "INPUT",
+        "id": "",
+        "className": "ember-text-field form-control",
+        "selector": "div#ember477 > input"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859770614,
+      "target": {
+        "tagName": "UL",
+        "id": "acDropdownListBox",
+        "className": "ac-dropdown-results dropdown-menu show grouped-options",
+        "selector": "ul#acDropdownListBox"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "click",
+      "timestamp": 1755859770677,
+      "target": {
+        "tagName": "DIV",
+        "id": "",
+        "className": "",
+        "selector": "li#acOption_0 > div > div > div > div"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859770690,
+      "target": {
+        "tagName": "UL",
+        "id": "acDropdownListBox",
+        "className": "ac-dropdown-results dropdown-menu show grouped-options",
+        "selector": "ul#acDropdownListBox"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859770694,
+      "target": {
+        "tagName": "DIV",
+        "id": "ac-ember452",
+        "className": "ac-box ",
+        "selector": "div#ac-ember452"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859772256,
+      "target": {
+        "tagName": "DIV",
+        "id": "ac-ember452",
+        "className": "ac-box ",
+        "selector": "div#ac-ember452"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859772257,
+      "target": {
+        "tagName": "DIV",
+        "id": "ac-ember453",
+        "className": "ac-box ",
+        "selector": "div#ac-ember453"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "click",
+      "timestamp": 1755859772356,
+      "target": {
+        "tagName": "SPAN",
+        "id": "",
+        "className": "placeholder-text me-0 ac-selected-label",
+        "selector": "div#ac-ember453 > div > span"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859772366,
+      "target": {
+        "tagName": "DIV",
+        "id": "ac-ember453",
+        "className": "ac-box ac-box-open",
+        "selector": "div#ac-ember453"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859772368,
+      "target": {
+        "tagName": "INPUT",
+        "id": "",
+        "className": "ember-text-field form-control",
+        "selector": "div#ember480 > input"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859773513,
+      "target": {
+        "tagName": "INPUT",
+        "id": "",
+        "className": "ember-text-field form-control",
+        "selector": "div#ember480 > input"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859773514,
+      "target": {
+        "tagName": "UL",
+        "id": "acDropdownListBox",
+        "className": "ac-dropdown-results dropdown-menu show left-align-options",
+        "selector": "ul#acDropdownListBox"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "click",
+      "timestamp": 1755859773598,
+      "target": {
+        "tagName": "DIV",
+        "id": "",
+        "className": "option",
+        "selector": "li#acOption_1 > div > div > div"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859773610,
+      "target": {
+        "tagName": "UL",
+        "id": "acDropdownListBox",
+        "className": "ac-dropdown-results dropdown-menu show left-align-options",
+        "selector": "ul#acDropdownListBox"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859773618,
+      "target": {
+        "tagName": "DIV",
+        "id": "ac-ember453",
+        "className": "ac-box ",
+        "selector": "div#ac-ember453"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859775514,
+      "target": {
+        "tagName": "DIV",
+        "id": "ac-ember453",
+        "className": "ac-box ",
+        "selector": "div#ac-ember453"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859775515,
+      "target": {
+        "tagName": "BUTTON",
+        "id": "ember461",
+        "className": "btn btn-primary ember-view",
+        "selector": "button#ember461"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "click",
+      "timestamp": 1755859775579,
+      "target": {
+        "tagName": "BUTTON",
+        "id": "ember461",
+        "className": "btn btn-primary ember-view",
+        "selector": "button#ember461"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859775587,
+      "target": {
+        "tagName": "BUTTON",
+        "id": "ember461",
+        "className": "btn btn-primary ember-view",
+        "selector": "button#ember461"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new"
+    },
+    {
+      "type": "focus",
+      "timestamp": 1755859776220,
+      "target": {
+        "tagName": "DIV",
+        "id": "skip-to-element",
+        "className": "no-outline",
+        "selector": "div#skip-to-element"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/6797511000000294014?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D"
+    },
+    {
+      "type": "blur",
+      "timestamp": 1755859778480,
+      "target": {
+        "tagName": "DIV",
+        "id": "skip-to-element",
+        "className": "no-outline",
+        "selector": "div#skip-to-element"
+      },
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/6797511000000294014?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D"
+    }
+  ],
+  "domSnapshots": [
+    {
+      "timestamp": 1755859742157,
+      "url": "https://inventory.zoho.com/app/893870319#/home/gettingstarted",
+      "title": "Zoho Inventory",
+      "interactables": [
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle   btn",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "Navigate To (Alt+0) ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle...btn",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-d05c3c70-aa8a-4bb5-aee5-e2a150795129\"]/button[1]",
+            "cssPath": "div#dd-d05c3c70-aa8a-4bb5-aee5-e2a150795129 > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 8,
+            "width": 1,
+            "height": 1,
+            "top": 8,
+            "right": 9,
+            "bottom": 9,
+            "left": 8
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "fixed"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": " ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Show dropdown menu\"]",
+            "role": null,
+            "xpath": "//*[@id=\"dd-d2ea548a-cb15-43cf-83a6-ca5c81b70da6\"]/button[1]",
+            "cssPath": "div#dd-d2ea548a-cb15-43cf-83a6-ca5c81b70da6 > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 239,
+            "y": 13.59375,
+            "width": 16,
+            "height": 20.796875,
+            "top": 13.59375,
+            "right": 255,
+            "bottom": 34.390625,
+            "left": 239
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle   input-group-text",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": " ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle...input-group-text",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Show dropdown menu\"]",
+            "role": null,
+            "xpath": "//*[@id=\"dd-f2fe5377-abef-4ea3-a2eb-ca7d23e9d626\"]/button[1]",
+            "cssPath": "div#dd-f2fe5377-abef-4ea3-a2eb-ca7d23e9d626 > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 280,
+            "y": 6.984375,
+            "width": 42,
+            "height": 34,
+            "top": 6.984375,
+            "right": 322,
+            "bottom": 40.984375,
+            "left": 280
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "INPUT",
+          "id": "app-quick-search-field",
+          "className": "ember-text-field ember-view form-control",
+          "name": "",
+          "type": "text",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": "#app-quick-search-field",
+            "className": ".ember-text-field.ember-view.form-control",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Search in Customers ( / )\"]",
+            "role": null,
+            "xpath": "//*[@id=\"app-quick-search-field\"]",
+            "cssPath": "input#app-quick-search-field"
+          },
+          "visible": true,
+          "rect": {
+            "x": 323,
+            "y": 6.984375,
+            "width": 255,
+            "height": 34,
+            "top": 6.984375,
+            "right": 578,
+            "bottom": 40.984375,
+            "left": 323
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  btn p-0 no-box-shadow",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": " ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..btn.p-0.no-box-shadow",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Show dropdown menu\"]",
+            "role": null,
+            "xpath": "//*[@id=\"dd-e757d8bb-e5ab-4104-98c9-fc8a0bed8e1e\"]/button[1]",
+            "cssPath": "div#dd-e757d8bb-e5ab-4104-98c9-fc8a0bed8e1e > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1337,
+            "y": 7,
+            "width": 34,
+            "height": 34,
+            "top": 7,
+            "right": 1371,
+            "bottom": 41,
+            "left": 1337
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  nav-item align-items-center d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Items   ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..nav-item.align-items-center.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-d9ec3c37-1a3f-4c62-8535-cc0c775aae65\"]/button[1]",
+            "cssPath": "div#dd-d9ec3c37-1a3f-4c62-8535-cc0c775aae65 > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8.5,
+            "y": 99,
+            "width": 204,
+            "height": 30,
+            "top": 99,
+            "right": 212.5,
+            "bottom": 129,
+            "left": 8.5
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "c7d74d70-5ade-4f80-8101-f2e834cd0c00",
+          "className": "accordion-button ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Items   ",
+          "selectors": {
+            "id": "#c7d74d70-5ade-4f80-8101-f2e834cd0c00",
+            "className": ".accordion-button.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"c7d74d70-5ade-4f80-8101-f2e834cd0c00\"]",
+            "cssPath": "button#c7d74d70-5ade-4f80-8101-f2e834cd0c00"
+          },
+          "visible": true,
+          "rect": {
+            "x": 10.5,
+            "y": 99,
+            "width": 200,
+            "height": 30,
+            "top": 99,
+            "right": 210.5,
+            "bottom": 129,
+            "left": 10.5
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "H3",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  nav-item align-items-center d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Inventory   ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..nav-item.align-items-center.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-c3a9fb29-9327-4c66-b79a-93ee51c3a8a4\"]/button[1]",
+            "cssPath": "div#dd-c3a9fb29-9327-4c66-b79a-93ee51c3a8a4 > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8.5,
+            "y": 136,
+            "width": 204,
+            "height": 30,
+            "top": 136,
+            "right": 212.5,
+            "bottom": 166,
+            "left": 8.5
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "c280c9f1-2289-4f0f-823a-ac94749f0f12",
+          "className": "accordion-button ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Inventory   ",
+          "selectors": {
+            "id": "#c280c9f1-2289-4f0f-823a-ac94749f0f12",
+            "className": ".accordion-button.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"c280c9f1-2289-4f0f-823a-ac94749f0f12\"]",
+            "cssPath": "button#c280c9f1-2289-4f0f-823a-ac94749f0f12"
+          },
+          "visible": true,
+          "rect": {
+            "x": 10.5,
+            "y": 136,
+            "width": 200,
+            "height": 30,
+            "top": 136,
+            "right": 210.5,
+            "bottom": 166,
+            "left": 10.5
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "H3",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "icon-button add-new tab-element-right",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": null,
+            "className": ".icon-button.add-new.tab-element-right",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"ee6b542a-940a-403b-9c39-9ea6e6083c07\"]/li[3]/button[1]",
+            "cssPath": "ul#ee6b542a-940a-403b-9c39-9ea6e6083c07 > li:nth-of-type(3) > button"
+          },
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "0",
+            "zIndex": "auto",
+            "position": "absolute"
+          },
+          "parentTag": "LI",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": " | "
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  nav-item align-items-center d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Sales   ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..nav-item.align-items-center.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-e4f479af-e865-4a1d-99da-3c36e24a5420\"]/button[1]",
+            "cssPath": "div#dd-e4f479af-e865-4a1d-99da-3c36e24a5420 > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8.5,
+            "y": 173,
+            "width": 204,
+            "height": 30,
+            "top": 173,
+            "right": 212.5,
+            "bottom": 203,
+            "left": 8.5
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "ceb3fd9b-4a78-48f9-b3b7-7aeb8247f550",
+          "className": "accordion-button ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Sales   ",
+          "selectors": {
+            "id": "#ceb3fd9b-4a78-48f9-b3b7-7aeb8247f550",
+            "className": ".accordion-button.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"ceb3fd9b-4a78-48f9-b3b7-7aeb8247f550\"]",
+            "cssPath": "button#ceb3fd9b-4a78-48f9-b3b7-7aeb8247f550"
+          },
+          "visible": true,
+          "rect": {
+            "x": 10.5,
+            "y": 173,
+            "width": 200,
+            "height": 30,
+            "top": 173,
+            "right": 210.5,
+            "bottom": 203,
+            "left": 10.5
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "H3",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "icon-button add-new tab-element-right",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": null,
+            "className": ".icon-button.add-new.tab-element-right",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"e877d06f-149e-448d-b7b4-25c64e4f5f85\"]/li[3]/button[1]",
+            "cssPath": "ul#e877d06f-149e-448d-b7b4-25c64e4f5f85 > li:nth-of-type(3) > button"
+          },
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "0",
+            "zIndex": "auto",
+            "position": "absolute"
+          },
+          "parentTag": "LI",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": " | "
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  nav-item align-items-center d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Purchases   ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..nav-item.align-items-center.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-d3b942e8-74e5-4d07-af90-3227db840aa7\"]/button[1]",
+            "cssPath": "div#dd-d3b942e8-74e5-4d07-af90-3227db840aa7 > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8.5,
+            "y": 210,
+            "width": 204,
+            "height": 30,
+            "top": 210,
+            "right": 212.5,
+            "bottom": 240,
+            "left": 8.5
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "d7fe4829-8729-4ea4-bc5a-e3fb51e9975c",
+          "className": "accordion-button ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Purchases   ",
+          "selectors": {
+            "id": "#d7fe4829-8729-4ea4-bc5a-e3fb51e9975c",
+            "className": ".accordion-button.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"d7fe4829-8729-4ea4-bc5a-e3fb51e9975c\"]",
+            "cssPath": "button#d7fe4829-8729-4ea4-bc5a-e3fb51e9975c"
+          },
+          "visible": true,
+          "rect": {
+            "x": 10.5,
+            "y": 210,
+            "width": 200,
+            "height": 30,
+            "top": 210,
+            "right": 210.5,
+            "bottom": 240,
+            "left": 10.5
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "H3",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "badge badge-lhs-webinar w-100 text-uppercase rounded-pill justify-content-center text-dark-gray",
+          "name": "",
+          "type": "submit",
+          "value": "",
+          "text": " Live Guided Onboarding",
+          "selectors": {
+            "id": null,
+            "className": ".badge.badge-lhs-webinar.w-100.text-uppercase.rounded-pill.justify-content-center.text-dark-gray",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"main-nav-tab\"]/ul[1]/li[15]/div[1]/div[1]/button[1]",
+            "cssPath": "nav#main-nav-tab > ul > li:nth-of-type(15) > div > div > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 11,
+            "y": 554.1875,
+            "width": 198,
+            "height": 31,
+            "top": 554.1875,
+            "right": 209,
+            "bottom": 585.1875,
+            "left": 11
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "icon-button collapse-expand z-index-1 ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": null,
+            "className": ".icon-button.collapse-expand.z-index-1.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Collapse/Expand\"]",
+            "role": null,
+            "xpath": "//*[@id=\"main-nav-tab\"]/button[1]",
+            "cssPath": "nav#main-nav-tab > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 180,
+            "y": 856,
+            "width": 39,
+            "height": 39,
+            "top": 856,
+            "right": 219,
+            "bottom": 895,
+            "left": 180
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "1",
+            "position": "fixed"
+          },
+          "parentTag": "NAV",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": " | "
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "d98325e2-c8d9-4a4b-b037-3515b434c6c0",
+          "className": "popover-trigger cursor-pointer border-end pe-4 helpline-md",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": "#d98325e2-c8d9-4a4b-b037-3515b434c6c0",
+            "className": ".popover-trigger.cursor-pointer.border-end.pe-4.helpline-md",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"d98325e2-c8d9-4a4b-b037-3515b434c6c0\"]",
+            "cssPath": "button#d98325e2-c8d9-4a4b-b037-3515b434c6c0"
+          },
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "styles": {
+            "display": "none",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": " | "
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  btn p-0 no-box-shadow",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": " Quick Create",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..btn.p-0.no-box-shadow",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-f74c02a5-82f0-471a-a168-b45023c77c0f\"]/button[1]",
+            "cssPath": "div#dd-f74c02a5-82f0-471a-a168-b45023c77c0f > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1195.78125,
+            "y": 263.1875,
+            "width": 124.21875,
+            "height": 34.546875,
+            "top": 263.1875,
+            "right": 1320,
+            "bottom": 297.734375,
+            "left": 1195.78125
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "btn btn-small btn-outline-blue d-flex align-items-center",
+          "name": "",
+          "type": "submit",
+          "value": "",
+          "text": " Quick Create",
+          "selectors": {
+            "id": null,
+            "className": ".btn.btn-small.btn-outline-blue.d-flex.align-items-center",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-f74c02a5-82f0-471a-a168-b45023c77c0f\"]/button[1]/button[1]",
+            "cssPath": "div#dd-f74c02a5-82f0-471a-a168-b45023c77c0f > button > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1196.78125,
+            "y": 264.1875,
+            "width": 122.21875,
+            "height": 32.546875,
+            "top": 264.1875,
+            "right": 1319,
+            "bottom": 296.734375,
+            "left": 1196.78125
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "BUTTON",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        }
+      ],
+      "forms": []
+    },
+    {
+      "timestamp": 1755859760682,
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/new",
+      "title": "Add New Item | Zoho Inventory",
+      "interactables": [
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle   btn",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "Navigate To (Alt+0) ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle...btn",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-d05c3c70-aa8a-4bb5-aee5-e2a150795129\"]/button[1]",
+            "cssPath": "div#dd-d05c3c70-aa8a-4bb5-aee5-e2a150795129 > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 8,
+            "width": 1,
+            "height": 1,
+            "top": 8,
+            "right": 9,
+            "bottom": 9,
+            "left": 8
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "fixed"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": " ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Show dropdown menu\"]",
+            "role": null,
+            "xpath": "//*[@id=\"dd-d2ea548a-cb15-43cf-83a6-ca5c81b70da6\"]/button[1]",
+            "cssPath": "div#dd-d2ea548a-cb15-43cf-83a6-ca5c81b70da6 > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 239,
+            "y": 13.59375,
+            "width": 16,
+            "height": 20.796875,
+            "top": 13.59375,
+            "right": 255,
+            "bottom": 34.390625,
+            "left": 239
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle   input-group-text",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": " ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle...input-group-text",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Show dropdown menu\"]",
+            "role": null,
+            "xpath": "//*[@id=\"dd-f2fe5377-abef-4ea3-a2eb-ca7d23e9d626\"]/button[1]",
+            "cssPath": "div#dd-f2fe5377-abef-4ea3-a2eb-ca7d23e9d626 > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 280,
+            "y": 6.984375,
+            "width": 42,
+            "height": 34,
+            "top": 6.984375,
+            "right": 322,
+            "bottom": 40.984375,
+            "left": 280
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "INPUT",
+          "id": "app-quick-search-field",
+          "className": "ember-text-field ember-view form-control",
+          "name": "",
+          "type": "text",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": "#app-quick-search-field",
+            "className": ".ember-text-field.ember-view.form-control",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Search in Items ( / )\"]",
+            "role": null,
+            "xpath": "//*[@id=\"app-quick-search-field\"]",
+            "cssPath": "input#app-quick-search-field"
+          },
+          "visible": true,
+          "rect": {
+            "x": 323,
+            "y": 6.984375,
+            "width": 255,
+            "height": 34,
+            "top": 6.984375,
+            "right": 578,
+            "bottom": 40.984375,
+            "left": 323
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  btn p-0 no-box-shadow",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": " ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..btn.p-0.no-box-shadow",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Show dropdown menu\"]",
+            "role": null,
+            "xpath": "//*[@id=\"dd-e757d8bb-e5ab-4104-98c9-fc8a0bed8e1e\"]/button[1]",
+            "cssPath": "div#dd-e757d8bb-e5ab-4104-98c9-fc8a0bed8e1e > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1337,
+            "y": 7,
+            "width": 34,
+            "height": 34,
+            "top": 7,
+            "right": 1371,
+            "bottom": 41,
+            "left": 1337
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  nav-item align-items-center d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Items   ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..nav-item.align-items-center.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-dfe5ba40-8eea-4a7e-b446-c116d6c2df9c\"]/button[1]",
+            "cssPath": "div#dd-dfe5ba40-8eea-4a7e-b446-c116d6c2df9c > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8.5,
+            "y": 99,
+            "width": 204,
+            "height": 30,
+            "top": 99,
+            "right": 212.5,
+            "bottom": 129,
+            "left": 8.5
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "e25e2ab6-2925-4b85-9ec0-c771f7d1d36a",
+          "className": "accordion-button ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Items   ",
+          "selectors": {
+            "id": "#e25e2ab6-2925-4b85-9ec0-c771f7d1d36a",
+            "className": ".accordion-button.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"e25e2ab6-2925-4b85-9ec0-c771f7d1d36a\"]",
+            "cssPath": "button#e25e2ab6-2925-4b85-9ec0-c771f7d1d36a"
+          },
+          "visible": true,
+          "rect": {
+            "x": 10.5,
+            "y": 99,
+            "width": 200,
+            "height": 30,
+            "top": 99,
+            "right": 210.5,
+            "bottom": 129,
+            "left": 10.5
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "H3",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  nav-item align-items-center d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Inventory   ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..nav-item.align-items-center.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-d0a24a6e-9707-44a0-9ac2-57b7b6b0d21f\"]/button[1]",
+            "cssPath": "div#dd-d0a24a6e-9707-44a0-9ac2-57b7b6b0d21f > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8.5,
+            "y": 204,
+            "width": 204,
+            "height": 30,
+            "top": 204,
+            "right": 212.5,
+            "bottom": 234,
+            "left": 8.5
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "f7a05d8f-1167-4709-886b-712076b419c1",
+          "className": "accordion-button ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Inventory   ",
+          "selectors": {
+            "id": "#f7a05d8f-1167-4709-886b-712076b419c1",
+            "className": ".accordion-button.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"f7a05d8f-1167-4709-886b-712076b419c1\"]",
+            "cssPath": "button#f7a05d8f-1167-4709-886b-712076b419c1"
+          },
+          "visible": true,
+          "rect": {
+            "x": 10.5,
+            "y": 204,
+            "width": 200,
+            "height": 30,
+            "top": 204,
+            "right": 210.5,
+            "bottom": 234,
+            "left": 10.5
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "H3",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "icon-button add-new tab-element-right",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": null,
+            "className": ".icon-button.add-new.tab-element-right",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"e90be478-cbb6-44b1-a29c-e6f44390a4fe\"]/li[3]/button[1]",
+            "cssPath": "ul#e90be478-cbb6-44b1-a29c-e6f44390a4fe > li:nth-of-type(3) > button"
+          },
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "0",
+            "zIndex": "auto",
+            "position": "absolute"
+          },
+          "parentTag": "LI",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": " | "
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  nav-item align-items-center d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Sales   ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..nav-item.align-items-center.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-ed640007-1dfa-41fc-b2de-2241350d0d5b\"]/button[1]",
+            "cssPath": "div#dd-ed640007-1dfa-41fc-b2de-2241350d0d5b > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8.5,
+            "y": 241,
+            "width": 204,
+            "height": 30,
+            "top": 241,
+            "right": 212.5,
+            "bottom": 271,
+            "left": 8.5
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "c8ec834d-4ce7-479a-97ba-b17336045660",
+          "className": "accordion-button ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Sales   ",
+          "selectors": {
+            "id": "#c8ec834d-4ce7-479a-97ba-b17336045660",
+            "className": ".accordion-button.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"c8ec834d-4ce7-479a-97ba-b17336045660\"]",
+            "cssPath": "button#c8ec834d-4ce7-479a-97ba-b17336045660"
+          },
+          "visible": true,
+          "rect": {
+            "x": 10.5,
+            "y": 241,
+            "width": 200,
+            "height": 30,
+            "top": 241,
+            "right": 210.5,
+            "bottom": 271,
+            "left": 10.5
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "H3",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "icon-button add-new tab-element-right",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": null,
+            "className": ".icon-button.add-new.tab-element-right",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"cc0baef2-e3b6-4d75-b25c-4b5e93717ee0\"]/li[3]/button[1]",
+            "cssPath": "ul#cc0baef2-e3b6-4d75-b25c-4b5e93717ee0 > li:nth-of-type(3) > button"
+          },
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "0",
+            "zIndex": "auto",
+            "position": "absolute"
+          },
+          "parentTag": "LI",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": " | "
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  nav-item align-items-center d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Purchases   ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..nav-item.align-items-center.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-c9f5f67d-2ed0-45fd-a88b-662a77add3fc\"]/button[1]",
+            "cssPath": "div#dd-c9f5f67d-2ed0-45fd-a88b-662a77add3fc > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8.5,
+            "y": 278,
+            "width": 204,
+            "height": 30,
+            "top": 278,
+            "right": 212.5,
+            "bottom": 308,
+            "left": 8.5
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "e1652f09-dca0-4654-910e-3d0c4e59d9c3",
+          "className": "accordion-button ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Purchases   ",
+          "selectors": {
+            "id": "#e1652f09-dca0-4654-910e-3d0c4e59d9c3",
+            "className": ".accordion-button.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"e1652f09-dca0-4654-910e-3d0c4e59d9c3\"]",
+            "cssPath": "button#e1652f09-dca0-4654-910e-3d0c4e59d9c3"
+          },
+          "visible": true,
+          "rect": {
+            "x": 10.5,
+            "y": 278,
+            "width": 200,
+            "height": 30,
+            "top": 278,
+            "right": 210.5,
+            "bottom": 308,
+            "left": 10.5
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "H3",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "badge badge-lhs-webinar w-100 text-uppercase rounded-pill justify-content-center text-dark-gray",
+          "name": "",
+          "type": "submit",
+          "value": "",
+          "text": " Live Guided Onboarding",
+          "selectors": {
+            "id": null,
+            "className": ".badge.badge-lhs-webinar.w-100.text-uppercase.rounded-pill.justify-content-center.text-dark-gray",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"main-nav-tab\"]/ul[1]/li[15]/div[1]/div[1]/button[1]",
+            "cssPath": "nav#main-nav-tab > ul > li:nth-of-type(15) > div > div > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 11,
+            "y": 622.1875,
+            "width": 198,
+            "height": 31,
+            "top": 622.1875,
+            "right": 209,
+            "bottom": 653.1875,
+            "left": 11
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "icon-button collapse-expand z-index-1 ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": null,
+            "className": ".icon-button.collapse-expand.z-index-1.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Collapse/Expand\"]",
+            "role": null,
+            "xpath": "//*[@id=\"main-nav-tab\"]/button[1]",
+            "cssPath": "nav#main-nav-tab > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 180,
+            "y": 856,
+            "width": 39,
+            "height": 39,
+            "top": 856,
+            "right": 219,
+            "bottom": 895,
+            "left": 180
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "1",
+            "position": "fixed"
+          },
+          "parentTag": "NAV",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": " | "
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "icon-button close-details close-details-header float-end",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": null,
+            "className": ".icon-button.close-details.close-details-header.float-end",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Back\"]",
+            "role": null,
+            "xpath": "/html/body/div[6]/div[5]/div[3]/div[2]/div[1]/div[1]/button[1]",
+            "cssPath": "html > body > div:nth-of-type(6) > div:nth-of-type(5) > div:nth-of-type(3) > div:nth-of-type(2) > div > div > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1523,
+            "y": 68,
+            "width": 14,
+            "height": 20.796875,
+            "top": 68,
+            "right": 1537,
+            "bottom": 88.796875,
+            "left": 1523
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": " | "
+        },
+        {
+          "tagName": "INPUT",
+          "id": "df82e1f8-e5ec-41db-b69a-f8014f2d0984",
+          "className": "form-check-input",
+          "name": "c27803ed-31fb-4c76-89ab-55cbb9dd509d",
+          "type": "radio",
+          "value": "goods",
+          "text": "",
+          "selectors": {
+            "id": "#df82e1f8-e5ec-41db-b69a-f8014f2d0984",
+            "className": ".form-check-input",
+            "name": "[name=\"c27803ed-31fb-4c76-89ab-55cbb9dd509d\"]",
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": "[role=\"radio\"]",
+            "xpath": "//*[@id=\"df82e1f8-e5ec-41db-b69a-f8014f2d0984\"]",
+            "cssPath": "input#df82e1f8-e5ec-41db-b69a-f8014f2d0984"
+          },
+          "visible": true,
+          "rect": {
+            "x": 393.328125,
+            "y": 144.390625,
+            "width": 14,
+            "height": 14,
+            "top": 144.390625,
+            "right": 407.328125,
+            "bottom": 158.390625,
+            "left": 393.328125
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "relative"
+          },
+          "parentTag": "DIV",
+          "siblings": 2,
+          "inForm": true,
+          "inModal": false,
+          "nearbyText": " | "
+        },
+        {
+          "tagName": "INPUT",
+          "id": "d827a563-c32c-4187-8a14-a78e497a44da",
+          "className": "form-check-input",
+          "name": "c27803ed-31fb-4c76-89ab-55cbb9dd509d",
+          "type": "radio",
+          "value": "service",
+          "text": "",
+          "selectors": {
+            "id": "#d827a563-c32c-4187-8a14-a78e497a44da",
+            "className": ".form-check-input",
+            "name": "[name=\"c27803ed-31fb-4c76-89ab-55cbb9dd509d\"]",
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": "[role=\"radio\"]",
+            "xpath": "//*[@id=\"d827a563-c32c-4187-8a14-a78e497a44da\"]",
+            "cssPath": "input#d827a563-c32c-4187-8a14-a78e497a44da"
+          },
+          "visible": true,
+          "rect": {
+            "x": 468.84375,
+            "y": 144.390625,
+            "width": 14,
+            "height": 14,
+            "top": 144.390625,
+            "right": 482.84375,
+            "bottom": 158.390625,
+            "left": 468.84375
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "relative"
+          },
+          "parentTag": "DIV",
+          "siblings": 2,
+          "inForm": true,
+          "inModal": false,
+          "nearbyText": " | "
+        }
+      ],
+      "forms": [
+        {
+          "id": "item-creation",
+          "name": "",
+          "action": "https://inventory.zoho.com/app/893870319#/inventory/items/new",
+          "method": "get",
+          "fields": [
+            {
+              "name": "",
+              "type": "fieldset",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "c27803ed-31fb-4c76-89ab-55cbb9dd509d",
+              "type": "radio",
+              "value": "filled",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "c27803ed-31fb-4c76-89ab-55cbb9dd509d",
+              "type": "radio",
+              "value": "filled",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "fieldset",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "filled",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "checkbox",
+              "value": "filled",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "file",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "button",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "checkbox",
+              "value": "filled",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "textarea",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "checkbox",
+              "value": "filled",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "textarea",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": true
+            },
+            {
+              "name": "",
+              "type": "checkbox",
+              "value": "filled",
+              "required": false,
+              "disabled": false,
+              "visible": false
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "empty",
+              "required": false,
+              "disabled": false,
+              "visible": false
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "filled",
+              "required": false,
+              "disabled": false,
+              "visible": false
+            },
+            {
+              "name": "",
+              "type": "text",
+              "value": "filled",
+              "required": false,
+              "disabled": false,
+              "visible": false
+            },
+            {
+              "name": "",
+              "type": "submit",
+              "value": "empty",
+              "disabled": false,
+              "visible": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "timestamp": 1755859778688,
+      "url": "https://inventory.zoho.com/app/893870319#/inventory/items/6797511000000294014?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D",
+      "title": "Test Item 1A | Items | Zoho Inventory",
+      "interactables": [
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle   btn",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "Navigate To (Alt+0) ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle...btn",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-d05c3c70-aa8a-4bb5-aee5-e2a150795129\"]/button[1]",
+            "cssPath": "div#dd-d05c3c70-aa8a-4bb5-aee5-e2a150795129 > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 8,
+            "width": 1,
+            "height": 1,
+            "top": 8,
+            "right": 9,
+            "bottom": 9,
+            "left": 8
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "fixed"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": " ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Show dropdown menu\"]",
+            "role": null,
+            "xpath": "//*[@id=\"dd-d2ea548a-cb15-43cf-83a6-ca5c81b70da6\"]/button[1]",
+            "cssPath": "div#dd-d2ea548a-cb15-43cf-83a6-ca5c81b70da6 > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 239,
+            "y": 13.59375,
+            "width": 16,
+            "height": 20.796875,
+            "top": 13.59375,
+            "right": 255,
+            "bottom": 34.390625,
+            "left": 239
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle   input-group-text",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": " ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle...input-group-text",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Show dropdown menu\"]",
+            "role": null,
+            "xpath": "//*[@id=\"dd-f2fe5377-abef-4ea3-a2eb-ca7d23e9d626\"]/button[1]",
+            "cssPath": "div#dd-f2fe5377-abef-4ea3-a2eb-ca7d23e9d626 > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 280,
+            "y": 6.984375,
+            "width": 42,
+            "height": 34,
+            "top": 6.984375,
+            "right": 322,
+            "bottom": 40.984375,
+            "left": 280
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "INPUT",
+          "id": "app-quick-search-field",
+          "className": "ember-text-field ember-view form-control",
+          "name": "",
+          "type": "text",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": "#app-quick-search-field",
+            "className": ".ember-text-field.ember-view.form-control",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Search in Items ( / )\"]",
+            "role": null,
+            "xpath": "//*[@id=\"app-quick-search-field\"]",
+            "cssPath": "input#app-quick-search-field"
+          },
+          "visible": true,
+          "rect": {
+            "x": 323,
+            "y": 6.984375,
+            "width": 255,
+            "height": 34,
+            "top": 6.984375,
+            "right": 578,
+            "bottom": 40.984375,
+            "left": 323
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  btn p-0 no-box-shadow",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": " ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..btn.p-0.no-box-shadow",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Show dropdown menu\"]",
+            "role": null,
+            "xpath": "//*[@id=\"dd-e757d8bb-e5ab-4104-98c9-fc8a0bed8e1e\"]/button[1]",
+            "cssPath": "div#dd-e757d8bb-e5ab-4104-98c9-fc8a0bed8e1e > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1337,
+            "y": 7,
+            "width": 34,
+            "height": 34,
+            "top": 7,
+            "right": 1371,
+            "bottom": 41,
+            "left": 1337
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  nav-item align-items-center d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Items   ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..nav-item.align-items-center.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-dfe5ba40-8eea-4a7e-b446-c116d6c2df9c\"]/button[1]",
+            "cssPath": "div#dd-dfe5ba40-8eea-4a7e-b446-c116d6c2df9c > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8.5,
+            "y": 99,
+            "width": 204,
+            "height": 30,
+            "top": 99,
+            "right": 212.5,
+            "bottom": 129,
+            "left": 8.5
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "e25e2ab6-2925-4b85-9ec0-c771f7d1d36a",
+          "className": "accordion-button ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Items   ",
+          "selectors": {
+            "id": "#e25e2ab6-2925-4b85-9ec0-c771f7d1d36a",
+            "className": ".accordion-button.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"e25e2ab6-2925-4b85-9ec0-c771f7d1d36a\"]",
+            "cssPath": "button#e25e2ab6-2925-4b85-9ec0-c771f7d1d36a"
+          },
+          "visible": true,
+          "rect": {
+            "x": 10.5,
+            "y": 99,
+            "width": 200,
+            "height": 30,
+            "top": 99,
+            "right": 210.5,
+            "bottom": 129,
+            "left": 10.5
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "H3",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  nav-item align-items-center d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Inventory   ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..nav-item.align-items-center.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-d0a24a6e-9707-44a0-9ac2-57b7b6b0d21f\"]/button[1]",
+            "cssPath": "div#dd-d0a24a6e-9707-44a0-9ac2-57b7b6b0d21f > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8.5,
+            "y": 204,
+            "width": 204,
+            "height": 30,
+            "top": 204,
+            "right": 212.5,
+            "bottom": 234,
+            "left": 8.5
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "f7a05d8f-1167-4709-886b-712076b419c1",
+          "className": "accordion-button ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Inventory   ",
+          "selectors": {
+            "id": "#f7a05d8f-1167-4709-886b-712076b419c1",
+            "className": ".accordion-button.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"f7a05d8f-1167-4709-886b-712076b419c1\"]",
+            "cssPath": "button#f7a05d8f-1167-4709-886b-712076b419c1"
+          },
+          "visible": true,
+          "rect": {
+            "x": 10.5,
+            "y": 204,
+            "width": 200,
+            "height": 30,
+            "top": 204,
+            "right": 210.5,
+            "bottom": 234,
+            "left": 10.5
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "H3",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "icon-button add-new tab-element-right",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": null,
+            "className": ".icon-button.add-new.tab-element-right",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"e90be478-cbb6-44b1-a29c-e6f44390a4fe\"]/li[3]/button[1]",
+            "cssPath": "ul#e90be478-cbb6-44b1-a29c-e6f44390a4fe > li:nth-of-type(3) > button"
+          },
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "0",
+            "zIndex": "auto",
+            "position": "absolute"
+          },
+          "parentTag": "LI",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": " | "
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  nav-item align-items-center d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Sales   ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..nav-item.align-items-center.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-ed640007-1dfa-41fc-b2de-2241350d0d5b\"]/button[1]",
+            "cssPath": "div#dd-ed640007-1dfa-41fc-b2de-2241350d0d5b > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8.5,
+            "y": 241,
+            "width": 204,
+            "height": 30,
+            "top": 241,
+            "right": 212.5,
+            "bottom": 271,
+            "left": 8.5
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "c8ec834d-4ce7-479a-97ba-b17336045660",
+          "className": "accordion-button ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Sales   ",
+          "selectors": {
+            "id": "#c8ec834d-4ce7-479a-97ba-b17336045660",
+            "className": ".accordion-button.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"c8ec834d-4ce7-479a-97ba-b17336045660\"]",
+            "cssPath": "button#c8ec834d-4ce7-479a-97ba-b17336045660"
+          },
+          "visible": true,
+          "rect": {
+            "x": 10.5,
+            "y": 241,
+            "width": 200,
+            "height": 30,
+            "top": 241,
+            "right": 210.5,
+            "bottom": 271,
+            "left": 10.5
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "H3",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "icon-button add-new tab-element-right",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": null,
+            "className": ".icon-button.add-new.tab-element-right",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"cc0baef2-e3b6-4d75-b25c-4b5e93717ee0\"]/li[3]/button[1]",
+            "cssPath": "ul#cc0baef2-e3b6-4d75-b25c-4b5e93717ee0 > li:nth-of-type(3) > button"
+          },
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "0",
+            "zIndex": "auto",
+            "position": "absolute"
+          },
+          "parentTag": "LI",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": " | "
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  nav-item align-items-center d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Purchases   ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..nav-item.align-items-center.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-c9f5f67d-2ed0-45fd-a88b-662a77add3fc\"]/button[1]",
+            "cssPath": "div#dd-c9f5f67d-2ed0-45fd-a88b-662a77add3fc > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8.5,
+            "y": 278,
+            "width": 204,
+            "height": 30,
+            "top": 278,
+            "right": 212.5,
+            "bottom": 308,
+            "left": 8.5
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "e1652f09-dca0-4654-910e-3d0c4e59d9c3",
+          "className": "accordion-button ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "  Purchases   ",
+          "selectors": {
+            "id": "#e1652f09-dca0-4654-910e-3d0c4e59d9c3",
+            "className": ".accordion-button.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"e1652f09-dca0-4654-910e-3d0c4e59d9c3\"]",
+            "cssPath": "button#e1652f09-dca0-4654-910e-3d0c4e59d9c3"
+          },
+          "visible": true,
+          "rect": {
+            "x": 10.5,
+            "y": 278,
+            "width": 200,
+            "height": 30,
+            "top": 278,
+            "right": 210.5,
+            "bottom": 308,
+            "left": 10.5
+          },
+          "styles": {
+            "display": "inline-block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "H3",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "badge badge-lhs-webinar w-100 text-uppercase rounded-pill justify-content-center text-dark-gray",
+          "name": "",
+          "type": "submit",
+          "value": "",
+          "text": " Live Guided Onboarding",
+          "selectors": {
+            "id": null,
+            "className": ".badge.badge-lhs-webinar.w-100.text-uppercase.rounded-pill.justify-content-center.text-dark-gray",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"main-nav-tab\"]/ul[1]/li[15]/div[1]/div[1]/button[1]",
+            "cssPath": "nav#main-nav-tab > ul > li:nth-of-type(15) > div > div > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 11,
+            "y": 622.1875,
+            "width": 198,
+            "height": 31,
+            "top": 622.1875,
+            "right": 209,
+            "bottom": 653.1875,
+            "left": 11
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "icon-button collapse-expand z-index-1 ",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": null,
+            "className": ".icon-button.collapse-expand.z-index-1.",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"Collapse/Expand\"]",
+            "role": null,
+            "xpath": "//*[@id=\"main-nav-tab\"]/button[1]",
+            "cssPath": "nav#main-nav-tab > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 180,
+            "y": 856,
+            "width": 39,
+            "height": 39,
+            "top": 856,
+            "right": 219,
+            "bottom": 895,
+            "left": 180
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "1",
+            "position": "fixed"
+          },
+          "parentTag": "NAV",
+          "siblings": 2,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": " | "
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "",
+          "className": "dropdown-toggle no-caret  filter-dd-trigger   icon-position list-view-select exclude-dd-btn",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "Active Items ",
+          "selectors": {
+            "id": null,
+            "className": ".dropdown-toggle.no-caret..filter-dd-trigger...icon-position.list-view-select.exclude-dd-btn",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"dd-dac7511e-88df-4d26-b394-f9c83d7b1bd1\"]/div[1]/button[1]",
+            "cssPath": "div#dd-dac7511e-88df-4d26-b394-f9c83d7b1bd1 > div > button"
+          },
+          "visible": true,
+          "rect": {
+            "x": 226,
+            "y": 65.203125,
+            "width": 133.1875,
+            "height": 29.59375,
+            "top": 65.203125,
+            "right": 359.1875,
+            "bottom": 94.796875,
+            "left": 226
+          },
+          "styles": {
+            "display": "block",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "ca150a71-7bc3-4c9f-8301-a7326f0e28a6",
+          "className": "icon-button btn btn-primary d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": "#ca150a71-7bc3-4c9f-8301-a7326f0e28a6",
+            "className": ".icon-button.btn.btn-primary.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": null,
+            "role": null,
+            "xpath": "//*[@id=\"ca150a71-7bc3-4c9f-8301-a7326f0e28a6\"]",
+            "cssPath": "button#ca150a71-7bc3-4c9f-8301-a7326f0e28a6"
+          },
+          "visible": true,
+          "rect": {
+            "x": 490,
+            "y": 64,
+            "width": 32,
+            "height": 32,
+            "top": 64,
+            "right": 522,
+            "bottom": 96,
+            "left": 490
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "relative"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        },
+        {
+          "tagName": "BUTTON",
+          "id": "c9302ba6-beeb-4671-a9d0-9034678f49a6",
+          "className": "dropdown-toggle no-caret  btn btn-secondary d-flex",
+          "name": "",
+          "type": "button",
+          "value": "",
+          "text": "",
+          "selectors": {
+            "id": "#c9302ba6-beeb-4671-a9d0-9034678f49a6",
+            "className": ".dropdown-toggle.no-caret..btn.btn-secondary.d-flex",
+            "name": null,
+            "dataTestId": null,
+            "ariaLabel": "[aria-label=\"More Actions\"]",
+            "role": null,
+            "xpath": "//*[@id=\"c9302ba6-beeb-4671-a9d0-9034678f49a6\"]",
+            "cssPath": "button#c9302ba6-beeb-4671-a9d0-9034678f49a6"
+          },
+          "visible": true,
+          "rect": {
+            "x": 532,
+            "y": 64,
+            "width": 32,
+            "height": 32,
+            "top": 64,
+            "right": 564,
+            "bottom": 96,
+            "left": 532
+          },
+          "styles": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "zIndex": "auto",
+            "position": "static"
+          },
+          "parentTag": "DIV",
+          "siblings": 1,
+          "inForm": false,
+          "inModal": false,
+          "nearbyText": ""
+        }
+      ],
+      "forms": []
+    }
+  ],
+  "mutations": [
+    {
+      "type": "childList",
+      "target": "BODY",
+      "timestamp": 1755859742260
+    },
+    {
+      "type": "childList",
+      "target": "BODY",
+      "timestamp": 1755859742260
+    },
+    {
+      "type": "childList",
+      "target": "UL",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "UL",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "LI",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "LI",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "LI",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "SPAN",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "SPAN",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "SPAN",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "A",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "LI",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "LI",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "LI",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "LI",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "LI",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "LI",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "UL",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "LI",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "DIV",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "DIV",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "DIV",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "BUTTON",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "H3",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "BUTTON",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "BUTTON",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "BUTTON",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "BUTTON",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "BUTTON",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "SPAN",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "BUTTON",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "BUTTON",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "BUTTON",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "BUTTON",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "BUTTON",
+      "timestamp": 1755859742396
+    },
+    {
+      "type": "childList",
+      "target": "BUTTON",
+      "timestamp": 1755859742396
+    }
+  ],
+  "screenshots": [],
+  "networkRequests": [
+    {
+      "method": "Network.requestWillBeSent"
+    },
+    {
+      "method": "Network.requestWillBeSentExtraInfo"
+    },
+    {
+      "method": "Network.responseReceivedExtraInfo"
+    },
+    {
+      "method": "Network.responseReceived"
+    },
+    {
+      "method": "Network.loadingFinished"
+    },
+    {
+      "method": "Network.requestWillBeSent"
+    },
+    {
+      "method": "Network.requestWillBeSentExtraInfo"
+    },
+    {
+      "method": "Network.responseReceivedExtraInfo"
+    },
+    {
+      "method": "Network.responseReceived"
+    },
+    {
+      "method": "Network.loadingFinished"
+    },
+    {
+      "method": "Network.requestWillBeSent"
+    },
+    {
+      "method": "Network.requestWillBeSentExtraInfo"
+    },
+    {
+      "method": "Network.responseReceivedExtraInfo"
+    },
+    {
+      "method": "Network.responseReceived"
+    },
+    {
+      "method": "Network.loadingFinished"
+    },
+    {
+      "method": "Network.requestWillBeSent"
+    },
+    {
+      "method": "Network.requestWillBeSentExtraInfo"
+    },
+    {
+      "method": "Network.responseReceivedExtraInfo"
+    },
+    {
+      "method": "Network.responseReceived"
+    },
+    {
+      "method": "Network.loadingFinished"
+    },
+    {
+      "url": "https://accounts.zoho.com/signin?servicename=ZohoInventory&signupurl=https://www.zoho.com/us/inventory/signup/index.html",
+      "type": "navigation"
+    },
+    {
+      "method": "Network.requestWillBeSent"
+    },
+    {
+      "method": "Network.requestWillBeSentExtraInfo"
+    },
+    {
+      "method": "Network.requestWillBeSent"
+    },
+    {
+      "method": "Network.requestWillBeSentExtraInfo"
+    },
+    {
+      "method": "Network.responseReceivedExtraInfo"
+    },
+    {
+      "method": "Network.responseReceived"
+    },
+    {
+      "method": "Network.loadingFinished"
+    },
+    {
+      "method": "Network.responseReceivedExtraInfo"
+    },
+    {
+      "method": "Network.responseReceived"
+    }
+  ],
+  "consoleErrors": [
+    {
+      "message": "%cElectron Security Warning (Disabled webSecurity) font-weight: bold; This renderer process has \"webSecurity\" disabled. This\n  exposes users of this app to severe security risks.\n\nFor more information and help, consult\nhttps://electronjs.org/docs/tutorial/security.\nThis warning will not show up\nonce the app is packaged.",
+      "timestamp": 4867
+    },
+    {
+      "message": "%cElectron Security Warning (allowRunningInsecureContent) font-weight: bold; This renderer process has \"allowRunningInsecureContent\"\n  enabled. This exposes users of this app to severe security risks.\n\n  \nFor more information and help, consult\nhttps://electronjs.org/docs/tutorial/security.\nThis warning will not show up\nonce the app is packaged.",
+      "timestamp": 4868
+    },
+    {
+      "message": "%cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security\n  Policy set or a policy with \"unsafe-eval\" enabled. This exposes users of\n  this app to unnecessary security risks.\n\nFor more information and help, consult\nhttps://electronjs.org/docs/tutorial/security.\nThis warning will not show up\nonce the app is packaged.",
+      "timestamp": 4868
+    },
+    {
+      "message": "%cElectron Security Warning (Disabled webSecurity) font-weight: bold; This renderer process has \"webSecurity\" disabled. This\n  exposes users of this app to severe security risks.\n\nFor more information and help, consult\nhttps://electronjs.org/docs/tutorial/security.\nThis warning will not show up\nonce the app is packaged.",
+      "timestamp": 23595
+    },
+    {
+      "message": "%cElectron Security Warning (allowRunningInsecureContent) font-weight: bold; This renderer process has \"allowRunningInsecureContent\"\n  enabled. This exposes users of this app to severe security risks.\n\n  \nFor more information and help, consult\nhttps://electronjs.org/docs/tutorial/security.\nThis warning will not show up\nonce the app is packaged.",
+      "timestamp": 23596
+    },
+    {
+      "message": "%cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security\n  Policy set or a policy with \"unsafe-eval\" enabled. This exposes users of\n  this app to unnecessary security risks.\n\nFor more information and help, consult\nhttps://electronjs.org/docs/tutorial/security.\nThis warning will not show up\nonce the app is packaged.",
+      "timestamp": 23596
+    },
+    {
+      "message": "%cElectron Security Warning (Disabled webSecurity) font-weight: bold; This renderer process has \"webSecurity\" disabled. This\n  exposes users of this app to severe security risks.\n\nFor more information and help, consult\nhttps://electronjs.org/docs/tutorial/security.\nThis warning will not show up\nonce the app is packaged.",
+      "timestamp": 27685
+    },
+    {
+      "message": "%cElectron Security Warning (allowRunningInsecureContent) font-weight: bold; This renderer process has \"allowRunningInsecureContent\"\n  enabled. This exposes users of this app to severe security risks.\n\n  \nFor more information and help, consult\nhttps://electronjs.org/docs/tutorial/security.\nThis warning will not show up\nonce the app is packaged.",
+      "timestamp": 27685
+    },
+    {
+      "message": "An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.",
+      "timestamp": 27732
+    },
+    {
+      "message": "An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.",
+      "timestamp": 28797
+    }
+  ],
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "events": [
+    {
+      "type": "input",
+      "field": "a5c9a0ebb",
+      "value": ""
+    },
+    {
+      "type": "input",
+      "field": "a5791eca7",
+      "value": ""
+    },
+    {
+      "type": "input",
+      "field": "a8c87ee61",
+      "value": ""
+    }
+  ]
+}
