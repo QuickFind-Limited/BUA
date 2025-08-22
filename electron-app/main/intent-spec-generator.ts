@@ -536,7 +536,6 @@ export class IntentSpecGenerator {
     
     return undefined;
   }
-}
 
   /**
    * Process rich recording data with multiple selectors and DOM snapshots
@@ -601,6 +600,7 @@ export class IntentSpecGenerator {
       performanceMetrics: recordingData.performanceMetrics || {}
     };
   }
+}
 
 /**
  * Convenience function to generate Intent Spec from recording

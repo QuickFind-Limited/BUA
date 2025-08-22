@@ -206,8 +206,21 @@ body {
 
 .enhanced-recorder-btn.recording {
   background: #2196F3; /* Stay blue when recording */
-  opacity: 0.6;
-  cursor: not-allowed;
+  cursor: pointer;
+}
+
+/* Pulsing text animation for recording state */
+.enhanced-recorder-btn.recording .enhanced-recorder-text {
+  animation: pulse-text 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 
 .enhanced-recorder-btn.paused {

@@ -1430,6 +1430,83 @@ async function stopRecording() {
     }
 }
 
+// Function to show analysis progress in the sidebar
+function showAnalysisProgress(progressData) {
+    console.log('📊 Analysis progress:', progressData);
+    
+    // Show progress in the analysis sidebar if it exists
+    const analysisSidebar = document.querySelector('#analysis-sidebar');
+    if (analysisSidebar) {
+        analysisSidebar.classList.add('active');
+        document.body.classList.add('sidebar-visible');
+        
+        // Update progress message
+        const detailContent = document.getElementById('detail-content');
+        if (detailContent) {
+            const statusColor = progressData.status === 'error' ? '#ff4444' : 
+                               progressData.status === 'complete' ? '#4CAF50' : '#2196F3';
+            
+            detailContent.innerHTML = `
+                <div style="padding: 12px; background: rgba(33, 150, 243, 0.1); border-radius: 8px; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                        <div class="spinner" style="display: ${progressData.status === 'processing' ? 'block' : 'none'}"></div>
+                        <span style="font-weight: 600; color: ${statusColor};">
+                            ${progressData.status === 'starting' ? '🚀 Starting Analysis' :
+                              progressData.status === 'processing' ? '⚙️ Processing' :
+                              progressData.status === 'complete' ? '✅ Complete' :
+                              progressData.status === 'error' ? '❌ Error' : '📊 Analysis'}
+                        </span>
+                    </div>
+                    <div style="color: #666; font-size: 13px;">
+                        ${progressData.message}
+                    </div>
+                </div>
+            `;
+            
+            // Auto-hide sidebar after completion
+            if (progressData.status === 'complete') {
+                setTimeout(() => {
+                    analysisSidebar.classList.remove('active');
+                    document.body.classList.remove('sidebar-visible');
+                }, 3000);
+            }
+        }
+    }
+}
+
+// Function to show Intent Spec in the vars panel
+function showIntentSpecInVarsPanel(intentSpec) {
+    console.log('📝 Showing Intent Spec in vars panel:', intentSpec);
+    
+    // Check if vars panel manager exists
+    if (window.varsPanelManager) {
+        window.varsPanelManager.showVarsPanel(intentSpec);
+    } else {
+        console.warn('Vars panel manager not found, trying to initialize...');
+        // Try again after a short delay
+        setTimeout(() => {
+            if (window.varsPanelManager) {
+                window.varsPanelManager.showVarsPanel(intentSpec);
+            } else {
+                console.error('Could not show Intent Spec - vars panel not available');
+            }
+        }, 1000);
+    }
+}
+
+// Setup analysis listeners
+if (window.electronAPI) {
+    // Listen for analysis progress
+    window.electronAPI.onAnalysisProgress && window.electronAPI.onAnalysisProgress((progressData) => {
+        showAnalysisProgress(progressData);
+    });
+    
+    // Listen for Intent Spec to show in vars panel
+    window.electronAPI.onShowIntentSpec && window.electronAPI.onShowIntentSpec((intentSpec) => {
+        showIntentSpecInVarsPanel(intentSpec);
+    });
+}
+
 // Make functions globally available for onclick handlers and external access
 window.closeTab = closeTab;
 window.showVarsPanel = showVarsPanel;
@@ -1440,3 +1517,5 @@ window.openSettings = openSettings;
 window.pauseRecording = pauseRecording;
 window.resumeRecording = resumeRecording;
 window.stopRecording = stopRecording;
+window.showAnalysisProgress = showAnalysisProgress;
+window.showIntentSpecInVarsPanel = showIntentSpecInVarsPanel;

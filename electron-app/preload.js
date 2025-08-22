@@ -105,14 +105,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeTabsUpdatedListener: (callback) => ipcRenderer.removeListener('tabs-updated', callback),
   removeAllTabsUpdatedListeners: () => ipcRenderer.removeAllListeners('tabs-updated'),
 
+  // Analysis events
+  onAnalysisProgress: (callback) => ipcRenderer.on('analysis-progress', (event, data) => callback(data)),
+  onShowIntentSpec: (callback) => ipcRenderer.on('show-intent-spec', (event, intentSpec) => callback(intentSpec)),
+  
   // Remove flow event listeners
   removeFlowProgressListener: (callback) => ipcRenderer.removeListener('flow-progress', callback),
   removeFlowCompleteListener: (callback) => ipcRenderer.removeListener('flow-complete', callback),
   removeRecordingCompleteListener: (callback) => ipcRenderer.removeListener('recording-complete', callback),
+  removeAnalysisProgressListener: (callback) => ipcRenderer.removeListener('analysis-progress', callback),
+  removeShowIntentSpecListener: (callback) => ipcRenderer.removeListener('show-intent-spec', callback),
   removeAllFlowListeners: () => {
     ipcRenderer.removeAllListeners('flow-progress');
     ipcRenderer.removeAllListeners('flow-complete');
     ipcRenderer.removeAllListeners('recording-complete');
+    ipcRenderer.removeAllListeners('analysis-progress');
+    ipcRenderer.removeAllListeners('show-intent-spec');
   },
 
   // WebView2 bridge events - from renderer to main

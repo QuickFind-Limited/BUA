@@ -6,6 +6,13 @@ const path = require('path');
 const fs = require('fs').promises;
 const { RecordingEventCollector, EVENT_TYPES } = require('./recording-event-collector');
 
+// Keep using default Electron paths to preserve cookies and sessions
+// This ensures Google sign-in and other authentications continue to work
+
+// Only disable GPU cache to reduce errors without affecting functionality
+app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
+app.commandLine.appendSwitch('disable-gpu-program-cache');
+
 // Module-level variables
 let mainWindow = null;
 let webView = null;
@@ -510,6 +517,122 @@ ipcMain.handle('stop-enhanced-recording', async () => {
       tabs: Object.keys(recordingData.tabSessions || {})
     });
     
+    // Automatically start Intent Spec generation
+    console.log('🤖 Starting automatic Intent Spec generation...');
+    
+    // Send progress update to UI
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('analysis-progress', {
+        status: 'starting',
+        message: 'Analyzing recording to generate Intent Spec...'
+      });
+    }
+    
+    // Generate Intent Spec from the recording
+    setTimeout(async () => {
+      try {
+        // Import the generator functions (use .js extension for compiled files)
+        const { generateIntentSpecFromRichRecording } = require('./main/intent-spec-generator.js');
+        const { generateEnhancedIntentSpecPrompt, generateVariableExtractionPrompt } = require('./main/enhanced-intent-spec-prompt.js');
+        
+        // Send progress update
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('analysis-progress', {
+            status: 'processing',
+            message: 'Extracting actions and identifying variables...'
+          });
+        }
+        
+        // Debug: Check recording data structure
+        console.log('Recording data structure:', {
+          hasEvents: !!recordingData.events,
+          eventCount: recordingData.events?.length || 0,
+          hasActions: !!recordingData.actions,
+          actionCount: recordingData.actions?.length || 0,
+          keys: Object.keys(recordingData)
+        });
+        
+        // Generate the Intent Spec
+        const intentSpec = generateIntentSpecFromRichRecording(recordingData);
+        
+        // Extract variables with UI-compatible names
+        const serializedRecording = JSON.stringify(recordingData, null, 2);
+        const variablePrompt = generateVariableExtractionPrompt(serializedRecording);
+        
+        // For now, use simple extraction based on input values
+        const extractedVariables = [];
+        if (recordingData.events) {
+          recordingData.events.forEach(event => {
+            if (event.type === 'action' && event.data) {
+              const action = event.data;
+              if (action.action === 'input' && action.value) {
+                // Detect variable type based on field context
+                let varName = 'VALUE';
+                const elementInfo = action.elementInfo || {};
+                const fieldType = elementInfo.type || '';
+                const fieldName = (elementInfo.name || elementInfo.id || '').toLowerCase();
+                
+                if (fieldType === 'password' || fieldName.includes('password')) {
+                  varName = 'PASSWORD';
+                } else if (fieldType === 'email' || fieldName.includes('email')) {
+                  varName = 'EMAIL_ADDRESS';
+                } else if (fieldName.includes('username') || fieldName.includes('user')) {
+                  varName = 'USERNAME';
+                } else if (fieldType === 'tel' || fieldName.includes('phone')) {
+                  varName = 'PHONE_NUMBER';
+                } else if (fieldName.includes('search') || fieldName.includes('query')) {
+                  varName = 'SEARCH_QUERY';
+                }
+                
+                if (!extractedVariables.includes(varName)) {
+                  extractedVariables.push(varName);
+                }
+              }
+            }
+          });
+        }
+        
+        // Update Intent Spec with extracted variables
+        intentSpec.params = extractedVariables.length > 0 ? extractedVariables : ['USERNAME', 'PASSWORD'];
+        
+        // Send progress update
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('analysis-progress', {
+            status: 'complete',
+            message: `Intent Spec generated with ${intentSpec.steps.length} steps and ${intentSpec.params.length} variables`
+          });
+          
+          // Show only the Intent Spec with variables in the vars panel (not full spec)
+          // The vars panel only needs name, description, params, and url
+          const intentSpecForVarsPanel = {
+            name: intentSpec.name,
+            description: intentSpec.description || `Automated flow from recording with ${intentSpec.steps.length} steps`,
+            params: intentSpec.params,
+            url: intentSpec.url || recordingData.events?.[0]?.data?.url || 'https://example.com'
+          };
+          
+          mainWindow.webContents.send('show-intent-spec', intentSpecForVarsPanel);
+        }
+        
+        // Save the Intent Spec
+        const intentSpecFilename = `intent-spec-${timestamp}.json`;
+        const intentSpecPath = path.join(app.getPath('userData'), 'recordings', intentSpecFilename);
+        await fs.writeFile(intentSpecPath, JSON.stringify(intentSpec, null, 2));
+        
+        console.log(`📝 Intent Spec saved to: ${intentSpecFilename}`);
+        console.log(`✅ Analysis complete. Variables detected: ${intentSpec.params.join(', ')}`);
+        
+      } catch (error) {
+        console.error('Failed to generate Intent Spec:', error);
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('analysis-progress', {
+            status: 'error',
+            message: `Failed to generate Intent Spec: ${error.message}`
+          });
+        }
+      }
+    }, 1000); // Small delay to ensure UI is ready
+    
     return { success: true, data: recordingData, filename };
     
   } catch (error) {
@@ -699,8 +822,28 @@ ipcMain.handle('resume-enhanced-recording', async () => {
   return { success: false, message: 'Resume not implemented' };
 });
 
+// Clean up only problematic caches on startup, preserve cookies/auth
+async function cleanupOldCache() {
+  try {
+    const { session } = require('electron');
+    // Only clear service workers and cache storage that cause errors
+    // Do NOT clear cookies, localStorage, or sessionStorage
+    await session.defaultSession.clearStorageData({
+      storages: ['serviceworkers', 'cachestorage'],
+      quotas: ['temporary']
+    });
+    console.log('✅ Service worker cache cleaned');
+  } catch (error) {
+    console.warn('Could not clear cache:', error.message);
+  }
+}
+
 // Initialize app
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  // Clean up cache to prevent IO errors
+  await cleanupOldCache();
+  await createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
