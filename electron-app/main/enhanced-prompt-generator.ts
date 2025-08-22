@@ -436,44 +436,71 @@ function summarizeDomSnapshots(snapshots: any[]): string {
   
   let summary = `DOM Snapshot Summary (${snapshots.length} total):\n`;
   
-  // Analyze first, middle, and last snapshots
-  const keySnapshots = [
-    snapshots[0],
-    snapshots[Math.floor(snapshots.length / 2)],
-    snapshots[snapshots.length - 1]
-  ].filter(Boolean);
+  // With event-driven captures, each snapshot is meaningful
+  // Group snapshots by URL to identify page transitions
+  const pageGroups: Record<string, any[]> = {};
+  snapshots.forEach(snapshot => {
+    const url = snapshot.url || 'unknown';
+    if (!pageGroups[url]) pageGroups[url] = [];
+    pageGroups[url].push(snapshot);
+  });
   
-  keySnapshots.forEach((snapshot, i) => {
-    if (!snapshot) return;
+  // Show page flow
+  summary += `\nPage Flow (${Object.keys(pageGroups).length} unique pages):\n`;
+  Object.entries(pageGroups).forEach(([url, snaps]) => {
+    summary += `  - ${url} (${snaps.length} snapshots)\n`;
+  });
+  
+  // Analyze snapshots triggered by different events
+  const eventSnapshots = snapshots.filter(s => s.reason);
+  if (eventSnapshots.length > 0) {
+    summary += `\nEvent-Triggered Snapshots:\n`;
+    const eventCounts: Record<string, number> = {};
+    eventSnapshots.forEach(s => {
+      eventCounts[s.reason] = (eventCounts[s.reason] || 0) + 1;
+    });
+    Object.entries(eventCounts).forEach(([event, count]) => {
+      summary += `  - ${event}: ${count}\n`;
+    });
+  }
+  
+  // Analyze first and last snapshot for each unique page
+  Object.entries(pageGroups).forEach(([url, snaps]) => {
+    const first = snaps[0];
+    const last = snaps[snaps.length - 1];
     
-    const label = i === 0 ? 'First' : i === 1 ? 'Middle' : 'Last';
-    summary += `\n${label} Snapshot:\n`;
-    summary += `  - URL: ${snapshot.url || 'unknown'}\n`;
-    summary += `  - Title: ${snapshot.title || 'unknown'}\n`;
+    summary += `\n${url.substring(url.lastIndexOf('/') + 1) || 'Page'}:\n`;
+    summary += `  - Title: ${last.title || 'unknown'}\n`;
     
-    // Find form elements
-    if (snapshot.interactables) {
-      const inputs = snapshot.interactables.filter((el: any) => 
+    // Compare first and last to show state changes
+    if (first.interactables && last.interactables) {
+      const firstInputs = first.interactables.filter((el: any) => 
         el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'
       );
-      const buttons = snapshot.interactables.filter((el: any) => 
-        el.tagName === 'BUTTON'
+      const lastInputs = last.interactables.filter((el: any) => 
+        el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'
       );
       
-      if (inputs.length > 0) {
-        summary += `  - Input fields: ${inputs.length}\n`;
-        inputs.slice(0, 3).forEach((input: any) => {
-          summary += `    • ${input.id || input.name || input.placeholder || 'unnamed'}\n`;
+      // Show fields that have values in last snapshot (were filled)
+      const filledFields = lastInputs.filter((input: any) => input.value);
+      if (filledFields.length > 0) {
+        summary += `  - Filled fields: ${filledFields.length}\n`;
+        filledFields.slice(0, 5).forEach((input: any) => {
+          summary += `    • ${input.id || input.name}: "${input.value}"\n`;
         });
       }
       
+      // Show available buttons for actions
+      const buttons = last.interactables.filter((el: any) => 
+        el.tagName === 'BUTTON' || el.role === 'button'
+      );
       if (buttons.length > 0) {
-        summary += `  - Buttons: ${buttons.length}\n`;
+        summary += `  - Available actions: ${buttons.slice(0, 3).map((b: any) => b.text || b.value || 'button').join(', ')}\n`;
       }
     }
     
-    if (snapshot.forms && snapshot.forms.length > 0) {
-      summary += `  - Forms detected: ${snapshot.forms.length}\n`;
+    if (last.forms && last.forms.length > 0) {
+      summary += `  - Forms on page: ${last.forms.length}\n`;
     }
   });
   
