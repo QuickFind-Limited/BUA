@@ -321,27 +321,9 @@ async function launchPlaywrightRecorder() {
         const addressBar = document.getElementById('address-bar');
         const startUrl = addressBar ? addressBar.value : 'https://www.google.com';
         
-        // Launch the recorder
-        if (window.electronAPI && window.electronAPI.launchRecorder) {
-            const result = await window.electronAPI.launchRecorder(startUrl);
-            
-            if (result.success) {
-                console.log('Playwright recorder launched successfully');
-                
-                // Update button to show monitoring state
-                launcherBtn.classList.add('monitoring');
-                launcherBtn.querySelector('.launcher-text').textContent = 'Monitoring Recording';
-                
-                // Start monitoring for recording completion
-                startRecorderMonitoring();
-                isMonitoringRecorder = true;
-            } else {
-                console.error('Failed to launch recorder:', result.error);
-                showRecordingError('Failed to launch recorder: ' + (result.error || 'Unknown error'));
-            }
-        } else {
-            console.error('Launch recorder API not available');
-        }
+        // Launch recorder removed - using CDP recording instead
+        console.log('Playwright launcher removed - using CDP recording');
+        showRecordingError('Please use the Recording button instead (CDP-based recording)');
     } catch (error) {
         console.error('Error launching recorder:', error);
         showRecordingError('Error launching recorder: ' + error.message);

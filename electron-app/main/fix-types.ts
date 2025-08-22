@@ -37,12 +37,6 @@ const fixes = [
     ]
   },
   {
-    file: 'main/playwright-launcher-recorder.ts',
-    replacements: [
-      { from: 'this.tabManager.getActiveTab()', to: '(this.tabManager as any).getActiveTab()' },
-    ]
-  },
-  {
     file: 'main/enhanced-cdp-recorder.ts',
     replacements: [
       { from: 'webContents.getContentSize()', to: '(webContents as any).getContentSize?.() || { width: 1920, height: 1080 }' },

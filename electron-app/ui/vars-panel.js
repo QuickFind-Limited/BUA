@@ -126,7 +126,7 @@ class VarsPanelManager {
         }
         
         this.saveFlowBtn = document.getElementById('save-flow-btn');
-        this.launchRecorderBtn = document.getElementById('launch-recorder-btn');
+        // Launch recorder button removed - using CDP recording instead
         this.runMagnitudeBtn = document.getElementById('run-magnitude-btn');
         this.closePanelBtn = document.getElementById('close-panel-btn');
         this.flowFileInput = document.getElementById('flowFileInput');
@@ -142,12 +142,7 @@ class VarsPanelManager {
             });
         }
         
-        // Launch Recorder button
-        if (this.launchRecorderBtn) {
-            this.launchRecorderBtn.addEventListener('click', () => {
-                this.launchRecorder();
-            });
-        }
+        // Launch Recorder button removed - using CDP recording instead
         
         // Run with Magnitude button
         if (this.runMagnitudeBtn) {
@@ -567,31 +562,7 @@ class VarsPanelManager {
         }
     }
 
-    launchRecorder() {
-        console.log('Launching Playwright recorder...');
-        
-        // Get current URL from address bar or use default
-        const addressBar = document.getElementById('address-bar');
-        const startUrl = addressBar ? addressBar.value : 'https://www.google.com';
-        
-        if (window.electronAPI && window.electronAPI.launchRecorder) {
-            this.showStatus('Launching Playwright recorder...', 'info');
-            
-            window.electronAPI.launchRecorder(startUrl)
-                .then((result) => {
-                    if (result.success) {
-                        this.showStatus('Recorder launched. Use Playwright Inspector to record your actions.', 'success');
-                    } else {
-                        this.showStatus(result.error || 'Failed to launch recorder', 'error');
-                    }
-                })
-                .catch((error) => {
-                    this.showStatus('Error launching recorder: ' + error.message, 'error');
-                });
-        } else {
-            this.showStatus('Recorder API not available', 'error');
-        }
-    }
+    // launchRecorder method removed - using CDP recording instead
 
     runWithMagnitude() {
         if (!this.currentFlow || this.isExecuting) return;

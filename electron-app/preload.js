@@ -32,7 +32,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   runFlow: (params) => ipcRenderer.invoke('flows:runOne', params),
   executeFlow: (flowSpec, variables) => ipcRenderer.invoke('execute-flow', { flowSpec, variables }),
   saveFlow: (flowSpec, filePath) => ipcRenderer.invoke('save-flow', { flowSpec, filePath }),
-  launchRecorder: (startUrl) => ipcRenderer.invoke('launch-recorder', startUrl),
   getRecorderStatus: () => ipcRenderer.invoke('get-recorder-status'),
   getLastRecording: () => ipcRenderer.invoke('get-last-recording'),
   saveIntentSpec: (intentSpec, filename) => ipcRenderer.invoke('save-intent-spec', intentSpec, filename),

@@ -1087,39 +1087,7 @@ export function registerIpcHandlers(): void {
   });
 
   // Store launcher recorder instance
-  let launcherRecorderInstance: any = null;
-  
-  // Launch Recorder handler
-  ipcMain.handle('launch-recorder', async (event: IpcMainInvokeEvent, startUrl: string) => {
-    try {
-      const tabManager = getTabManager();
-      if (!tabManager) {
-        throw new Error('TabManager not initialized');
-      }
-      
-      // Import the launcher recorder
-      const { PlaywrightLauncherRecorder } = await import('./playwright-launcher-recorder');
-      const mainWindow = getMainWindow();
-      if (!mainWindow) {
-        throw new Error('Main window not initialized');
-      }
-      
-      // Create or reuse launcher recorder instance
-      if (!launcherRecorderInstance) {
-        launcherRecorderInstance = new PlaywrightLauncherRecorder(mainWindow);
-      }
-      
-      const result = await launcherRecorderInstance.launchRecorder(startUrl);
-      
-      return result;
-    } catch (error) {
-      console.error('Launch recorder error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to launch recorder'
-      };
-    }
-  });
+  // Launch Recorder handler - removed (using CDP recording instead)
   
   // Save Intent Spec to file
   ipcMain.handle('save-intent-spec', async (event: IpcMainInvokeEvent, intentSpec: any, filename: string) => {
