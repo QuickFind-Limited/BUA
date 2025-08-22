@@ -897,28 +897,59 @@ async function analyzeLastRecording() {
             // Use modern sidebar if available
             const sidebar = window.modernSidebar || analysisSidebar;
             
+            // Track step completion times to ensure minimum duration
+            const stepStartTimes = {};
+            
             // Listen for progress updates from backend
             if (window.electronAPI && window.electronAPI.onAnalysisProgress) {
                 window.electronAPI.onAnalysisProgress((progress) => {
                     console.log('Analysis progress update from backend:', progress);
                     
-                    // Update the corresponding step in our progress tracker
                     const stepId = `progress-${progress.step}`;
-                    updateAnalysisStep(stepId, progress.status);
+                    const stepIndex = analysisSteps.findIndex(s => s.id === stepId);
                     
-                    // Also update sidebar if available
-                    sidebar.updateProgress(progress.step, progress.status, progress.message);
-                    
-                    // If validation is completed, complete the analysis
-                    if (progress.step === 'validating' && progress.status === 'completed') {
-                        // Clear any remaining timers
-                        stepTimers.forEach(timer => clearTimeout(timer));
-                        stepTimers = [];
+                    if (stepIndex !== -1) {
+                        const step = analysisSteps[stepIndex];
                         
-                        // Complete the analysis
-                        completeAnalysis();
-                        sidebar.completeAnalysis(true);
+                        if (progress.status === 'active') {
+                            // Record when this step started
+                            stepStartTimes[stepId] = Date.now();
+                            
+                            // If this is step 3 or later, update immediately
+                            if (stepIndex >= 2) {
+                                currentStepIndex = stepIndex - 1; // Set to previous so advance goes to this one
+                                advanceAnalysisStep(true); // Skip auto-advance
+                            }
+                        } else if (progress.status === 'completed') {
+                            // Calculate how long the step has been showing
+                            const startTime = stepStartTimes[stepId] || Date.now();
+                            const elapsed = Date.now() - startTime;
+                            const remaining = Math.max(0, step.minDuration - elapsed);
+                            
+                            // Wait for minimum duration before advancing
+                            setTimeout(() => {
+                                updateAnalysisStep(stepId, 'completed');
+                                
+                                // If this is the last step, complete the analysis
+                                if (progress.step === 'validating') {
+                                    stepTimers.forEach(timer => clearTimeout(timer));
+                                    stepTimers = [];
+                                    completeAnalysis();
+                                    sidebar.completeAnalysis(true);
+                                } else {
+                                    // Move to next step if backend indicates more to come
+                                    const nextStepIndex = stepIndex + 1;
+                                    if (nextStepIndex < analysisSteps.length) {
+                                        currentStepIndex = stepIndex;
+                                        advanceAnalysisStep(true); // Skip auto-advance, let backend control
+                                    }
+                                }
+                            }, remaining);
+                        }
                     }
+                    
+                    // Also update sidebar
+                    sidebar.updateProgress(progress.step, progress.status, progress.message);
                 });
             }
             
@@ -1421,9 +1452,35 @@ async function stopRecording() {
             isEnhancedRecording = false;
             
             // Handle the recorded session
-            if (result.data?.session) {
-                window.lastRecordingSession = result.data.session;
-                handleRecordingComplete({ session: result.data.session });
+            // The main process returns the data directly, not wrapped in a session object
+            if (result.data) {
+                window.lastRecordingSession = result.data;
+                lastRecordingData = result.data;
+                
+                // Check if Intent Spec was already generated
+                if (result.data.intentSpec) {
+                    console.log('Intent Spec already generated by backend:', result.data.intentSpec);
+                    
+                    // Progress animation continues but we already have the spec
+                    setTimeout(() => {
+                        // Complete all progress steps quickly since analysis is done
+                        completeAnalysis();
+                        
+                        // Show the vars panel with the Intent Spec
+                        if (window.varsPanelManager) {
+                            window.varsPanelManager.showVarsPanel(result.data.intentSpec);
+                        }
+                    }, 2000); // Show progress for 2 seconds then complete
+                } else {
+                    // No Intent Spec yet, trigger analysis
+                    console.log('No Intent Spec found, triggering analysis...');
+                    
+                    // Wait a moment for the first progress step to show, then start real analysis
+                    setTimeout(async () => {
+                        console.log('Starting actual analysis...');
+                        await analyzeRecording();
+                    }, 500);
+                }
             }
         }
     }
@@ -1479,7 +1536,7 @@ function startAnalysisProgress() {
 }
 
 // Advance to the next analysis step
-function advanceAnalysisStep() {
+function advanceAnalysisStep(skipAutoAdvance = false) {
     // Complete the current step
     if (currentStepIndex >= 0 && currentStepIndex < analysisSteps.length) {
         const currentStep = analysisSteps[currentStepIndex];
@@ -1506,11 +1563,14 @@ function advanceAnalysisStep() {
             }
         }
         
-        // Schedule next step with minimum duration
-        const timer = setTimeout(() => {
-            advanceAnalysisStep();
-        }, nextStep.minDuration);
-        stepTimers.push(timer);
+        // Only auto-advance for the first 2 steps (recording and parsing)
+        // The rest will be controlled by actual backend progress
+        if (!skipAutoAdvance && currentStepIndex < 2) {
+            const timer = setTimeout(() => {
+                advanceAnalysisStep();
+            }, nextStep.minDuration);
+            stepTimers.push(timer);
+        }
     } else {
         // Analysis complete
         completeAnalysis();
