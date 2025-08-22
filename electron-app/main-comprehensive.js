@@ -1049,10 +1049,82 @@ ipcMain.handle('stop-enhanced-recording', async () => {
   
   console.log('📊 Comprehensive recording summary:', finalData.stats);
   
+  // Process actions to extract final input values
+  const fieldLastValue = {};
+  
+  // First pass: collect the final value for each field by reconstructing from keydown events
+  if (finalData.actions) {
+    let currentField = null;
+    let currentText = '';
+    
+    finalData.actions.forEach(action => {
+      // Track focus to know which field is being typed in
+      if (action.type === 'focus' && action.target?.tagName === 'INPUT') {
+        currentField = action.target.id || action.target.name || action.target.selector;
+        currentText = '';
+      }
+      
+      // Accumulate keydown events to build the text
+      if (action.type === 'keydown' && currentField && action.key) {
+        if (action.key === 'Backspace') {
+          currentText = currentText.slice(0, -1);
+        } else if (action.key.length === 1) {
+          currentText += action.key;
+        }
+        
+        // Update the field's value
+        fieldLastValue[currentField] = {
+          value: currentText,
+          element: action.target,
+          url: action.url
+        };
+      }
+      
+      // Clear on blur
+      if (action.type === 'blur') {
+        currentField = null;
+      }
+    });
+  }
+  
+  // Add extracted input values to the recording for AI analysis
+  finalData.extractedInputs = Object.entries(fieldLastValue).map(([field, data]) => ({
+    field: field,
+    value: data.value,
+    url: data.url,
+    element: data.element
+  }));
+  
+  console.log(`📝 Extracted ${Object.keys(fieldLastValue).length} input fields with values`);
+  
   // Save data to file for analysis
   const fileName = `recording-${Date.now()}.json`;
   await fs.writeFile(fileName, JSON.stringify(finalData, null, 2));
   console.log(`💾 Recording saved to ${fileName}`);
+  
+  // Automatically generate Intent Spec using AI
+  try {
+    console.log('🤖 Generating Intent Spec with AI...');
+    const { analyzeRecording } = require('./dist/main/llm.js');
+    
+    const intentSpec = await analyzeRecording(finalData);
+    
+    if (intentSpec) {
+      console.log('✅ Intent Spec generated successfully');
+      console.log(`  Name: ${intentSpec.name}`);
+      console.log(`  Variables: ${intentSpec.params?.length || 0}`);
+      
+      // Save Intent Spec
+      const specFileName = `intent-spec-${Date.now()}.json`;
+      await fs.writeFile(specFileName, JSON.stringify(intentSpec, null, 2));
+      console.log(`💾 Intent Spec saved to ${specFileName}`);
+      
+      // Include in response
+      finalData.intentSpec = intentSpec;
+    }
+  } catch (error) {
+    console.error('❌ Failed to generate Intent Spec:', error.message);
+  }
   
   return {
     success: true,
