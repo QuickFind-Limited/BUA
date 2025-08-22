@@ -228,6 +228,17 @@ body {
   animation: pulse 2s infinite;
 }
 
+/* Analysing state for the enhanced recorder button */
+.enhanced-recorder-btn.analysing {
+  background: #9C27B0; /* Purple for analysing */
+  cursor: not-allowed;
+  position: relative;
+}
+
+.enhanced-recorder-btn.analysing .enhanced-recorder-text {
+  animation: pulse-text 1s ease-in-out infinite;
+}
+
 .pause-resume-btn {
   background: #607D8B; /* Blue-grey for pause/resume */
   color: white;
@@ -739,6 +750,21 @@ body {
   color: #cccccc;
   font-size: 13px;
   line-height: 1.5;
+}
+
+/* Mini spinner for progress indicators */
+.mini-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #4CAF50;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.progress-item.active .mini-spinner {
+  border-top-color: #2196F3;
 }
 
 /* Utility classes */
@@ -1558,6 +1584,18 @@ body {
 
 .progress-item.completed {
   opacity: 1;
+}
+
+.progress-item.error {
+  opacity: 1;
+}
+
+.progress-item.error .progress-icon svg {
+  stroke: #f44336;
+}
+
+.progress-item.error .progress-status {
+  color: #f44336;
 }
 
 @keyframes pulse {

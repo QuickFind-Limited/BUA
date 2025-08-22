@@ -1,0 +1,161 @@
+{
+  "name": "Zoho Inventory Getting Started Navigation",
+  "description": "Navigate to Zoho Inventory getting started page and interact with the dashboard",
+  "url": "https://inventory.zoho.com/app/893870319#/home/gettingstarted",
+  "params": [],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "",
+    "cookies": true,
+    "localStorage": true
+  },
+  "skipNavigationStates": [
+    "authenticated",
+    "dashboard"
+  ],
+  "steps": [
+    {
+      "name": "Navigate to Zoho Inventory",
+      "ai_instruction": "Navigate to the Zoho Inventory getting started page",
+      "snippet": "await page.goto('https://inventory.zoho.com/app/893870319#/home/gettingstarted');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [],
+      "value": "",
+      "waitBefore": {
+        "type": "time",
+        "condition": "initial delay",
+        "timeout": 1000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "title contains 'Zoho Inventory'",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory.zoho.com"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh and retry"
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000
+      }
+    },
+    {
+      "name": "Wait for dashboard to load",
+      "ai_instruction": "Wait for the getting started dashboard to fully load with all form fields visible",
+      "snippet": "await page.waitForSelector('[name=\"wms_settings_pausechat\"]', { timeout: 10000 });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[name=\"wms_settings_pausechat\"]",
+        "input[type=\"checkbox\"]",
+        "[role=\"checkbox\"]"
+      ],
+      "value": "",
+      "waitBefore": {
+        "type": "time",
+        "condition": "page stabilization",
+        "timeout": 297
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "form fields present",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "wms_settings fields present"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 1000,
+        "skipOnError": true,
+        "alternativeAction": "continue without settings"
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000
+      }
+    },
+    {
+      "name": "Verify settings state",
+      "ai_instruction": "Verify that chat and sound settings are properly configured",
+      "snippet": "await page.evaluate(() => { return document.querySelector('[name=\"wms_settings_sound_global\"]')?.value === 'on'; });",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "[name=\"wms_settings_sound_global\"]",
+        "[name=\"wms_settings_pausechat\"]",
+        "[name=\"wms_settings_sound_mymsg\"]"
+      ],
+      "value": "on",
+      "waitBefore": {
+        "type": "element",
+        "condition": "settings loaded",
+        "timeout": 1000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "validation complete",
+        "timeout": 500
+      },
+      "validation": {
+        "type": "element",
+        "expected": "settings values set to 'on'"
+      },
+      "errorHandling": {
+        "retry": 1,
+        "retryDelay": 500,
+        "skipOnError": true,
+        "alternativeAction": "log state and continue"
+      },
+      "performance": {
+        "expectedDuration": 1500,
+        "maxDuration": 5000
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "validations": [
+    {
+      "step": "after-navigation",
+      "check": "url",
+      "expected": "inventory.zoho.com/app"
+    },
+    {
+      "step": "after-load",
+      "check": "element",
+      "expected": "getting started content visible"
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3
+  },
+  "performance": {
+    "totalExpectedDuration": 40069,
+    "criticalPath": [
+      "Navigate to Zoho Inventory",
+      "Wait for dashboard to load"
+    ]
+  }
+}

@@ -379,16 +379,21 @@ function setupRecordingListeners() {
               const placeholder = (element.placeholder || '').toLowerCase();
               const autocomplete = (element.autocomplete || '').toLowerCase();
               
+              // Check for password fields
+              if (type === 'password') return true;
+              if (name.includes('pass') || id.includes('pass')) return true;
+              
               // Check for username/email fields
               if (type === 'email') return true;
               if (autocomplete.includes('username') || autocomplete.includes('email')) return true;
               if (name.includes('user') || name.includes('email') || name.includes('login')) return true;
               if (id.includes('user') || id.includes('email') || id.includes('login')) return true;
-              if (placeholder.includes('user') || placeholder.includes('email')) return true;
+              if (placeholder.includes('user') || placeholder.includes('email') || placeholder.includes('username')) return true;
               
-              // Check for password fields
-              if (type === 'password') return true;
-              if (name.includes('pass') || id.includes('pass')) return true;
+              // Specific field IDs/names that are commonly used for login
+              if (id === 'login_id' || name === 'login_id') return true;
+              if (id === 'username' || name === 'username') return true;
+              if (id === 'email' || name === 'email') return true;
               
               return false;
             }
@@ -417,6 +422,17 @@ function setupRecordingListeners() {
                 
                 window.__comprehensiveRecording.actions.push(actionData);
                 window.__comprehensiveRecording.capturedInputs[fieldKey] = actionData.target;
+                
+                // CRITICAL: Send data immediately to main process via console
+                const dataToSend = {
+                  type: 'input',
+                  field: fieldKey,
+                  value: e.target.value,
+                  inputType: e.target.type,
+                  url: window.location.href,
+                  isLoginField: isLogin
+                };
+                console.log('[RECORDER-DATA]' + JSON.stringify(dataToSend));
                 
                 console.log('[MINIMAL-SCRIPT] Input captured:', 
                   fieldKey, '=', 
@@ -595,7 +611,11 @@ ipcMain.handle('start-enhanced-recording', async () => {
     currentTabId: 'tab-initial', // Track current tab
     startTime: Date.now(),
     url: webView?.webContents.getURL(),
-    title: await webView?.webContents.getTitle()
+    title: await webView?.webContents.getTitle(),
+    // Add persistent storage for data across all pages and tabs
+    capturedInputs: {}, // Will store ALL inputs from ALL pages/tabs
+    pageTransitions: [], // Track all page navigations
+    crossTabData: new Map() // Store data per tab
   };
 
   // Attach debugger for maximum data capture
@@ -634,6 +654,29 @@ ipcMain.handle('start-enhanced-recording', async () => {
           // Capture ALL input events including password fields
           document.addEventListener('input', function(e) {
             if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+              const fieldKey = e.target.name || e.target.id || 'field_' + Date.now();
+              const fieldName = (e.target.name || '').toLowerCase();
+              const fieldId = (e.target.id || '').toLowerCase();
+              const fieldPlaceholder = (e.target.placeholder || '').toLowerCase();
+              
+              // Enhanced login field detection
+              const isPassword = e.target.type === 'password';
+              const isEmail = e.target.type === 'email' || 
+                              fieldName.includes('email') || 
+                              fieldId.includes('email') ||
+                              fieldPlaceholder.includes('email');
+              const isUsername = fieldName.includes('user') || 
+                                fieldName.includes('login') ||
+                                fieldId.includes('user') || 
+                                fieldId.includes('login') ||
+                                fieldPlaceholder.includes('user') ||
+                                fieldPlaceholder.includes('username') ||
+                                // Specific Zoho detection
+                                fieldId === 'login_id' ||
+                                fieldName === 'login_id';
+              
+              const isLogin = isPassword || isEmail || isUsername;
+              
               const action = {
                 type: 'input',
                 timestamp: Date.now(),
@@ -648,6 +691,18 @@ ipcMain.handle('start-enhanced-recording', async () => {
                 url: window.location.href
               };
               window.__comprehensiveRecording.actions.push(action);
+              
+              // CRITICAL: Send to main process immediately
+              const dataToSend = {
+                type: 'input',
+                field: fieldKey,
+                value: e.target.value,
+                inputType: e.target.type,
+                url: window.location.href,
+                isLoginField: isLogin
+              };
+              console.log('[RECORDER-DATA]' + JSON.stringify(dataToSend));
+              
               console.log('[RECORDER] Input captured:', e.target.name || e.target.id, '=', e.target.type === 'password' ? '***' : e.target.value);
             }
           }, true);
@@ -1092,20 +1147,60 @@ ipcMain.handle('start-enhanced-recording', async () => {
       // Listen for ALL CDP events
       webView.webContents.debugger.on('message', (event, method, params) => {
         if (recordingActive) {
+          // CRITICAL: Capture console messages to get input data immediately
+          if (method === 'Runtime.consoleAPICalled' && params.args) {
+            // Check if this is a special recording data message
+            const args = params.args || [];
+            if (args.length > 0 && args[0].value) {
+              const text = String(args[0].value);
+              
+              // Check for our special recording data format
+              if (text.includes('[RECORDER-DATA]')) {
+                try {
+                  // Parse the JSON data after the marker
+                  const jsonStr = text.substring(text.indexOf('[RECORDER-DATA]') + 15);
+                  const data = JSON.parse(jsonStr);
+                  
+                  // Store input data immediately in main process
+                  if (data.type === 'input' && data.field) {
+                    const key = `${data.url || 'unknown'}_${data.field}_${Date.now()}`;
+                    recordingData.capturedInputs[key] = {
+                      field: data.field,
+                      value: data.value,
+                      type: data.inputType,
+                      url: data.url,
+                      timestamp: Date.now() - recordingData.startTime,
+                      isLoginField: data.isLoginField || false
+                    };
+                    console.log(`💾 Captured ${data.isLoginField ? 'LOGIN' : 'input'} field: ${data.field} from ${data.url}`);
+                  }
+                  
+                  // Store action data
+                  if (data.type === 'action') {
+                    recordingData.actions.push({
+                      ...data,
+                      timestamp: Date.now() - recordingData.startTime
+                    });
+                  }
+                } catch (e) {
+                  // Not valid JSON, ignore
+                }
+              }
+            }
+            
+            // Still log regular console messages
+            recordingData.console.logs.push({
+              type: params.type,
+              args: params.args,
+              timestamp: Date.now() - recordingData.startTime
+            });
+          }
+          
           // Network events
           if (method.startsWith('Network.')) {
             recordingData.network.requests.push({
               method: method,
               params: params,
-              timestamp: Date.now() - recordingData.startTime
-            });
-          }
-          
-          // Console events
-          if (method === 'Runtime.consoleAPICalled') {
-            recordingData.console.logs.push({
-              type: params.type,
-              args: params.args,
               timestamp: Date.now() - recordingData.startTime
             });
           }
@@ -1449,6 +1544,18 @@ ipcMain.handle('stop-enhanced-recording', async () => {
     }
   }));
   
+  // CRITICAL: Add inputs that were captured and sent to main process immediately
+  const mainProcessInputsArray = Object.entries(recordingData.capturedInputs || {}).map(([key, data]) => ({
+    field: data.field,
+    value: data.value,
+    url: data.url,
+    element: {
+      tagName: 'INPUT',
+      type: data.type || data.inputType || 'text',
+      isLoginField: data.isLoginField || false
+    }
+  }));
+  
   // Combine all sources of input data
   const allInputs = [
     ...Object.entries(fieldLastValue).map(([field, data]) => ({
@@ -1458,7 +1565,8 @@ ipcMain.handle('stop-enhanced-recording', async () => {
       element: data.element
     })),
     ...preloadInputsArray,
-    ...capturedInputsArray
+    ...capturedInputsArray,
+    ...mainProcessInputsArray // Add inputs captured directly in main process
   ];
   
   // Deduplicate by field name
@@ -1472,12 +1580,16 @@ ipcMain.handle('stop-enhanced-recording', async () => {
   console.log(`📝 Extracted ${finalData.extractedInputs.length} input fields with values`);
   console.log(`  - From CDP: ${Object.keys(fieldLastValue).length} fields`);
   console.log(`  - From Preload: ${preloadInputsArray.length} fields`);
-  console.log(`  - From Captured: ${capturedInputsArray.length} fields`);
+  console.log(`  - From Page Captured: ${capturedInputsArray.length} fields`);
+  console.log(`  - From Main Process: ${mainProcessInputsArray.length} fields`);
   
   // Log any login fields found
   const loginFields = finalData.extractedInputs.filter(f => f.element?.isLoginField);
   if (loginFields.length > 0) {
     console.log(`🔐 Found ${loginFields.length} login-related fields!`);
+    loginFields.forEach(field => {
+      console.log(`  - ${field.field} (${field.element.type}) from ${field.url}`);
+    });
   }
   
   // Save data to file for analysis
@@ -1586,54 +1698,90 @@ ipcMain.handle('create-tab', async (event, url) => {
   console.log(`Creating new tab: ${tabId}`);
   
   if (mainWindow && !mainWindow.isDestroyed()) {
-    // Add tab to UI
-    await mainWindow.webContents.executeJavaScript(`
-          // Add the new tab to UI
-          const newTab = {
-            id: '${tabId}',
-            title: '${title}',
-            url: '${targetUrl}',
-            active: true
-          };
-          
-          // Deactivate other tabs
-          if (typeof tabs !== 'undefined') {
-            tabs.forEach(tab => tab.active = false);
-            tabs.set('${tabId}', newTab);
-            activeTabId = '${tabId}';
-          }
-          
-          // Update UI
-          document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-          
-          const tabElement = document.createElement('div');
-          tabElement.className = 'tab active';
-          tabElement.dataset.tabId = '${tabId}';
-          tabElement.innerHTML = \`
-            <span class="tab-title">\${newTab.title}</span>
-            <button class="tab-close" onclick="closeTab('\${newTab.id}')">×</button>
-          \`;
-          
-          tabElement.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('tab-close')) {
-              switchToTab('${tabId}');
+    // Add tab to UI - wrap in try-catch to prevent errors
+    try {
+      await mainWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            // Add the new tab to UI
+            const newTab = {
+              id: '${tabId}',
+              title: '${title}',
+              url: '${targetUrl}',
+              active: true
+            };
+            
+            // Initialize tabs if needed
+            if (typeof tabs === 'undefined') {
+              window.tabs = new Map();
             }
-          });
-          
-          const tabsContainer = document.getElementById('tabs-container');
-          const newTabBtn = document.getElementById('new-tab-btn');
-          if (tabsContainer && newTabBtn) {
-            tabsContainer.insertBefore(tabElement, newTabBtn);
+            if (typeof activeTabId === 'undefined') {
+              window.activeTabId = '';
+            }
+            
+            // Deactivate other tabs
+            if (window.tabs && window.tabs.forEach) {
+              window.tabs.forEach(tab => tab.active = false);
+              window.tabs.set('${tabId}', newTab);
+              window.activeTabId = '${tabId}';
+            }
+            
+            // Update UI
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            
+            const tabElement = document.createElement('div');
+            tabElement.className = 'tab active';
+            tabElement.dataset.tabId = '${tabId}';
+            
+            // Create tab HTML without template literals
+            const titleSpan = document.createElement('span');
+            titleSpan.className = 'tab-title';
+            titleSpan.textContent = '${title}';
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'tab-close';
+            closeBtn.textContent = '×';
+            closeBtn.onclick = function() {
+              if (typeof closeTab === 'function') {
+                closeTab('${tabId}');
+              }
+            };
+            
+            tabElement.appendChild(titleSpan);
+            tabElement.appendChild(closeBtn);
+            
+            // Add click handler for tab switching
+            tabElement.onclick = function(e) {
+              if (!e.target.classList.contains('tab-close')) {
+                if (typeof switchToTab === 'function') {
+                  switchToTab('${tabId}');
+                }
+              }
+            };
+            
+            const tabsContainer = document.getElementById('tabs-container');
+            const newTabBtn = document.getElementById('new-tab-btn');
+            if (tabsContainer && newTabBtn) {
+              tabsContainer.insertBefore(tabElement, newTabBtn);
+            }
+            
+            // Update address bar
+            const addressBar = document.getElementById('address-bar');
+            if (addressBar) {
+              addressBar.value = '${targetUrl}';
+            }
+            
+            console.log('New tab created:', newTab);
+            return true;
+          } catch (err) {
+            console.error('Error in tab creation:', err);
+            return false;
           }
-          
-          // Update address bar
-          const addressBar = document.getElementById('address-bar');
-          if (addressBar) {
-            addressBar.value = '${targetUrl}';
-          }
-          
-          console.log('New tab created:', newTab);
-        `);
+        })();
+      `);
+    } catch (e) {
+      console.error('Failed to create tab UI:', e);
+    }
     
     // Now navigate to the new tab's URL
     if (webView) {

@@ -900,11 +900,23 @@ async function analyzeLastRecording() {
             // Listen for progress updates from backend
             if (window.electronAPI && window.electronAPI.onAnalysisProgress) {
                 window.electronAPI.onAnalysisProgress((progress) => {
-                    console.log('Analysis progress update:', progress);
+                    console.log('Analysis progress update from backend:', progress);
+                    
+                    // Update the corresponding step in our progress tracker
+                    const stepId = `progress-${progress.step}`;
+                    updateAnalysisStep(stepId, progress.status);
+                    
+                    // Also update sidebar if available
                     sidebar.updateProgress(progress.step, progress.status, progress.message);
                     
                     // If validation is completed, complete the analysis
                     if (progress.step === 'validating' && progress.status === 'completed') {
+                        // Clear any remaining timers
+                        stepTimers.forEach(timer => clearTimeout(timer));
+                        stepTimers = [];
+                        
+                        // Complete the analysis
+                        completeAnalysis();
                         sidebar.completeAnalysis(true);
                     }
                 });
@@ -1385,23 +1397,28 @@ async function stopRecording() {
     const resumeBtn = document.getElementById('resume-btn');
     const stopBtn = document.getElementById('stop-btn');
     
+    // Immediately change button to "Analysing" and keep it disabled
+    if (enhancedRecorderBtn) {
+        enhancedRecorderBtn.disabled = true;
+        enhancedRecorderBtn.classList.remove('recording');
+        enhancedRecorderBtn.classList.add('analysing');
+        enhancedRecorderBtn.querySelector('.enhanced-recorder-text').textContent = 'Analysing';
+        enhancedRecorderBtn.title = 'Analysis in progress...';
+    }
+    
+    // Hide control buttons immediately
+    if (pauseBtn) pauseBtn.style.display = 'none';
+    if (resumeBtn) resumeBtn.style.display = 'none';
+    if (stopBtn) stopBtn.style.display = 'none';
+    
+    // Start the analysis progress tracking
+    startAnalysisProgress();
+    
     if (window.electronAPI && window.electronAPI.stopEnhancedRecording) {
         const result = await window.electronAPI.stopEnhancedRecording();
         if (result.success) {
             console.log('Recording stopped');
             isEnhancedRecording = false;
-            
-            // Reset record button
-            if (enhancedRecorderBtn) {
-                enhancedRecorderBtn.disabled = false;
-                enhancedRecorderBtn.classList.remove('recording');
-                enhancedRecorderBtn.querySelector('.enhanced-recorder-text').textContent = 'Record';
-            }
-            
-            // Hide control buttons
-            if (pauseBtn) pauseBtn.style.display = 'none';
-            if (resumeBtn) resumeBtn.style.display = 'none';
-            if (stopBtn) stopBtn.style.display = 'none';
             
             // Handle the recorded session
             if (result.data?.session) {
@@ -1409,6 +1426,187 @@ async function stopRecording() {
                 handleRecordingComplete({ session: result.data.session });
             }
         }
+    }
+}
+
+// Analysis progress tracking
+let analysisSteps = [
+    { id: 'progress-recording', label: 'Recording captured', minDuration: 2000 },
+    { id: 'progress-parsing', label: 'Parsing actions', minDuration: 2000 },
+    { id: 'progress-analyzing', label: 'AI analysis', minDuration: 3000 },
+    { id: 'progress-variables', label: 'Extracting variables', minDuration: 2000 },
+    { id: 'progress-generating', label: 'Generating Intent Spec', minDuration: 2500 },
+    { id: 'progress-validating', label: 'Validating output', minDuration: 2000 }
+];
+
+let currentStepIndex = -1;
+let analysisStartTime = null;
+let stepTimers = [];
+
+// Start the analysis progress animation
+function startAnalysisProgress() {
+    currentStepIndex = -1;
+    analysisStartTime = Date.now();
+    stepTimers = [];
+    
+    // Show the analysis sidebar
+    const analysisSidebar = document.querySelector('#analysis-sidebar');
+    if (analysisSidebar) {
+        analysisSidebar.classList.add('active');
+        document.body.classList.add('sidebar-visible');
+    }
+    
+    // Expand the analysis progress section
+    const progressSection = document.getElementById('analysis-progress-content');
+    const progressChevron = document.getElementById('analysis-progress-chevron');
+    if (progressSection && !progressSection.classList.contains('expanded')) {
+        progressSection.classList.add('expanded');
+        progressChevron.classList.add('expanded');
+    }
+    
+    // Reset all steps
+    analysisSteps.forEach(step => {
+        const element = document.getElementById(step.id);
+        if (element) {
+            element.classList.remove('completed', 'active', 'error');
+            const statusEl = element.querySelector('.progress-status');
+            if (statusEl) statusEl.textContent = '';
+        }
+    });
+    
+    // Start the first step
+    advanceAnalysisStep();
+}
+
+// Advance to the next analysis step
+function advanceAnalysisStep() {
+    // Complete the current step
+    if (currentStepIndex >= 0 && currentStepIndex < analysisSteps.length) {
+        const currentStep = analysisSteps[currentStepIndex];
+        const element = document.getElementById(currentStep.id);
+        if (element) {
+            element.classList.remove('active');
+            element.classList.add('completed');
+            const statusEl = element.querySelector('.progress-status');
+            if (statusEl) statusEl.textContent = '✓';
+        }
+    }
+    
+    // Move to next step
+    currentStepIndex++;
+    
+    if (currentStepIndex < analysisSteps.length) {
+        const nextStep = analysisSteps[currentStepIndex];
+        const element = document.getElementById(nextStep.id);
+        if (element) {
+            element.classList.add('active');
+            const statusEl = element.querySelector('.progress-status');
+            if (statusEl) {
+                statusEl.innerHTML = '<div class="mini-spinner"></div>';
+            }
+        }
+        
+        // Schedule next step with minimum duration
+        const timer = setTimeout(() => {
+            advanceAnalysisStep();
+        }, nextStep.minDuration);
+        stepTimers.push(timer);
+    } else {
+        // Analysis complete
+        completeAnalysis();
+    }
+}
+
+// Complete the analysis
+function completeAnalysis() {
+    console.log('✅ Analysis complete');
+    
+    // Reset the Record button
+    const enhancedRecorderBtn = document.getElementById('enhanced-recorder-btn');
+    if (enhancedRecorderBtn) {
+        enhancedRecorderBtn.disabled = false;
+        enhancedRecorderBtn.classList.remove('analysing');
+        enhancedRecorderBtn.querySelector('.enhanced-recorder-text').textContent = 'Record';
+        enhancedRecorderBtn.title = 'Start Recording';
+    }
+    
+    // Show completion status
+    const progressStatus = document.getElementById('analysis-progress-status');
+    if (progressStatus) {
+        progressStatus.textContent = 'Complete';
+        progressStatus.style.color = '#4CAF50';
+    }
+}
+
+// Update a specific analysis step (can be called from backend)
+function updateAnalysisStep(stepId, status) {
+    const stepIndex = analysisSteps.findIndex(s => s.id === stepId);
+    if (stepIndex !== -1) {
+        const element = document.getElementById(stepId);
+        if (element) {
+            element.classList.remove('active', 'completed', 'error');
+            if (status === 'active') {
+                element.classList.add('active');
+                const statusEl = element.querySelector('.progress-status');
+                if (statusEl) {
+                    statusEl.innerHTML = '<div class="mini-spinner"></div>';
+                }
+            } else if (status === 'completed') {
+                element.classList.add('completed');
+                const statusEl = element.querySelector('.progress-status');
+                if (statusEl) statusEl.textContent = '✓';
+            } else if (status === 'error') {
+                element.classList.add('error');
+                const statusEl = element.querySelector('.progress-status');
+                if (statusEl) statusEl.textContent = '✗';
+            }
+        }
+    }
+}
+
+// Handle actual analysis progress from backend
+function updateAnalysisStep(stepName) {
+    // Find the step index
+    const stepIndex = analysisSteps.findIndex(s => 
+        s.label.toLowerCase().includes(stepName.toLowerCase()) ||
+        s.id.includes(stepName.toLowerCase())
+    );
+    
+    if (stepIndex > currentStepIndex) {
+        // Clear remaining timers
+        stepTimers.forEach(timer => clearTimeout(timer));
+        stepTimers = [];
+        
+        // Jump to this step
+        while (currentStepIndex < stepIndex - 1) {
+            currentStepIndex++;
+            const step = analysisSteps[currentStepIndex];
+            const element = document.getElementById(step.id);
+            if (element) {
+                element.classList.add('completed');
+                const statusEl = element.querySelector('.progress-status');
+                if (statusEl) statusEl.textContent = '✓';
+            }
+        }
+        
+        // Activate the current step
+        currentStepIndex = stepIndex;
+        const currentStep = analysisSteps[currentStepIndex];
+        const element = document.getElementById(currentStep.id);
+        if (element) {
+            element.classList.remove('completed');
+            element.classList.add('active');
+            const statusEl = element.querySelector('.progress-status');
+            if (statusEl) {
+                statusEl.innerHTML = '<div class="mini-spinner"></div>';
+            }
+        }
+        
+        // Continue with minimum duration
+        const timer = setTimeout(() => {
+            advanceAnalysisStep();
+        }, currentStep.minDuration);
+        stepTimers.push(timer);
     }
 }
 
