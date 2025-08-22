@@ -1,0 +1,204 @@
+You are an expert at creating BULLETPROOF Intent Specifications from comprehensive recording data.
+
+Your task: Analyze the recording and output a STRICT JSON Intent Spec. NO prose, NO explanations, NO markdown - ONLY valid JSON.
+
+COMPREHENSIVE RECORDING DATA:
+==========================
+Session: comprehensive-1755890435786
+Duration: 57439ms
+Start URL: https://www.google.com/?zx=1755890418447&no_sw_cr=1
+Viewport: {"width":1920,"height":1080}
+User Agent: Not captured
+
+RECORDED EVENTS/ACTIONS (0):
+No actions captured
+
+DOM SNAPSHOTS (14):
+DOM Snapshot Summary (14 total):
+
+Page Flow (4 unique pages):
+  - https://inventory.zoho.com/app/893870319#/home/gettingstarted (2 snapshots)
+  - https://inventory.zoho.com/app/893870319#/inventory/items?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D (1 snapshots)
+  - https://inventory.zoho.com/app/893870319#/inventory/items/new (10 snapshots)
+  - https://inventory.zoho.com/app/893870319#/inventory/items/6797511000000295027?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D (1 snapshots)
+
+Event-Triggered Snapshots:
+  - click: 8
+  - periodic-idle: 1
+  - form-change: 3
+  - popstate: 1
+
+gettingstarted:
+  - Title: Zoho Inventory
+  - Filled fields: 22
+    • wms_settings_pausechat: "on"
+    • wms_settings_sound_global: "on"
+    • wms_settings_sound_mymsg: "on"
+    • wms_settings_sound_mention: "on"
+    • wms_settings_sound_groupmsg: "on"
+  - Available actions: Navigate To (Alt+0) ,  ,  
+
+items?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D:
+  - Title: Items | Zoho Inventory
+  - Filled fields: 48
+    • ember264: "on"
+    • ember277: "on"
+    • ember283: "on"
+    • ember289: "on"
+    • ember295: "on"
+  - Available actions: Navigate To (Alt+0) ,  ,  
+
+new:
+  - Title: Add New Item | Zoho Inventory
+  - Filled fields: 34
+    • e7f00d25-2a32-46c9-bf7a-6334f515ae96: "goods"
+    • e3620404-a1d5-4aef-948f-c70ab2a3c666: "service"
+    • ae61b9cd3: "New Box Item 100"
+    • ember435: "box"
+    • a0a0b51ba: "on"
+  - Available actions: Navigate To (Alt+0) ,  ,  
+  - Forms on page: 1
+
+6797511000000295027?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D:
+  - Title: Add New Item | Zoho Inventory
+  - Filled fields: 47
+    • ember506: "on"
+    • ember512: "on"
+    • ember518: "on"
+    • ember524: "on"
+    • ember530: "on"
+  - Available actions: Navigate To (Alt+0) ,  ,  
+
+
+NETWORK INSIGHTS:
+No network data captured
+
+DYNAMIC ELEMENTS DETECTED:
+No mutations captured
+
+CONSOLE ERRORS FOUND:
+No console errors detected
+
+TIMING PATTERNS:
+No timing data
+
+VIEWPORT & RESPONSIVE:
+No viewport data
+
+TAB NAVIGATION:
+Single tab workflow
+
+CRITICAL RULES FOR BULLETPROOF INTENT SPEC:
+==========================================
+1. WAIT CONDITIONS:
+   - Add explicit waits after navigation (use network patterns)
+   - Wait for dynamic content to load (use DOM mutations)
+   - Add retry logic for flaky elements
+
+2. SELECTOR STRATEGY:
+   - Provide 3+ selectors per element when possible
+   - Use data from DOM snapshots for alternative selectors
+   - Include aria-label, role, and text selectors
+
+3. ERROR HANDLING:
+   - Add skip conditions for optional steps (based on console errors)
+   - Include validation steps after critical actions
+   - Add recovery steps for common failures
+
+4. TIMING OPTIMIZATION:
+   - Use actual timing from recording for realistic delays
+   - Add throttling for rapid successive actions
+   - Include performance.timing data for page load waits
+
+5. VIEWPORT AWARENESS:
+   - Add viewport adjustment steps if needed
+   - Include scroll actions for elements below fold
+   - Handle responsive layouts
+
+6. MULTI-TAB HANDLING:
+   - Track tab switches and window management
+   - Include tab synchronization waits
+   - Handle popup windows
+
+7. NETWORK AWARENESS:
+   - Wait for specific API calls to complete
+   - Handle offline/slow network scenarios
+   - Include request validation
+
+8. STATE MANAGEMENT:
+   - Track authentication state from cookies/localStorage
+   - Add conditional flows based on state
+   - Include state validation steps
+
+OUTPUT THIS ENHANCED JSON STRUCTURE:
+{
+  "name": "Descriptive name",
+  "description": "What this automation does",
+  "url": "https://www.google.com/?zx=1755890418447&no_sw_cr=1",
+  "params": ["VARIABLE_NAMES"],
+  "environment": {
+    "viewport": {},
+    "userAgent": "",
+    "cookies": false,
+    "localStorage": false
+  },
+  "skipNavigationStates": ["authenticated", "dashboard"],
+  "steps": [
+    {
+      "name": "Step name",
+      "ai_instruction": "Natural language instruction",
+      "snippet": "await page.action();",
+      "prefer": "snippet or ai",
+      "fallback": "ai, snippet, or retry",
+      "selectors": ["primary", "secondary", "text-based", "aria-based"],
+      "value": "value or {{VARIABLE}}",
+      "waitBefore": {
+        "type": "network|element|time",
+        "condition": "specific condition",
+        "timeout": 5000
+      },
+      "waitAfter": {
+        "type": "network|element|time",
+        "condition": "specific condition",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element|text|url|network",
+        "expected": "expected value or pattern"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "fallback action"
+      },
+      "performance": {
+        "expectedDuration": 57439,
+        "maxDuration": 30000
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "validations": [
+    {
+      "step": "after-login",
+      "check": "element|url|cookie",
+      "expected": "value"
+    }
+  ],
+  "errorRecovery": {
+    "strategies": ["retry", "refresh", "restart"],
+    "maxAttempts": 3
+  },
+  "performance": {
+    "totalExpectedDuration": 57439,
+    "criticalPath": ["step1", "step3", "step5"]
+  }
+}
+
+IMPORTANT: Return ONLY the JSON Intent Spec above with actual values filled in. No explanations, no comments, no markdown - ONLY valid JSON starting with { and ending with }

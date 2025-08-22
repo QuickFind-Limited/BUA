@@ -1,0 +1,40 @@
+{
+  "name": "Zoho Account Login",
+  "url": "https://accounts.zoho.com/signin",
+  "description": "Automates login to Zoho accounts using email and password credentials",
+  "params": [
+    "LOGIN_ID",
+    "PASSWORD"
+  ],
+  "steps": [
+    {
+      "name": "Enter email address",
+      "ai_instruction": "Enter the email address in the login field",
+      "snippet": "await page.fill('#login_id', '{{LOGIN_ID}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "value": "{{LOGIN_ID}}"
+    },
+    {
+      "name": "Enter password",
+      "ai_instruction": "Enter the password in the password field",
+      "snippet": "await page.fill('#password', '{{PASSWORD}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "value": "{{PASSWORD}}"
+    },
+    {
+      "name": "Submit login",
+      "ai_instruction": "Click the Sign In or Next button to complete login",
+      "snippet": "await page.click('#nextbtn');",
+      "prefer": "snippet",
+      "fallback": "ai"
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  }
+}

@@ -1,0 +1,435 @@
+{
+  "name": "Create New Box Item in Zoho Inventory",
+  "description": "Creates a new inventory item named 'New Box Item 100' with quantity 32 and reorder level 30 in Zoho Inventory",
+  "url": "https://inventory.zoho.com/app/893870319#/home/gettingstarted",
+  "params": [
+    "ITEM_NAME",
+    "QUANTITY",
+    "REORDER_LEVEL"
+  ],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "",
+    "cookies": true,
+    "localStorage": true
+  },
+  "skipNavigationStates": [
+    "authenticated",
+    "inventory_dashboard"
+  ],
+  "steps": [
+    {
+      "name": "Navigate to Items List",
+      "ai_instruction": "Click on the Items menu or navigate to the items list page",
+      "snippet": "await page.goto('https://inventory.zoho.com/app/893870319#/inventory/items?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[href*='/inventory/items']",
+        "text=Items",
+        "[aria-label='Items']"
+      ],
+      "value": null,
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 5000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "networkidle",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory/items"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "refresh and retry"
+      },
+      "performance": {
+        "expectedDuration": 2000,
+        "maxDuration": 10000
+      }
+    },
+    {
+      "name": "Click New Item Button",
+      "ai_instruction": "Click the New or Add Item button to create a new inventory item",
+      "snippet": "await page.click('[href*='/inventory/items/new']');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[href*='/inventory/items/new']",
+        "button:has-text('New')",
+        "[aria-label='New Item']",
+        "text=+ New"
+      ],
+      "value": null,
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 3000
+      },
+      "waitAfter": {
+        "type": "url",
+        "condition": "/inventory/items/new",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "/inventory/items/new"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "navigate directly to new item URL"
+      },
+      "performance": {
+        "expectedDuration": 1500,
+        "maxDuration": 5000
+      }
+    },
+    {
+      "name": "Select Item Type",
+      "ai_instruction": "Select 'Goods' as the item type if not already selected",
+      "snippet": "await page.click('#e7f00d25-2a32-46c9-bf7a-6334f515ae96');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#e7f00d25-2a32-46c9-bf7a-6334f515ae96",
+        "input[value='goods']",
+        "label:has-text('Goods')"
+      ],
+      "value": "goods",
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "500",
+        "timeout": 500
+      },
+      "validation": {
+        "type": "element",
+        "expected": "checked"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": true,
+        "alternativeAction": "continue if already selected"
+      },
+      "performance": {
+        "expectedDuration": 500,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Enter Item Name",
+      "ai_instruction": "Enter the item name in the name field",
+      "snippet": "await page.fill('#ae61b9cd3', '{{ITEM_NAME}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#ae61b9cd3",
+        "input[name='item_name']",
+        "input[placeholder*='name']",
+        "label:has-text('Item Name') + input"
+      ],
+      "value": "{{ITEM_NAME}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "300",
+        "timeout": 300
+      },
+      "validation": {
+        "type": "element",
+        "expected": "value={{ITEM_NAME}}"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": false,
+        "alternativeAction": "clear and retry"
+      },
+      "performance": {
+        "expectedDuration": 1000,
+        "maxDuration": 3000
+      }
+    },
+    {
+      "name": "Set Unit",
+      "ai_instruction": "Enter 'box' as the unit of measurement",
+      "snippet": "await page.fill('#ember435', 'box');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#ember435",
+        "input[name='unit']",
+        "label:has-text('Unit') + input"
+      ],
+      "value": "box",
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "300",
+        "timeout": 300
+      },
+      "validation": {
+        "type": "element",
+        "expected": "value=box"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": true,
+        "alternativeAction": "continue with default unit"
+      },
+      "performance": {
+        "expectedDuration": 800,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Enter Opening Stock",
+      "ai_instruction": "Enter the opening stock quantity",
+      "snippet": "await page.fill('#a484fbb0c', '{{QUANTITY}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#a484fbb0c",
+        "input[name='opening_stock']",
+        "label:has-text('Opening Stock') + input",
+        "input[placeholder*='quantity']"
+      ],
+      "value": "{{QUANTITY}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "300",
+        "timeout": 300
+      },
+      "validation": {
+        "type": "element",
+        "expected": "value={{QUANTITY}}"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": false,
+        "alternativeAction": "clear and retry"
+      },
+      "performance": {
+        "expectedDuration": 800,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Set Reorder Level",
+      "ai_instruction": "Enter the reorder level for inventory management",
+      "snippet": "await page.fill('#afd251c93', '{{REORDER_LEVEL}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#afd251c93",
+        "input[name='reorder_level']",
+        "label:has-text('Reorder Level') + input"
+      ],
+      "value": "{{REORDER_LEVEL}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "300",
+        "timeout": 300
+      },
+      "validation": {
+        "type": "element",
+        "expected": "value={{REORDER_LEVEL}}"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": true,
+        "alternativeAction": "continue without reorder level"
+      },
+      "performance": {
+        "expectedDuration": 800,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Enable Track Inventory",
+      "ai_instruction": "Check the 'Track Inventory' checkbox if not already checked",
+      "snippet": "await page.check('#a0a0b51ba');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#a0a0b51ba",
+        "input[type='checkbox'][name*='track']",
+        "label:has-text('Track Inventory') input"
+      ],
+      "value": "on",
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "300",
+        "timeout": 300
+      },
+      "validation": {
+        "type": "element",
+        "expected": "checked"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": true,
+        "alternativeAction": "continue if already checked"
+      },
+      "performance": {
+        "expectedDuration": 500,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Save Item",
+      "ai_instruction": "Click the Save button to create the new inventory item",
+      "snippet": "await page.click('button:has-text(\"Save\")');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "button:has-text('Save')",
+        "[type='submit']",
+        "button.primary",
+        "#save-button"
+      ],
+      "value": null,
+      "waitBefore": {
+        "type": "time",
+        "condition": "500",
+        "timeout": 500
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "response",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "/inventory/items/[0-9]+"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "check for validation errors and fix"
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000
+      }
+    },
+    {
+      "name": "Verify Item Creation",
+      "ai_instruction": "Verify that the item was successfully created by checking the success message or item details page",
+      "snippet": "await page.waitForSelector('text=/Item.*created|saved|added/i', {timeout: 5000});",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "[class*='success']",
+        "[role='alert']",
+        "text=/successfully/i"
+      ],
+      "value": null,
+      "waitBefore": {
+        "type": "time",
+        "condition": "1000",
+        "timeout": 1000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "visible"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 2000,
+        "skipOnError": true,
+        "alternativeAction": "check URL for item ID"
+      },
+      "performance": {
+        "expectedDuration": 2000,
+        "maxDuration": 5000
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "validations": [
+    {
+      "step": "after-save",
+      "check": "url",
+      "expected": "/inventory/items/[0-9]+"
+    },
+    {
+      "step": "final",
+      "check": "element",
+      "expected": "item details visible"
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3
+  },
+  "performance": {
+    "totalExpectedDuration": 20000,
+    "criticalPath": [
+      "Navigate to Items List",
+      "Click New Item Button",
+      "Enter Item Name",
+      "Save Item",
+      "Verify Item Creation"
+    ]
+  }
+}
