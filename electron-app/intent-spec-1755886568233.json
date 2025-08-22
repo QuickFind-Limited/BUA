@@ -1,0 +1,46 @@
+{
+  "name": "Zoho Inventory Getting Started Setup",
+  "url": "https://inventory.zoho.com/app/893870319#/home/gettingstarted",
+  "description": "Navigate to Zoho Inventory and configure initial settings on the getting started page",
+  "params": [],
+  "steps": [
+    {
+      "name": "Configure chat settings",
+      "ai_instruction": "Enable pause chat setting if not already enabled",
+      "snippet": "await page.evaluate(() => { const input = document.querySelector('input[name=\"wms_settings_pausechat\"]'); if(input && !input.checked) input.click(); });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "value": "on"
+    },
+    {
+      "name": "Enable global sound settings",
+      "ai_instruction": "Enable global sound notifications",
+      "snippet": "await page.evaluate(() => { const input = document.querySelector('input[name=\"wms_settings_sound_global\"]'); if(input && !input.checked) input.click(); });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "value": "on"
+    },
+    {
+      "name": "Configure message sound settings",
+      "ai_instruction": "Enable sound notifications for my messages, mentions, and group messages",
+      "snippet": "await page.evaluate(() => { ['wms_settings_sound_mymsg', 'wms_settings_sound_mention', 'wms_settings_sound_groupmsg'].forEach(name => { const input = document.querySelector(`input[name=\"${name}\"]`); if(input && !input.checked) input.click(); }); });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "value": "on"
+    },
+    {
+      "name": "Complete setup",
+      "ai_instruction": "Verify all settings are saved and complete the getting started process",
+      "snippet": "await page.waitForTimeout(1000);",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "value": ""
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  }
+}

@@ -1,0 +1,390 @@
+{
+  "name": "Create Box Item in Zoho Inventory",
+  "description": "Navigates to Zoho Inventory and creates a new box item with specified dimensions",
+  "url": "https://www.google.com/?zx=1755887915397&no_sw_cr=1",
+  "params": [
+    "ITEM_NAME",
+    "ITEM_WIDTH",
+    "ITEM_HEIGHT"
+  ],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "cookies": true,
+    "localStorage": true
+  },
+  "skipNavigationStates": [
+    "inventory-dashboard",
+    "items-list"
+  ],
+  "steps": [
+    {
+      "name": "Navigate to Zoho Inventory",
+      "ai_instruction": "Navigate to Zoho Inventory dashboard",
+      "snippet": "await page.goto('https://inventory.zoho.com/app/893870319#/home/gettingstarted');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [],
+      "value": "",
+      "waitBefore": {
+        "type": "time",
+        "condition": "initial load",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "dashboard loaded",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory.zoho.com.*gettingstarted"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh page"
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000
+      }
+    },
+    {
+      "name": "Navigate to Items List",
+      "ai_instruction": "Click on Items menu to view items list",
+      "snippet": "await page.goto('https://inventory.zoho.com/app/893870319#/inventory/items?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "a[href*='inventory/items']",
+        "text=Items",
+        "[aria-label='Items']"
+      ],
+      "value": "",
+      "waitBefore": {
+        "type": "element",
+        "condition": "navigation ready",
+        "timeout": 1000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "items list loaded",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory/items.*filter_by=Status.Active"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 1500,
+        "skipOnError": false,
+        "alternativeAction": "click items menu"
+      },
+      "performance": {
+        "expectedDuration": 2500,
+        "maxDuration": 8000
+      }
+    },
+    {
+      "name": "Click New Item Button",
+      "ai_instruction": "Click the New or Add Item button to create a new item",
+      "snippet": "await page.goto('https://inventory.zoho.com/app/893870319#/inventory/items/new');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "button:has-text('New')",
+        "a[href*='items/new']",
+        "[aria-label='Add new item']",
+        "svg#Layer_1"
+      ],
+      "value": "",
+      "waitBefore": {
+        "type": "element",
+        "condition": "page ready",
+        "timeout": 500
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "new item form loaded",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory/items/new"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "find and click add button"
+      },
+      "performance": {
+        "expectedDuration": 2000,
+        "maxDuration": 7000
+      }
+    },
+    {
+      "name": "Select Goods Type",
+      "ai_instruction": "Select 'Goods' as the item type",
+      "snippet": "await page.click('#c7dce25f-72d4-41bf-844e-f89cd696817a');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#c7dce25f-72d4-41bf-844e-f89cd696817a",
+        "input[value='goods']",
+        "label:has-text('Goods')"
+      ],
+      "value": "goods",
+      "waitBefore": {
+        "type": "element",
+        "condition": "form ready",
+        "timeout": 1000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "selection registered",
+        "timeout": 500
+      },
+      "validation": {
+        "type": "element",
+        "expected": "input[value='goods']:checked"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": false,
+        "alternativeAction": "click goods radio button"
+      },
+      "performance": {
+        "expectedDuration": 200,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Enter Item Name",
+      "ai_instruction": "Enter the item name in the name field",
+      "snippet": "await page.fill('#a727ec629', '{{ITEM_NAME}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#a727ec629",
+        "input[name='item_name']",
+        "input[placeholder*='Item Name']"
+      ],
+      "value": "{{ITEM_NAME}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "input visible",
+        "timeout": 500
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "value entered",
+        "timeout": 300
+      },
+      "validation": {
+        "type": "element",
+        "expected": "input[value='{{ITEM_NAME}}']"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": false,
+        "alternativeAction": "clear and retry"
+      },
+      "performance": {
+        "expectedDuration": 500,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Select Unit as Box",
+      "ai_instruction": "Select 'box' as the unit of measurement",
+      "snippet": "await page.selectOption('#ember435', 'box');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#ember435",
+        "select[name='unit']",
+        "select:near(:text('Unit'))"
+      ],
+      "value": "box",
+      "waitBefore": {
+        "type": "element",
+        "condition": "select visible",
+        "timeout": 500
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "selection made",
+        "timeout": 300
+      },
+      "validation": {
+        "type": "element",
+        "expected": "select:has(option[value='box']:checked)"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": false,
+        "alternativeAction": "type box in unit field"
+      },
+      "performance": {
+        "expectedDuration": 300,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Enter Width Dimension",
+      "ai_instruction": "Enter the width dimension value",
+      "snippet": "await page.fill('#aa724404a', '{{ITEM_WIDTH}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#aa724404a",
+        "input[name='width']",
+        "input[placeholder*='Width']"
+      ],
+      "value": "{{ITEM_WIDTH}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "dimension fields visible",
+        "timeout": 500
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "value entered",
+        "timeout": 300
+      },
+      "validation": {
+        "type": "element",
+        "expected": "input[value='{{ITEM_WIDTH}}']"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": false,
+        "alternativeAction": "clear and retry"
+      },
+      "performance": {
+        "expectedDuration": 400,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Enter Height Dimension",
+      "ai_instruction": "Enter the height dimension value",
+      "snippet": "await page.fill('#a92b829f0', '{{ITEM_HEIGHT}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#a92b829f0",
+        "input[name='height']",
+        "input[placeholder*='Height']"
+      ],
+      "value": "{{ITEM_HEIGHT}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "height field visible",
+        "timeout": 500
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "value entered",
+        "timeout": 300
+      },
+      "validation": {
+        "type": "element",
+        "expected": "input[value='{{ITEM_HEIGHT}}']"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": false,
+        "alternativeAction": "clear and retry"
+      },
+      "performance": {
+        "expectedDuration": 400,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Save Item",
+      "ai_instruction": "Click the Save button to create the item",
+      "snippet": "await page.click('button:has-text(\"Save\")');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "button:has-text('Save')",
+        "button[type='submit']",
+        "[aria-label='Save item']"
+      ],
+      "value": "",
+      "waitBefore": {
+        "type": "element",
+        "condition": "save button enabled",
+        "timeout": 1000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "save request completed",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory/items/[0-9]+"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "submit form"
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "validations": [
+    {
+      "step": "after-save",
+      "check": "url",
+      "expected": "inventory/items/[0-9]+.*filter_by=Status.Active"
+    },
+    {
+      "step": "item-created",
+      "check": "element",
+      "expected": "text=Item created successfully"
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3
+  },
+  "performance": {
+    "totalExpectedDuration": 20000,
+    "criticalPath": [
+      "Navigate to Zoho Inventory",
+      "Click New Item Button",
+      "Enter Item Name",
+      "Save Item"
+    ]
+  }
+}

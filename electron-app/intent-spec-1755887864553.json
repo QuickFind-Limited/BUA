@@ -1,0 +1,40 @@
+{
+  "name": "Zoho Inventory Getting Started Page Load",
+  "url": "https://www.google.com/?zx=1755887739460&no_sw_cr=1",
+  "description": "Navigates to Zoho Inventory getting started page and captures initial state",
+  "params": [
+    "ZOHO_ACCOUNT_ID"
+  ],
+  "steps": [
+    {
+      "name": "Navigate to Zoho Inventory",
+      "ai_instruction": "Navigate to Zoho Inventory getting started page",
+      "snippet": "await page.goto('https://inventory.zoho.com/app/{{ZOHO_ACCOUNT_ID}}#/home/gettingstarted', { waitUntil: 'domcontentloaded' });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "value": ""
+    },
+    {
+      "name": "Wait for page stabilization",
+      "ai_instruction": "Wait for all dynamic content to load and stabilize on the getting started page",
+      "snippet": "await page.waitForTimeout(5000);",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "value": ""
+    },
+    {
+      "name": "Verify page loaded completely",
+      "ai_instruction": "Verify that the Zoho Inventory getting started page has loaded with all expected elements",
+      "snippet": "await page.waitForSelector('input[name=\"wms_settings_pausechat\"]', { timeout: 5000 });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "value": ""
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  }
+}

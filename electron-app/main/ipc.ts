@@ -1113,34 +1113,14 @@ export function registerIpcHandlers(): void {
     }
   });
   
-  // Get recorder status
+  // Get recorder status - removed (using CDP recording)
   ipcMain.handle('get-recorder-status', async (event: IpcMainInvokeEvent) => {
-    try {
-      if (!launcherRecorderInstance) {
-        return { isRecording: false };
-      }
-      
-      return {
-        isRecording: launcherRecorderInstance.isRecording()
-      };
-    } catch (error) {
-      console.error('Get recorder status error:', error);
-      return { isRecording: false };
-    }
+    return { isRecording: false };
   });
   
-  // Get last recording
+  // Get last recording - removed (using CDP recording)
   ipcMain.handle('get-last-recording', async (event: IpcMainInvokeEvent) => {
-    try {
-      if (!launcherRecorderInstance) {
-        return null;
-      }
-      
-      return launcherRecorderInstance.getLastRecording();
-    } catch (error) {
-      console.error('Get last recording error:', error);
-      return null;
-    }
+    return null;
   });
 
   // Run Magnitude with WebView handler

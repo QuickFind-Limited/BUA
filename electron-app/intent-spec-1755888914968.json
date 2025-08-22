@@ -1,0 +1,157 @@
+{
+  "name": "Zoho Inventory Getting Started",
+  "description": "Navigate to Zoho Inventory getting started page with chat settings configured",
+  "url": "https://www.google.com/?zx=1755888847122&no_sw_cr=1",
+  "params": [],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "cookies": true,
+    "localStorage": true
+  },
+  "skipNavigationStates": [
+    "authenticated",
+    "inventory-dashboard"
+  ],
+  "steps": [
+    {
+      "name": "Navigate to Zoho Inventory",
+      "ai_instruction": "Navigate from Google to Zoho Inventory getting started page",
+      "snippet": "await page.goto('https://inventory.zoho.com/app/893870319#/home/gettingstarted');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [],
+      "value": "",
+      "waitBefore": {
+        "type": "time",
+        "condition": "initial page load",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "networkidle",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory.zoho.com.*gettingstarted"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh and retry navigation"
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000
+      }
+    },
+    {
+      "name": "Verify chat settings loaded",
+      "ai_instruction": "Verify that chat settings fields are present and have expected values",
+      "snippet": "await page.waitForSelector('input[name=\"wms_settings_pausechat\"]');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "input[name=\"wms_settings_pausechat\"]",
+        "[data-field=\"wms_settings_pausechat\"]",
+        "input[value=\"on\"][type=\"checkbox\"]"
+      ],
+      "value": "",
+      "waitBefore": {
+        "type": "element",
+        "condition": "presence of chat settings",
+        "timeout": 5000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "settings stabilization",
+        "timeout": 500
+      },
+      "validation": {
+        "type": "element",
+        "expected": "chat settings fields present"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 1000,
+        "skipOnError": true,
+        "alternativeAction": "continue without chat validation"
+      },
+      "performance": {
+        "expectedDuration": 1000,
+        "maxDuration": 6000
+      }
+    },
+    {
+      "name": "Validate page title",
+      "ai_instruction": "Ensure the page title is 'Zoho Inventory'",
+      "snippet": "await page.waitForFunction(() => document.title === 'Zoho Inventory');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [],
+      "value": "",
+      "waitBefore": {
+        "type": "time",
+        "condition": "title update",
+        "timeout": 100
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "validation complete",
+        "timeout": 100
+      },
+      "validation": {
+        "type": "text",
+        "expected": "Zoho Inventory"
+      },
+      "errorHandling": {
+        "retry": 1,
+        "retryDelay": 500,
+        "skipOnError": true,
+        "alternativeAction": "log warning and continue"
+      },
+      "performance": {
+        "expectedDuration": 200,
+        "maxDuration": 1000
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "snippet"
+  },
+  "validations": [
+    {
+      "step": "after-navigation",
+      "check": "url",
+      "expected": "inventory.zoho.com"
+    },
+    {
+      "step": "page-loaded",
+      "check": "element",
+      "expected": "getting started content visible"
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3
+  },
+  "performance": {
+    "totalExpectedDuration": 25488,
+    "criticalPath": [
+      "Navigate to Zoho Inventory",
+      "Verify chat settings loaded"
+    ]
+  }
+}

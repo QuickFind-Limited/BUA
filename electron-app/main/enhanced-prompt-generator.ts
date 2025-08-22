@@ -48,6 +48,8 @@ export function generateBulletproofIntentSpecPrompt(recording: EnhancedRecording
 
   return `You are an expert at creating BULLETPROOF Intent Specifications from comprehensive recording data.
 
+Your task: Analyze the recording and output a STRICT JSON Intent Spec. NO prose, NO explanations, NO markdown - ONLY valid JSON.
+
 COMPREHENSIVE RECORDING DATA:
 ==========================
 Session: ${recording.sessionId}
@@ -170,6 +172,12 @@ OUTPUT THIS ENHANCED JSON STRUCTURE:
       }
     }
   ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
   "validations": [
     {
       "step": "after-login",
@@ -187,7 +195,7 @@ OUTPUT THIS ENHANCED JSON STRUCTURE:
   }
 }
 
-Analyze the recording and create a BULLETPROOF Intent Spec:`;
+IMPORTANT: Return ONLY the JSON Intent Spec above with actual values filled in. No explanations, no comments, no markdown - ONLY valid JSON starting with { and ending with }`;
 }
 
 /**

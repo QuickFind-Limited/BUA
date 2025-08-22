@@ -1,0 +1,287 @@
+{
+  "name": "Create New Inventory Item in Zoho",
+  "description": "Navigates to Zoho Inventory and creates a new item called 'Test Box 5' with specified attributes",
+  "url": "https://inventory.zoho.com/app/893870319#/home/gettingstarted",
+  "params": [
+    "ITEM_NAME",
+    "ITEM_UNIT",
+    "ITEM_TYPE"
+  ],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "Not captured",
+    "cookies": true,
+    "localStorage": true
+  },
+  "skipNavigationStates": [
+    "authenticated",
+    "inventory-dashboard"
+  ],
+  "steps": [
+    {
+      "name": "Navigate to Items List",
+      "ai_instruction": "Click on the Items menu or navigate to the items listing page",
+      "snippet": "await page.goto('https://inventory.zoho.com/app/893870319#/inventory/items?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[href*='/inventory/items']",
+        "text=Items",
+        "[data-automation='items-menu']"
+      ],
+      "value": null,
+      "waitBefore": {
+        "type": "element",
+        "condition": "page fully loaded",
+        "timeout": 5000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "items list API response",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "/inventory/items"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "navigate via menu click"
+      },
+      "performance": {
+        "expectedDuration": 2000,
+        "maxDuration": 10000
+      }
+    },
+    {
+      "name": "Click New Item Button",
+      "ai_instruction": "Click the 'New' or 'Add Item' button to start creating a new inventory item",
+      "snippet": "await page.click('[href*='/inventory/items/new']');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[href*='/inventory/items/new']",
+        "button:has-text('New')",
+        "[data-automation='new-item-button']",
+        "text=New Item"
+      ],
+      "value": null,
+      "waitBefore": {
+        "type": "element",
+        "condition": "new button visible",
+        "timeout": 3000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "form loaded",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "/inventory/items/new"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": false,
+        "alternativeAction": "navigate directly to new item URL"
+      },
+      "performance": {
+        "expectedDuration": 1500,
+        "maxDuration": 5000
+      }
+    },
+    {
+      "name": "Enter Item Name",
+      "ai_instruction": "Fill in the item name field with '{{ITEM_NAME}}'",
+      "snippet": "await page.fill('#ac6103274', '{{ITEM_NAME}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#ac6103274",
+        "[name='item_name']",
+        "[placeholder*='Item Name']",
+        "input[aria-label='Item Name']"
+      ],
+      "value": "{{ITEM_NAME}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "input field visible",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "debounce",
+        "timeout": 300
+      },
+      "validation": {
+        "type": "element",
+        "expected": "value equals {{ITEM_NAME}}"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": false,
+        "alternativeAction": "clear and retry"
+      },
+      "performance": {
+        "expectedDuration": 500,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Select Item Unit",
+      "ai_instruction": "Select or enter '{{ITEM_UNIT}}' in the unit field",
+      "snippet": "await page.fill('#ember435', '{{ITEM_UNIT}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#ember435",
+        "[name='unit']",
+        "[placeholder*='Unit']",
+        "input[aria-label='Unit']"
+      ],
+      "value": "{{ITEM_UNIT}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "unit field visible",
+        "timeout": 1000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "debounce",
+        "timeout": 300
+      },
+      "validation": {
+        "type": "element",
+        "expected": "value contains {{ITEM_UNIT}}"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": true,
+        "alternativeAction": "select from dropdown"
+      },
+      "performance": {
+        "expectedDuration": 500,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Select Item Type",
+      "ai_instruction": "Select the item type as '{{ITEM_TYPE}}' (goods or service)",
+      "snippet": "await page.click('#eb1932ea-c0d3-4345-adb9-0c503cc86aca');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "#eb1932ea-c0d3-4345-adb9-0c503cc86aca",
+        "[value='goods']",
+        "input[type='radio'][value='{{ITEM_TYPE}}']",
+        "label:has-text('Goods')"
+      ],
+      "value": "{{ITEM_TYPE}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "radio buttons visible",
+        "timeout": 1000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "state change",
+        "timeout": 200
+      },
+      "validation": {
+        "type": "element",
+        "expected": "checked state true"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 300,
+        "skipOnError": false,
+        "alternativeAction": "click label text"
+      },
+      "performance": {
+        "expectedDuration": 300,
+        "maxDuration": 1500
+      }
+    },
+    {
+      "name": "Save Item",
+      "ai_instruction": "Click the Save button to create the new inventory item",
+      "snippet": "await page.click('button:has-text(\"Save\")');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "button:has-text('Save')",
+        "[type='submit']",
+        "[data-automation='save-button']",
+        "button.primary"
+      ],
+      "value": null,
+      "waitBefore": {
+        "type": "element",
+        "condition": "save button enabled",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "item creation API response",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "contains item ID"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "check for validation errors"
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 15000
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "validations": [
+    {
+      "step": "after-save",
+      "check": "url",
+      "expected": "/inventory/items/[0-9]+"
+    },
+    {
+      "step": "item-created",
+      "check": "element",
+      "expected": "success message or item details page"
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3
+  },
+  "performance": {
+    "totalExpectedDuration": 60558,
+    "criticalPath": [
+      "Navigate to Items List",
+      "Click New Item Button",
+      "Enter Item Name",
+      "Save Item"
+    ]
+  }
+}

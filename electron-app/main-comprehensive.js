@@ -132,6 +132,7 @@ function createWindow() {
   
   webView = new WebContentsView({
     webPreferences: {
+      preload: path.join(__dirname, 'webview-preload.js'), // Add preload script for recording
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
@@ -347,7 +348,157 @@ function setupRecordingListeners() {
     // Re-inject recording script after navigation
     if (recordingActive && debuggerAttached) {
       const currentTab = recordingData.currentTabId || 'tab-initial';
-      console.log(`🔄 Re-injecting recording script for tab: ${currentTab}`);
+      const currentUrl = webView.webContents.getURL();
+      console.log(`🔄 Re-injecting recording script for tab: ${currentTab} at ${currentUrl}`);
+      
+      // Check if comprehensiveScript is defined
+      if (!comprehensiveScript || comprehensiveScript === '') {
+        console.error('❌ Recording script not available for re-injection');
+        // Try to inject a minimal capture script instead
+        const minimalScript = `
+          (function() {
+            if (window.__recordingActive) return;
+            window.__recordingActive = true;
+            
+            window.__comprehensiveRecording = window.__comprehensiveRecording || {
+              actions: [],
+              domSnapshots: [],
+              mutations: [],
+              visibilityChanges: [],
+              capturedInputs: {}
+            };
+            
+            console.log('[MINIMAL-SCRIPT] Recording script injecting on:', window.location.href);
+            
+            // Helper to identify login-related fields
+            function isLoginField(element) {
+              if (!element) return false;
+              const name = (element.name || '').toLowerCase();
+              const id = (element.id || '').toLowerCase();
+              const type = (element.type || '').toLowerCase();
+              const placeholder = (element.placeholder || '').toLowerCase();
+              const autocomplete = (element.autocomplete || '').toLowerCase();
+              
+              // Check for username/email fields
+              if (type === 'email') return true;
+              if (autocomplete.includes('username') || autocomplete.includes('email')) return true;
+              if (name.includes('user') || name.includes('email') || name.includes('login')) return true;
+              if (id.includes('user') || id.includes('email') || id.includes('login')) return true;
+              if (placeholder.includes('user') || placeholder.includes('email')) return true;
+              
+              // Check for password fields
+              if (type === 'password') return true;
+              if (name.includes('pass') || id.includes('pass')) return true;
+              
+              return false;
+            }
+            
+            // Capture form inputs with focus on login fields
+            document.addEventListener('input', function(e) {
+              if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+                const isLogin = isLoginField(e.target);
+                const fieldKey = e.target.name || e.target.id || 'field_' + Date.now();
+                
+                const actionData = {
+                  type: 'input',
+                  timestamp: Date.now(),
+                  target: {
+                    tagName: e.target.tagName,
+                    id: e.target.id,
+                    name: e.target.name,
+                    type: e.target.type,
+                    value: e.target.value,
+                    placeholder: e.target.placeholder,
+                    autocomplete: e.target.autocomplete,
+                    isLoginField: isLogin
+                  },
+                  url: window.location.href
+                };
+                
+                window.__comprehensiveRecording.actions.push(actionData);
+                window.__comprehensiveRecording.capturedInputs[fieldKey] = actionData.target;
+                
+                console.log('[MINIMAL-SCRIPT] Input captured:', 
+                  fieldKey, '=', 
+                  e.target.type === 'password' ? '***' : e.target.value,
+                  isLogin ? '(LOGIN FIELD)' : ''
+                );
+              }
+            }, true);
+            
+            // Also capture on change events
+            document.addEventListener('change', function(e) {
+              if (e.target && e.target.tagName === 'INPUT') {
+                const isLogin = isLoginField(e.target);
+                const fieldKey = e.target.name || e.target.id || 'field_' + Date.now();
+                
+                window.__comprehensiveRecording.capturedInputs[fieldKey] = {
+                  tagName: e.target.tagName,
+                  id: e.target.id,
+                  name: e.target.name,
+                  type: e.target.type,
+                  value: e.target.value,
+                  isLoginField: isLogin
+                };
+                
+                console.log('[MINIMAL-SCRIPT] Change captured:', fieldKey, 
+                  isLogin ? '(LOGIN FIELD)' : ''
+                );
+              }
+            }, true);
+            
+            // Capture form submissions
+            document.addEventListener('submit', function(e) {
+              const form = e.target;
+              const formData = {};
+              const inputs = form.querySelectorAll('input, textarea, select');
+              
+              inputs.forEach(input => {
+                const key = input.name || input.id || input.type;
+                formData[key] = input.value;
+              });
+              
+              window.__comprehensiveRecording.actions.push({
+                type: 'submit',
+                timestamp: Date.now(),
+                formData: formData,
+                formAction: form.action,
+                formMethod: form.method,
+                url: window.location.href
+              });
+              
+              console.log('[MINIMAL-SCRIPT] Form submission captured with', Object.keys(formData).length, 'fields');
+            }, true);
+            
+            // Capture clicks
+            document.addEventListener('click', function(e) {
+              window.__comprehensiveRecording.actions.push({
+                type: 'click', 
+                timestamp: Date.now(),
+                target: {
+                  tagName: e.target.tagName,
+                  id: e.target.id,
+                  className: e.target.className,
+                  text: e.target.textContent?.substring(0, 100)
+                },
+                url: window.location.href
+              });
+            }, true);
+            
+            console.log('[MINIMAL-SCRIPT] Recording script ready on:', window.location.href);
+          })();
+        `;
+        
+        webView.webContents.debugger.sendCommand('Runtime.evaluate', {
+          expression: minimalScript,
+          userGesture: true
+        }).then(() => {
+          console.log('✅ Minimal recording script injected as fallback');
+        }).catch(err => {
+          console.error('Failed to inject even minimal script:', err);
+        });
+        return;
+      }
       
       // Re-inject the comprehensive script via debugger
       webView.webContents.debugger.sendCommand('Runtime.evaluate', {
@@ -461,6 +612,115 @@ ipcMain.handle('start-enhanced-recording', async () => {
       await webView.webContents.debugger.sendCommand('Network.enable');
       await webView.webContents.debugger.sendCommand('Console.enable');
       await webView.webContents.debugger.sendCommand('Performance.enable');
+      
+      // CRITICAL: Bypass CSP to allow script injection on secure login pages
+      console.log('🔓 Bypassing CSP for script injection...');
+      await webView.webContents.debugger.sendCommand('Page.setBypassCSP', { enabled: true });
+      console.log('✅ CSP bypass enabled - scripts can now be injected on secure pages');
+      
+      // IMMEDIATELY inject a minimal script that will persist across ALL navigations
+      const minimalPersistentScript = `
+        (function() {
+          if (window.__recordingInjected) return;
+          window.__recordingInjected = true;
+          
+          window.__comprehensiveRecording = window.__comprehensiveRecording || {
+            actions: [],
+            domSnapshots: [],
+            mutations: [],
+            visibilityChanges: []
+          };
+          
+          // Capture ALL input events including password fields
+          document.addEventListener('input', function(e) {
+            if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+              const action = {
+                type: 'input',
+                timestamp: Date.now(),
+                target: {
+                  tagName: e.target.tagName,
+                  id: e.target.id,
+                  name: e.target.name,
+                  type: e.target.type,
+                  value: e.target.value,
+                  placeholder: e.target.placeholder
+                },
+                url: window.location.href
+              };
+              window.__comprehensiveRecording.actions.push(action);
+              console.log('[RECORDER] Input captured:', e.target.name || e.target.id, '=', e.target.type === 'password' ? '***' : e.target.value);
+            }
+          }, true);
+          
+          // Capture change events
+          document.addEventListener('change', function(e) {
+            if (e.target) {
+              const action = {
+                type: 'change',
+                timestamp: Date.now(),
+                target: {
+                  tagName: e.target.tagName,
+                  id: e.target.id,
+                  name: e.target.name,
+                  type: e.target.type,
+                  value: e.target.value
+                },
+                url: window.location.href
+              };
+              window.__comprehensiveRecording.actions.push(action);
+              console.log('[RECORDER] Change captured:', e.target.name || e.target.id);
+            }
+          }, true);
+          
+          // Capture clicks
+          document.addEventListener('click', function(e) {
+            const action = {
+              type: 'click',
+              timestamp: Date.now(),
+              target: {
+                tagName: e.target.tagName,
+                id: e.target.id,
+                className: e.target.className,
+                text: e.target.textContent?.substring(0, 100)
+              },
+              url: window.location.href
+            };
+            window.__comprehensiveRecording.actions.push(action);
+            console.log('[RECORDER] Click captured:', e.target.tagName, e.target.id || e.target.className);
+          }, true);
+          
+          // Capture form submissions
+          document.addEventListener('submit', function(e) {
+            const formData = new FormData(e.target);
+            const formFields = {};
+            for (let [key, value] of formData.entries()) {
+              formFields[key] = value;
+            }
+            const action = {
+              type: 'submit',
+              timestamp: Date.now(),
+              target: {
+                tagName: 'FORM',
+                id: e.target.id,
+                action: e.target.action,
+                method: e.target.method,
+                fields: formFields
+              },
+              url: window.location.href
+            };
+            window.__comprehensiveRecording.actions.push(action);
+            console.log('[RECORDER] Form submit captured with fields:', Object.keys(formFields));
+          }, true);
+          
+          console.log('[RECORDER] Minimal persistent recording script injected successfully on:', window.location.href);
+        })();
+      `;
+      
+      // This ensures the script runs on EVERY page load, including future navigations
+      await webView.webContents.debugger.sendCommand('Page.addScriptToEvaluateOnNewDocument', {
+        source: minimalPersistentScript
+      });
+      console.log('✅ Persistent recording script registered for ALL future page loads');
       
       // COMPREHENSIVE script that captures EVERYTHING
       comprehensiveScript = `
@@ -1003,20 +1263,52 @@ ipcMain.handle('stop-enhanced-recording', async () => {
   
   // Collect all captured data
   let pageData = { actions: [], domSnapshots: [], mutations: [], visibilityChanges: [] };
+  let preloadData = { actions: [], inputs: {} };
+  
+  // First try to get data from the preload script
+  if (webView) {
+    try {
+      const preloadResult = await webView.webContents.executeJavaScript(`
+        if (window.getRecordingData) {
+          window.getRecordingData();
+        } else {
+          null;
+        }
+      `);
+      
+      if (preloadResult) {
+        preloadData = preloadResult;
+        console.log('📱 Collected preload recording data:', {
+          actions: preloadData.actions?.length || 0,
+          inputs: Object.keys(preloadData.inputs || {}).length
+        });
+      }
+    } catch (e) {
+      console.error('Error collecting preload data:', e);
+    }
+  }
+  
+  // Then get data from CDP injection
   if (webView && debuggerAttached) {
     try {
       const result = await webView.webContents.debugger.sendCommand('Runtime.evaluate', {
         expression: `
-          const data = window.__comprehensiveRecording || { actions: [], domSnapshots: [], mutations: [], visibilityChanges: [] };
+          const data = window.__comprehensiveRecording || { actions: [], domSnapshots: [], mutations: [], visibilityChanges: [], capturedInputs: {} };
           
           // Recording stopped
           
           console.log('Collected comprehensive recording data:', {
             actions: data.actions.length,
-            snapshots: data.domSnapshots.length,
-            mutations: data.mutations.length,
-            visibilityChanges: data.visibilityChanges.length
+            snapshots: data.domSnapshots?.length || 0,
+            mutations: data.mutations?.length || 0,
+            visibilityChanges: data.visibilityChanges?.length || 0,
+            capturedInputs: Object.keys(data.capturedInputs || {}).length
           });
+          
+          // Include captured inputs in the data
+          if (data.capturedInputs) {
+            console.log('Captured input fields:', Object.keys(data.capturedInputs));
+          }
           
           JSON.stringify(data);
         `,
@@ -1036,7 +1328,9 @@ ipcMain.handle('stop-enhanced-recording', async () => {
     }
   }
   
-  // Combine all data
+  // Combine all data (merge preload and CDP data)
+  const allActions = [...(preloadData.actions || []), ...(pageData.actions || [])];
+  
   const finalData = {
     sessionId: `comprehensive-${recordingData.startTime}`,
     startTime: recordingData.startTime,
@@ -1049,8 +1343,11 @@ ipcMain.handle('stop-enhanced-recording', async () => {
     tabSwitches: recordingData.tabSwitches || [],
     tabsUsed: Array.from(tabsData.keys()),
     
-    // User interactions
-    actions: pageData.actions || [],
+    // User interactions (merged from both sources)
+    actions: allActions,
+    
+    // Preload captured inputs
+    preloadInputs: preloadData.inputs || {},
     
     // DOM data
     domSnapshots: pageData.domSnapshots || [],
@@ -1125,15 +1422,63 @@ ipcMain.handle('stop-enhanced-recording', async () => {
     });
   }
   
-  // Add extracted input values to the recording for AI analysis
-  finalData.extractedInputs = Object.entries(fieldLastValue).map(([field, data]) => ({
+  // Also add inputs from preload script
+  const preloadInputsArray = Object.entries(finalData.preloadInputs || {}).map(([field, data]) => ({
     field: field,
     value: data.value,
     url: data.url,
-    element: data.element
+    element: {
+      tagName: 'INPUT',
+      id: data.id || field,
+      name: data.name || '',
+      type: data.type || 'text'
+    }
   }));
   
-  console.log(`📝 Extracted ${Object.keys(fieldLastValue).length} input fields with values`);
+  // Add inputs captured by the minimal script
+  const capturedInputsArray = Object.entries(pageData.capturedInputs || {}).map(([field, data]) => ({
+    field: field,
+    value: data.value,
+    url: data.url || recordingData.url,
+    element: {
+      tagName: data.tagName || 'INPUT',
+      id: data.id || '',
+      name: data.name || '',
+      type: data.type || 'text',
+      isLoginField: data.isLoginField || false
+    }
+  }));
+  
+  // Combine all sources of input data
+  const allInputs = [
+    ...Object.entries(fieldLastValue).map(([field, data]) => ({
+      field: field,
+      value: data.value,
+      url: data.url,
+      element: data.element
+    })),
+    ...preloadInputsArray,
+    ...capturedInputsArray
+  ];
+  
+  // Deduplicate by field name
+  const uniqueInputs = {};
+  allInputs.forEach(input => {
+    uniqueInputs[input.field] = input;
+  });
+  
+  finalData.extractedInputs = Object.values(uniqueInputs);
+  
+  console.log(`📝 Extracted ${finalData.extractedInputs.length} input fields with values`);
+  console.log(`  - From CDP: ${Object.keys(fieldLastValue).length} fields`);
+  console.log(`  - From Preload: ${preloadInputsArray.length} fields`);
+  console.log(`  - From Captured: ${capturedInputsArray.length} fields`);
+  
+  // Log any login fields found
+  const loginFields = finalData.extractedInputs.filter(f => f.element?.isLoginField);
+  if (loginFields.length > 0) {
+    console.log(`🔐 Found ${loginFields.length} login-related fields!`);
+  }
   
   // Save data to file for analysis
   const fileName = `recording-${Date.now()}.json`;
