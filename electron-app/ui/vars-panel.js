@@ -841,7 +841,9 @@ class VarsPanelManager {
             params: intentSpec.params || intentSpec.variables || [],  // Intent Spec uses 'params', not 'variables'
             url: intentSpec.url || intentSpec.startUrl,  // Include url field for navigation
             startUrl: intentSpec.url || intentSpec.startUrl,  // Keep startUrl for compatibility
-            successCheck: intentSpec.successCheck
+            successCheck: intentSpec.successCheck,
+            recordingScreenshot: intentSpec.recordingScreenshot || intentSpec.screenshotPath,  // Include screenshot path for comparison
+            recordingId: intentSpec.recordingId || intentSpec.sessionId  // Include recording ID
         };
         
         // If there's a goto in the first step, extract the URL

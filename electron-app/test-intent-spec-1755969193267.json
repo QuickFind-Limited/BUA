@@ -1,0 +1,324 @@
+{
+  "name": "Create Inventory Item in Zoho Inventory",
+  "description": "Automates the creation of a new inventory item in Zoho Inventory system",
+  "url": "https://www.google.com/?zx=1755943043074&no_sw_cr=1",
+  "params": [
+    "EMAIL_ADDRESS",
+    "PASSWORD",
+    "ITEM_NAME",
+    "SELL_PRICE",
+    "COST_PRICE"
+  ],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "Not captured",
+    "cookies": false,
+    "localStorage": false
+  },
+  "skipNavigationStates": [
+    "authenticated",
+    "dashboard"
+  ],
+  "steps": [
+    {
+      "name": "Login with credentials",
+      "ai_instruction": "Enter login credentials and authenticate",
+      "snippet": "await page.fill('[name=\"LOGIN_ID\"]', '{{EMAIL_ADDRESS}}'); await page.fill('[name=\"PASSWORD\"]', '{{PASSWORD}}'); await page.click('[type=\"submit\"]');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[name=\"LOGIN_ID\"]",
+        "[type=\"email\"]",
+        "input[placeholder*=\"email\"]",
+        "[aria-label*=\"email\"]"
+      ],
+      "value": "{{EMAIL_ADDRESS}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "page loaded",
+        "timeout": 5000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "authentication complete",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory.zoho.com"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "refresh page"
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000
+      }
+    },
+    {
+      "name": "Navigate to inventory items",
+      "ai_instruction": "Navigate to the inventory items section",
+      "snippet": "await page.click('[href*=\"inventory/items\"]');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "[href*=\"inventory/items\"]",
+        "text=Items",
+        "[aria-label*=\"items\"]",
+        "nav >> text=Items"
+      ],
+      "waitBefore": {
+        "type": "element",
+        "condition": "dashboard loaded",
+        "timeout": 3000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "items page loaded",
+        "timeout": 8000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory/items"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 1500,
+        "skipOnError": false,
+        "alternativeAction": "use main navigation"
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000
+      }
+    },
+    {
+      "name": "Click add new item button",
+      "ai_instruction": "Click the button to add a new inventory item",
+      "snippet": "await page.click('[href*=\"items/new\"]');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[href*=\"items/new\"]",
+        "text=Add New Item",
+        "button:has-text(\"New\")",
+        "[aria-label*=\"add item\"]"
+      ],
+      "waitBefore": {
+        "type": "element",
+        "condition": "items list loaded",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "new item form loaded",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "items/new"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "refresh and retry"
+      },
+      "performance": {
+        "expectedDuration": 2000,
+        "maxDuration": 8000
+      }
+    },
+    {
+      "name": "Enter item name",
+      "ai_instruction": "Fill in the item name field with the provided item name",
+      "snippet": "await page.fill('#a7c4e2c22', '{{ITEM_NAME}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#a7c4e2c22",
+        "[name*=\"item_name\"]",
+        "[placeholder*=\"Item Name\"]",
+        "input[aria-label*=\"name\"]"
+      ],
+      "value": "{{ITEM_NAME}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "form fields visible",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "input processed",
+        "timeout": 500
+      },
+      "validation": {
+        "type": "element",
+        "expected": "input value matches"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": false,
+        "alternativeAction": "clear and retry"
+      },
+      "performance": {
+        "expectedDuration": 1000,
+        "maxDuration": 3000
+      }
+    },
+    {
+      "name": "Enter selling price",
+      "ai_instruction": "Fill in the selling price field",
+      "snippet": "await page.fill('#aa22eb1bb', '{{SELL_PRICE}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#aa22eb1bb",
+        "[name*=\"selling_price\"]",
+        "[placeholder*=\"Selling Price\"]",
+        "input[aria-label*=\"sell\"]"
+      ],
+      "value": "{{SELL_PRICE}}",
+      "waitBefore": {
+        "type": "time",
+        "condition": "previous input complete",
+        "timeout": 200
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "input processed",
+        "timeout": 500
+      },
+      "validation": {
+        "type": "element",
+        "expected": "input value matches"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": false,
+        "alternativeAction": "clear and retry"
+      },
+      "performance": {
+        "expectedDuration": 800,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Enter cost price",
+      "ai_instruction": "Fill in the cost price field",
+      "snippet": "await page.fill('#ab9e6d2f6', '{{COST_PRICE}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#ab9e6d2f6",
+        "[name*=\"cost_price\"]",
+        "[placeholder*=\"Cost Price\"]",
+        "input[aria-label*=\"cost\"]"
+      ],
+      "value": "{{COST_PRICE}}",
+      "waitBefore": {
+        "type": "time",
+        "condition": "previous input complete",
+        "timeout": 200
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "input processed",
+        "timeout": 500
+      },
+      "validation": {
+        "type": "element",
+        "expected": "input value matches"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": false,
+        "alternativeAction": "clear and retry"
+      },
+      "performance": {
+        "expectedDuration": 800,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Save the new item",
+      "ai_instruction": "Click the save button to create the new inventory item",
+      "snippet": "await page.click('[type=\"submit\"], button:has-text(\"Save\")');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "[type=\"submit\"]",
+        "button:has-text(\"Save\")",
+        "[aria-label*=\"save\"]",
+        ".save-button"
+      ],
+      "waitBefore": {
+        "type": "time",
+        "condition": "form complete",
+        "timeout": 1000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "save request complete",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "item created successfully"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "check form validation errors"
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 15000
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "validations": [
+    {
+      "step": "after-login",
+      "check": "url",
+      "expected": "inventory.zoho.com"
+    },
+    {
+      "step": "after-save",
+      "check": "element",
+      "expected": "success message or item details page"
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3
+  },
+  "performance": {
+    "totalExpectedDuration": 70464,
+    "criticalPath": [
+      "Login with credentials",
+      "Enter item name",
+      "Save the new item"
+    ]
+  }
+}

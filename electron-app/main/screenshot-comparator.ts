@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
+const sharp = require('sharp');
 
 /**
  * Improved ScreenshotComparator with proper image handling
@@ -82,6 +83,45 @@ export class ScreenshotComparator {
   }
 
   /**
+   * Resize image if it's too large
+   */
+  private async resizeImageIfNeeded(imagePath: string, maxSizeKB: number = 500): Promise<string> {
+    const stats = fs.statSync(imagePath);
+    const sizeKB = stats.size / 1024;
+    
+    if (sizeKB <= maxSizeKB) {
+      // Image is already small enough
+      return fs.readFileSync(imagePath, 'base64');
+    }
+    
+    console.log(`Resizing image from ${sizeKB.toFixed(2)}KB to under ${maxSizeKB}KB`);
+    
+    try {
+      // Calculate resize percentage based on file size
+      const reductionFactor = Math.sqrt(maxSizeKB / sizeKB);
+      
+      // Read and resize the image
+      const resizedBuffer = await sharp(imagePath)
+        .resize({
+          width: Math.floor(1920 * reductionFactor), // Assuming max 1920px width
+          height: Math.floor(1080 * reductionFactor), // Assuming max 1080px height
+          fit: 'inside',
+          withoutEnlargement: true
+        })
+        .jpeg({ quality: 85 }) // Convert to JPEG with good quality
+        .toBuffer();
+      
+      const resizedSizeKB = resizedBuffer.length / 1024;
+      console.log(`Image resized to ${resizedSizeKB.toFixed(2)}KB`);
+      
+      return resizedBuffer.toString('base64');
+    } catch (error) {
+      console.error('Failed to resize image, using original:', error);
+      return fs.readFileSync(imagePath, 'base64');
+    }
+  }
+
+  /**
    * Perform AI comparison using proper Claude Vision API format
    */
   private async performProperAIComparison(
@@ -90,13 +130,13 @@ export class ScreenshotComparator {
   ): Promise<ScreenshotComparison> {
     const client = this.getAnthropicClient();
     
-    // Read images as base64
-    const actualImage = fs.readFileSync(actualPath, 'base64');
-    const expectedImage = fs.readFileSync(expectedPath, 'base64');
+    // Read and resize images if needed
+    const actualImage = await this.resizeImageIfNeeded(actualPath);
+    const expectedImage = await this.resizeImageIfNeeded(expectedPath);
 
     // Use proper message format for Claude Vision
     const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514', // Use Sonnet 4 for vision tasks
+      model: 'claude-3-5-sonnet-20241022', // Claude 3.5 Sonnet is best for vision tasks
       max_tokens: 1500,
       temperature: 0,
       messages: [{

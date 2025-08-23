@@ -640,6 +640,34 @@ export function registerIpcHandlers(): void {
       }
 
       const result = (tabManager as any).stopRecording();
+      
+      // Save the final screenshot from recording if available
+      if (result.success && result.session) {
+        try {
+          const tabManager = getTabManager();
+          const activeTab = tabManager ? (tabManager as any).getActiveTab() : null;
+          if (activeTab?.view) {
+            const screenshot = await activeTab.view.webContents.capturePage();
+            const screenshotBuffer = screenshot.toPNG();
+            
+            // Save recording screenshot
+            const recordingScreenshotPath = path.join(
+              __dirname,
+              '..',
+              '..',
+              `recording-screenshot-${result.session.sessionId || Date.now()}.png`
+            );
+            fs.writeFileSync(recordingScreenshotPath, screenshotBuffer);
+            
+            // Add screenshot path to session data
+            result.session.screenshotPath = recordingScreenshotPath;
+            console.log('Saved recording final screenshot:', recordingScreenshotPath);
+          }
+        } catch (screenshotError) {
+          console.error('Failed to save recording screenshot:', screenshotError);
+        }
+      }
+      
       return {
         success: result.success,
         data: result.success ? { session: (result as any).session } : undefined,
@@ -1505,6 +1533,50 @@ async function executeFlowSteps(flowSpec: any, variables?: Record<string, any>):
       }
     }
     
+    // Capture final screenshot after execution
+    let finalScreenshot = null;
+    let screenshotComparison = null;
+    
+    try {
+      // Take screenshot of final state
+      const tabManager = getTabManager();
+      const activeTab = tabManager ? (tabManager as any).getActiveTab() : null;
+      if (activeTab?.view) {
+        const screenshot = await activeTab.view.webContents.capturePage();
+        const screenshotBuffer = screenshot.toPNG();
+        
+        // Save screenshot to file
+        const screenshotPath = path.join(
+          __dirname, 
+          '..', 
+          '..', 
+          `execution-screenshot-${Date.now()}.png`
+        );
+        fs.writeFileSync(screenshotPath, screenshotBuffer);
+        finalScreenshot = screenshotPath;
+        
+        console.log('Captured execution final screenshot:', screenshotPath);
+        
+        // Compare with recording screenshot if available
+        const recordingScreenshotPath = flowSpec.recordingScreenshot || 
+          path.join(__dirname, '..', '..', `recording-screenshot-${flowSpec.recordingId || 'latest'}.png`);
+        
+        if (fs.existsSync(recordingScreenshotPath)) {
+          console.log('Comparing with recording screenshot:', recordingScreenshotPath);
+          const comparison = await screenshotComparator.compareScreenshots(
+            screenshotPath,
+            recordingScreenshotPath
+          );
+          screenshotComparison = comparison;
+          console.log(`Screenshot comparison result: ${comparison.match ? 'MATCH' : 'NO MATCH'} (${comparison.similarity}% similarity)`);
+        } else {
+          console.log('No recording screenshot found for comparison');
+        }
+      }
+    } catch (screenshotError) {
+      console.error('Screenshot capture/comparison error:', screenshotError);
+    }
+    
     return {
       flowId: flowSpec.id || 'generated',
       flowName: flowSpec.name || 'Unnamed Flow',
@@ -1513,7 +1585,12 @@ async function executeFlowSteps(flowSpec: any, variables?: Record<string, any>):
       totalSteps: flowSpec.steps.length,
       results: results,
       executionTime: Date.now(),
-      variables: variables
+      variables: variables,
+      finalScreenshot: finalScreenshot,
+      screenshotComparison: screenshotComparison,
+      visualVerification: screenshotComparison ? 
+        (screenshotComparison.similarity > 80 ? 'passed' : 'failed') : 
+        'not performed'
     };
     
   } catch (error) {

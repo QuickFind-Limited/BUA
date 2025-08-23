@@ -75,8 +75,12 @@ NAMING PRINCIPLES:
 4. For authentication fields:
    - Email/username fields → EMAIL_ADDRESS or USERNAME
    - Password fields → PASSWORD
-5. Use full words, not abbreviations (PHONE_NUMBER not PHONE or TEL)
-6. Include the field's business context in the name
+5. For dropdown/select fields:
+   - Treat selections as variables when they represent user choices
+   - Use descriptive names (UNIT_TYPE, CATEGORY, STATUS, COUNTRY)
+   - Only hardcode if the value is always the same in the workflow
+6. Use full words, not abbreviations (PHONE_NUMBER not PHONE or TEL)
+7. Include the field's business context in the name
 
 IMPORTANT: Analyze the actual page context and field labels to determine the most appropriate variable name. Don't use generic names like PRICE or QUANTITY when more specific names like SELL_PRICE or STOCK_QUANTITY would be clearer.
 
