@@ -1,0 +1,212 @@
+{
+  "name": "Zoho Account Login",
+  "description": "Automates login to Zoho accounts using email and password credentials",
+  "url": "https://accounts.zoho.com/signin",
+  "params": [
+    "EMAIL_ADDRESS",
+    "PASSWORD"
+  ],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "",
+    "cookies": false,
+    "localStorage": false
+  },
+  "skipNavigationStates": [
+    "authenticated",
+    "dashboard"
+  ],
+  "steps": [
+    {
+      "name": "Enter email address",
+      "ai_instruction": "Enter the email address in the login field",
+      "snippet": "await page.fill('#login_id', '{{EMAIL_ADDRESS}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#login_id",
+        "[name='LOGIN_ID']",
+        "[placeholder*='Email']",
+        "[aria-label*='email']"
+      ],
+      "value": "{{EMAIL_ADDRESS}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "#login_id",
+        "timeout": 5000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "100ms",
+        "timeout": 100
+      },
+      "validation": {
+        "type": "element",
+        "expected": "#login_id has value"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "ai"
+      },
+      "performance": {
+        "expectedDuration": 500,
+        "maxDuration": 5000
+      }
+    },
+    {
+      "name": "Click next button after email",
+      "ai_instruction": "Click the Next button to proceed to password entry",
+      "snippet": "await page.click('#nextbtn');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#nextbtn",
+        "[type='submit']",
+        "button:has-text('Next')",
+        "[aria-label='Next']"
+      ],
+      "value": "",
+      "waitBefore": {
+        "type": "element",
+        "condition": "#nextbtn:enabled",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "password field visible",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "password field appears"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "ai"
+      },
+      "performance": {
+        "expectedDuration": 1000,
+        "maxDuration": 10000
+      }
+    },
+    {
+      "name": "Enter password",
+      "ai_instruction": "Enter the password in the password field",
+      "snippet": "await page.fill('#password', '{{PASSWORD}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#password",
+        "[name='PASSWORD']",
+        "[type='password']",
+        "[aria-label*='password']"
+      ],
+      "value": "{{PASSWORD}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "#password",
+        "timeout": 5000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "100ms",
+        "timeout": 100
+      },
+      "validation": {
+        "type": "element",
+        "expected": "#password has value"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "ai"
+      },
+      "performance": {
+        "expectedDuration": 500,
+        "maxDuration": 5000
+      }
+    },
+    {
+      "name": "Submit login",
+      "ai_instruction": "Click the Sign In or Next button to complete login",
+      "snippet": "await page.click('#nextbtn');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#nextbtn",
+        "#signinbtn",
+        "[type='submit']",
+        "button:has-text('Sign In')",
+        "[aria-label='Sign In']"
+      ],
+      "value": "",
+      "waitBefore": {
+        "type": "element",
+        "condition": "#nextbtn:enabled",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "navigation or dashboard load",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "not signin page"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "ai"
+      },
+      "performance": {
+        "expectedDuration": 2000,
+        "maxDuration": 15000
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "validations": [
+    {
+      "step": "after-login",
+      "check": "url",
+      "expected": "dashboard or home page"
+    },
+    {
+      "step": "after-login",
+      "check": "cookie",
+      "expected": "authenticated session cookie"
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3
+  },
+  "performance": {
+    "totalExpectedDuration": 5000,
+    "criticalPath": [
+      "Enter email address",
+      "Click next button after email",
+      "Enter password",
+      "Submit login"
+    ]
+  }
+}
