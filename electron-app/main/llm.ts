@@ -13,7 +13,8 @@ async function getQueryFunction() {
       console.log('Query function invoked with options:', options.prompt?.substring(0, 100));
       // Ensure worker is started
       if (!workerProcess) {
-        const workerPath = path.join(__dirname, 'claude-code-worker.js');
+        // Use v2 worker that supports file-based prompts for large inputs
+        const workerPath = path.join(__dirname, 'claude-code-worker-v2.js');
         console.log('Starting worker process at:', workerPath);
         workerProcess = fork(workerPath, [], {
           silent: false,
@@ -86,10 +87,28 @@ async function getQueryFunction() {
         
         // Wrap send in try-catch to handle closed channel
         try {
-          workerProcess.send({
-            type: 'analyze',
-            prompt: options.prompt
-          });
+          // Check prompt size - use file for large prompts to avoid Windows CLI limits
+          const promptSize = options.prompt?.length || 0;
+          let messageToSend: any = { type: 'analyze' };
+          
+          if (promptSize > 7000) {
+            // Write to temp file for large prompts
+            const os = require('os');
+            const fs = require('fs');
+            const tempFile = path.join(os.tmpdir(), `claude-prompt-${Date.now()}.txt`);
+            fs.writeFileSync(tempFile, options.prompt);
+            console.log(`Large prompt (${promptSize} bytes) written to temp file`);
+            messageToSend.promptFile = tempFile;
+          } else {
+            messageToSend.prompt = options.prompt;
+          }
+          
+          // Add any options
+          if (options.options) {
+            messageToSend.options = options.options;
+          }
+          
+          workerProcess.send(messageToSend);
         } catch (error: any) {
           console.error('Failed to send to worker:', error.message);
           workerProcess = null;
@@ -524,10 +543,27 @@ function createAnalysisPrompt(recordingData: any): string {
   if (actualRecordingData && typeof actualRecordingData === 'object') {
     console.log('🚀 Using ENHANCED BULLETPROOF prompt for comprehensive Intent Spec generation');
     
-    // Extract captured inputs from console logs if not already present
-    if (!actualRecordingData.capturedInputs && actualRecordingData.console) {
-      const capturedInputs: any = {};
-      Object.values(actualRecordingData.console as any).forEach((logs: any) => {
+    // Handle both extractedInputs (from recording) and capturedInputs (from console)
+    if (!actualRecordingData.capturedInputs) {
+      // First check if we have extractedInputs from the recording
+      if (actualRecordingData.extractedInputs && Array.isArray(actualRecordingData.extractedInputs)) {
+        const capturedInputs: any = {};
+        actualRecordingData.extractedInputs.forEach((input: any) => {
+          capturedInputs[input.field] = {
+            field: input.field,
+            value: input.value,
+            type: input.element?.type || 'text',
+            url: input.url || actualRecordingData.url,
+            isLoginField: input.element?.isLoginField || false
+          };
+        });
+        actualRecordingData.capturedInputs = capturedInputs;
+        console.log('📝 Converted extractedInputs to capturedInputs:', Object.keys(capturedInputs).join(', '));
+      }
+      // Also check console logs as fallback
+      else if (actualRecordingData.console) {
+        const capturedInputs: any = {};
+        Object.values(actualRecordingData.console as any).forEach((logs: any) => {
         if (Array.isArray(logs)) {
           logs.forEach((log: any) => {
             if (log.args) {
@@ -555,9 +591,10 @@ function createAnalysisPrompt(recordingData: any): string {
         }
       });
       
-      if (Object.keys(capturedInputs).length > 0) {
-        actualRecordingData.capturedInputs = capturedInputs;
-        console.log('📝 Extracted captured inputs:', Object.keys(capturedInputs).join(', '));
+        if (Object.keys(capturedInputs).length > 0) {
+          actualRecordingData.capturedInputs = capturedInputs;
+          console.log('📝 Extracted captured inputs from console:', Object.keys(capturedInputs).join(', '));
+        }
       }
     }
     

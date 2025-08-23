@@ -21,10 +21,15 @@ process.on('message', async (message) => {
       
       let result = '';
       console.log('[Worker] Starting query...');
+      // Create an async generator to stream the prompt (avoids Windows command line length limits)
+      async function* promptStream() {
+        yield { type: 'message', message: message.prompt };
+      }
+      
       // Use Claude Code SDK with Opus 4.1 (default)
       // Don't set maxTurns - let Opus 4.1 complete its reasoning
       for await (const msg of query({
-        prompt: message.prompt
+        prompt: promptStream() // Use stream instead of string to avoid CLI limits
       })) {
         console.log('[Worker] Received message type:', msg.type, 'subtype:', msg.subtype);
         if (msg.type === 'result' && msg.subtype === 'success') {

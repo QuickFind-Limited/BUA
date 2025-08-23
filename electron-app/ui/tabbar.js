@@ -53,6 +53,29 @@ function initializeUI() {
     if (enhancedRecorderBtn) enhancedRecorderBtn.addEventListener('click', () => toggleEnhancedRecording());
     if (settingsBtn) settingsBtn.addEventListener('click', () => openSettings());
 
+    // Connect the run-magnitude button to execute the flow
+    const runMagnitudeBtn = document.getElementById('run-magnitude-btn');
+    if (runMagnitudeBtn) {
+        runMagnitudeBtn.addEventListener('click', () => {
+            // Check if varsPanelManager exists and has a flow loaded
+            if (window.varsPanelManager && window.varsPanelManager.currentFlow) {
+                console.log('Executing flow from Start Automation button');
+                window.varsPanelManager.executeFlow();
+            } else {
+                console.warn('No flow loaded or varsPanelManager not initialized');
+                // Show a message to the user
+                const statusText = document.getElementById('flow-variables-status');
+                if (statusText) {
+                    statusText.textContent = 'Please load a flow first';
+                    statusText.style.color = '#ff4444';
+                    setTimeout(() => {
+                        statusText.textContent = '';
+                    }, 3000);
+                }
+            }
+        });
+    }
+
     // Address bar enter key
     if (addressBar) {
         addressBar.addEventListener('keypress', (e) => {
@@ -1611,12 +1634,40 @@ function completeAnalysis() {
         enhancedRecorderBtn.title = 'Start Recording';
     }
     
+    // Clear any pending step timers
+    if (stepTimers && stepTimers.length > 0) {
+        stepTimers.forEach(timer => clearTimeout(timer));
+        stepTimers = [];
+    }
+    
+    // Reset analysis start time
+    analysisStartTime = null;
+    
     // Show completion status
     const progressStatus = document.getElementById('analysis-progress-status');
     if (progressStatus) {
         progressStatus.textContent = 'Complete';
         progressStatus.style.color = '#4CAF50';
     }
+    
+    // After 3 seconds, collapse the analysis progress section
+    setTimeout(() => {
+        const progressSection = document.getElementById('analysis-progress-content');
+        const progressChevron = document.getElementById('analysis-progress-chevron');
+        if (progressSection && progressSection.classList.contains('expanded')) {
+            progressSection.classList.remove('expanded');
+            progressSection.classList.add('collapsed');
+        }
+        if (progressChevron && progressChevron.classList.contains('expanded')) {
+            progressChevron.classList.remove('expanded');
+            progressChevron.classList.add('collapsed');
+        }
+        
+        // Clear the progress status after collapsing
+        if (progressStatus) {
+            progressStatus.textContent = '';
+        }
+    }, 3000);
 }
 
 // Update a specific analysis step (can be called from backend)

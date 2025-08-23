@@ -86,6 +86,8 @@ NAMING PRINCIPLES:
 
 IMPORTANT: Analyze the actual page context and field labels to determine the most appropriate variable name. Don't use generic names like PRICE or QUANTITY when more specific names like SELL_PRICE or STOCK_QUANTITY would be clearer.
 
+MANDATORY: If the recording includes login/authentication actions, the login credentials (LOGIN_ID, PASSWORD, EMAIL_ADDRESS, USERNAME) MUST be included in the "params" array as variables. NEVER hardcode login credentials in the snippet. Always use {{VARIABLE_NAME}} syntax for authentication fields.
+
 CRITICAL RULES FOR BULLETPROOF INTENT SPEC:
 ==========================================
 MANDATORY: Every step MUST include ALL of these elements for maximum resilience:
@@ -169,7 +171,7 @@ OUTPUT THIS ENHANCED JSON STRUCTURE:
   "name": "Descriptive name",
   "description": "What this automation does",
   "url": "${recording.url}",
-  "params": ["VARIABLE_NAMES"],
+  "params": ["LOGIN_ID", "PASSWORD", "OTHER_VARIABLE_NAMES"],
   "environment": {
     "viewport": ${JSON.stringify(recording.viewport || {})},
     "userAgent": "${recording.userAgent || ''}",
