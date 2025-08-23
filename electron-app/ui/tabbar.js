@@ -981,6 +981,27 @@ async function analyzeLastRecording() {
                 //     analyzeBtn.style.display = 'none';
                 // }
                 
+                // Mark analysis as complete
+                completeAnalysis();
+                
+                // Update sidebar to show success
+                const sidebar = window.modernSidebar || analysisSidebar;
+                sidebar.completeAnalysis(true);
+                
+                // Mark validating step as completed (the UI uses 'validating' not 'analysis')
+                const validatingStep = document.getElementById('progress-validating');
+                if (validatingStep) {
+                    validatingStep.classList.remove('active');
+                    validatingStep.classList.add('completed');
+                    const statusEl = validatingStep.querySelector('.progress-status');
+                    if (statusEl) {
+                        statusEl.innerHTML = `
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#007acc" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>`;
+                    }
+                }
+                
                 // Show vars panel with the Intent Spec (not the entire data object)
                 if (result.data.intentSpec) {
                     showVarsPanel(result.data.intentSpec);

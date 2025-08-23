@@ -1,0 +1,312 @@
+{
+  "name": "Zoho Inventory Login and Navigation",
+  "description": "Automates login to Zoho Inventory and navigates to the getting started page",
+  "url": "https://www.google.com/?zx=1755946871898&no_sw_cr=1",
+  "params": [
+    "EMAIL_ADDRESS",
+    "PASSWORD"
+  ],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "",
+    "cookies": false,
+    "localStorage": false
+  },
+  "skipNavigationStates": [
+    "authenticated",
+    "dashboard"
+  ],
+  "steps": [
+    {
+      "name": "Navigate to initial URL",
+      "ai_instruction": "Navigate to the Google page and wait for any redirects",
+      "snippet": "await page.goto('https://www.google.com/?zx=1755946871898&no_sw_cr=1', { waitUntil: 'networkidle2' });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [],
+      "value": "",
+      "waitBefore": {
+        "type": "time",
+        "condition": "page ready",
+        "timeout": 1000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "networkidle2",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "google.com"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh page"
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000
+      }
+    },
+    {
+      "name": "Navigate to Zoho Inventory",
+      "ai_instruction": "Navigate to Zoho Inventory login or directly to dashboard if already logged in",
+      "snippet": "await page.goto('https://inventory.zoho.com/', { waitUntil: 'networkidle2' });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [],
+      "value": "",
+      "waitBefore": {
+        "type": "time",
+        "condition": "brief pause",
+        "timeout": 500
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "networkidle2",
+        "timeout": 8000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory.zoho.com"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "direct navigation"
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000
+      }
+    },
+    {
+      "name": "Enter email address",
+      "ai_instruction": "Find the email or login ID field and enter the email address",
+      "snippet": "await page.type('input[name=\"LOGIN_ID\"]', '{{EMAIL_ADDRESS}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "input[name=\"LOGIN_ID\"]",
+        "input[type=\"email\"]",
+        "input[placeholder*=\"Email\"]",
+        "input[id*=\"login\"]"
+      ],
+      "value": "{{EMAIL_ADDRESS}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "input field visible",
+        "timeout": 5000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "typing complete",
+        "timeout": 500
+      },
+      "validation": {
+        "type": "element",
+        "expected": "value filled"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "use ai to find field"
+      },
+      "performance": {
+        "expectedDuration": 1500,
+        "maxDuration": 5000
+      }
+    },
+    {
+      "name": "Enter password",
+      "ai_instruction": "Find the password field and enter the password",
+      "snippet": "await page.type('input[name=\"PASSWORD\"]', '{{PASSWORD}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "input[name=\"PASSWORD\"]",
+        "input[type=\"password\"]",
+        "input[placeholder*=\"Password\"]",
+        "input[id*=\"password\"]"
+      ],
+      "value": "{{PASSWORD}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "password field visible",
+        "timeout": 3000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "typing complete",
+        "timeout": 500
+      },
+      "validation": {
+        "type": "element",
+        "expected": "value filled"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "use ai to find field"
+      },
+      "performance": {
+        "expectedDuration": 1500,
+        "maxDuration": 5000
+      }
+    },
+    {
+      "name": "Submit login form",
+      "ai_instruction": "Click the login or submit button to authenticate",
+      "snippet": "await page.click('button[type=\"submit\"]');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "button[type=\"submit\"]",
+        "button:has-text(\"Sign in\")",
+        "button:has-text(\"Login\")",
+        "input[type=\"submit\"]"
+      ],
+      "value": "",
+      "waitBefore": {
+        "type": "time",
+        "condition": "brief pause",
+        "timeout": 500
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "navigation complete",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory.zoho.com/app"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "press Enter key"
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000
+      }
+    },
+    {
+      "name": "Wait for dashboard load",
+      "ai_instruction": "Wait for the Zoho Inventory dashboard to fully load",
+      "snippet": "await page.waitForSelector('h3#ember158', { timeout: 10000 });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "h3#ember158",
+        "[data-ember-action]",
+        ".dashboard-content"
+      ],
+      "value": "",
+      "waitBefore": {
+        "type": "time",
+        "condition": "navigation settling",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "dashboard elements visible",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "dashboard loaded"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 3000,
+        "skipOnError": true,
+        "alternativeAction": "wait for any dashboard element"
+      },
+      "performance": {
+        "expectedDuration": 8000,
+        "maxDuration": 20000
+      }
+    },
+    {
+      "name": "Navigate to getting started",
+      "ai_instruction": "Click on getting started section or navigate to the getting started page",
+      "snippet": "await page.click('h3#ember158');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "h3#ember158",
+        "a[href*=\"gettingstarted\"]",
+        ":has-text(\"Getting Started\")"
+      ],
+      "value": "",
+      "waitBefore": {
+        "type": "element",
+        "condition": "element clickable",
+        "timeout": 3000
+      },
+      "waitAfter": {
+        "type": "url",
+        "condition": "URL contains gettingstarted",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "#/home/gettingstarted"
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 1500,
+        "skipOnError": true,
+        "alternativeAction": "navigate directly to URL"
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "validations": [
+    {
+      "step": "after-login",
+      "check": "url",
+      "expected": "inventory.zoho.com/app"
+    },
+    {
+      "step": "final",
+      "check": "element",
+      "expected": "getting started content visible"
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3
+  },
+  "performance": {
+    "totalExpectedDuration": 36718,
+    "criticalPath": [
+      "Navigate to Zoho Inventory",
+      "Submit login form",
+      "Wait for dashboard load"
+    ]
+  }
+}

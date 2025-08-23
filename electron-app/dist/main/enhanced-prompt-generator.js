@@ -362,25 +362,23 @@ function summarizeCapturedInputs(capturedInputs) {
     if (!capturedInputs || Object.keys(capturedInputs).length === 0) {
         return 'No captured inputs';
     }
-    
     let summary = 'Fields with captured values (MUST use standard variable names in params):\n';
     Object.entries(capturedInputs).forEach(([field, data]) => {
         const value = data.value || '';
         const type = data.type || 'text';
-        
         // Provide explicit mapping instructions
         if (field === 'LOGIN_ID' || field.toLowerCase().includes('email') || field.toLowerCase().includes('username')) {
             summary += `  - ${field} (${type}): "${value}" → ADD "EMAIL_ADDRESS" to params\n`;
-        } else if (field === 'PASSWORD' || field.toLowerCase().includes('password')) {
+        }
+        else if (field === 'PASSWORD' || field.toLowerCase().includes('password')) {
             summary += `  - ${field} (${type}): "${value}" → ADD "PASSWORD" to params\n`;
-        } else {
+        }
+        else {
             summary += `  - ${field} (${type}): "${value}"\n`;
         }
     });
-    
     return summary;
 }
-
 /**
  * Summarize actions to avoid huge prompts
  */
@@ -416,9 +414,11 @@ function summarizeActions(actions) {
             // Add explicit hints for variable mapping
             if (field === 'LOGIN_ID' || field.toLowerCase().includes('email') || field.toLowerCase().includes('username')) {
                 summary += `  - ${field}: "${value}" → MAP TO EMAIL_ADDRESS\n`;
-            } else if (field === 'PASSWORD' || field.toLowerCase().includes('password')) {
+            }
+            else if (field === 'PASSWORD' || field.toLowerCase().includes('password')) {
                 summary += `  - ${field}: "${value}" → MAP TO PASSWORD\n`;
-            } else {
+            }
+            else {
                 summary += `  - ${field}: "${value}"\n`;
             }
         });

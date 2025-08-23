@@ -3,31 +3,10 @@
  * Utilizes ALL captured data for robust automation
  */
 
-export interface EnhancedRecordingData {
-  sessionId: string;
-  startTime: number;
-  endTime: number;
-  duration: number;
-  url: string;
-  events?: any[];  // Some recordings use 'events'
-  actions?: any[];  // Some recordings use 'actions'
-  domSnapshots?: any[];
-  networkRequests?: any[];
-  consoleErrors?: any[];
-  mutations?: any[];
-  viewport?: { width: number; height: number };
-  userAgent?: string;
-  cookies?: any[];
-  localStorage?: any;
-  performance?: any;
-  tabSessions?: any;
-  screenshots?: any[];
-}
-
 /**
  * Generate enhanced prompt that uses ALL captured data
  */
-export function generateBulletproofIntentSpecPrompt(recording: EnhancedRecordingData): string {
+export function generateBulletproofIntentSpecPrompt(recording: any): string {
   // Analyze network patterns
   const networkPatterns = analyzeNetworkPatterns(recording.networkRequests || []);
   
@@ -61,6 +40,9 @@ User Agent: ${recording.userAgent || 'Not captured'}
 RECORDED EVENTS/ACTIONS (${recording.events?.length || recording.actions?.length || 0}):
 ${summarizeActions(recording.events || recording.actions || [])}
 
+${recording.capturedInputs ? `CAPTURED INPUT FIELDS:
+${summarizeCapturedInputs(recording.capturedInputs)}
+` : ''}
 DOM SNAPSHOTS (${recording.domSnapshots?.length || 0}):
 ${summarizeDomSnapshots(recording.domSnapshots || [])}
 
@@ -81,6 +63,18 @@ ${viewportInsights}
 
 TAB NAVIGATION:
 ${tabPatterns}
+
+CRITICAL: VARIABLE NAME MAPPING
+================================
+You MUST extract ALL input fields as variables with STANDARD names:
+- If you see LOGIN_ID field → Add "EMAIL_ADDRESS" to params (NOT LOGIN_ID)
+- If you see PASSWORD field → Add "PASSWORD" to params
+- If you see username/email field → Add "EMAIL_ADDRESS" or "USERNAME" to params
+- If you see item_name field → Add "ITEM_NAME" to params
+- If you see quantity field → Add "QUANTITY" to params
+
+Example: Recording shows LOGIN_ID="admin@example.com" and PASSWORD="secret"
+Then params MUST be: ["EMAIL_ADDRESS", "PASSWORD", ...]
 
 CRITICAL RULES FOR BULLETPROOF INTENT SPEC:
 ==========================================
@@ -205,8 +199,7 @@ function analyzeNetworkPatterns(requests: any[]): string {
   if (!requests.length) return 'No network data captured';
   
   const apiCalls = requests.filter((r: any) => r.url?.includes('/api/'));
-  const resources = requests.filter((r: any) => 
-    r.url?.match(/\.(js|css|png|jpg|svg)$/));
+  const resources = requests.filter((r: any) => r.url?.match(/\.(js|css|png|jpg|svg)$/));
   
   return `
 - API Calls: ${apiCalls.length} (wait for these to complete)
@@ -251,7 +244,7 @@ function analyzeTimingPatterns(events: any[]): string {
   
   const delays: number[] = [];
   for (let i = 1; i < events.length; i++) {
-    const delay = (events[i].timestamp || 0) - (events[i-1].timestamp || 0);
+    const delay = (events[i].timestamp || 0) - (events[i - 1].timestamp || 0);
     if (delay > 0) delays.push(delay);
   }
   
@@ -323,7 +316,7 @@ function extractErrorPatterns(errors: any[]): string[] {
 /**
  * Generate validation steps from recording data
  */
-export function generateValidationSteps(recording: EnhancedRecordingData): any[] {
+export function generateValidationSteps(recording: any): any[] {
   const validations: any[] = [];
   
   // Add URL validation after navigation
@@ -337,7 +330,8 @@ export function generateValidationSteps(recording: EnhancedRecordingData): any[]
   
   // Add login validation
   if (recording.events?.some((e: any) => 
-    e.selector?.includes('password') || e.selector?.includes('login'))) {
+    e.selector?.includes('password') || e.selector?.includes('login')
+  )) {
     validations.push({
       step: 'after-login',
       check: 'cookie',
@@ -360,7 +354,7 @@ export function generateValidationSteps(recording: EnhancedRecordingData): any[]
 /**
  * Generate performance expectations
  */
-export function generatePerformanceExpectations(recording: EnhancedRecordingData): any {
+export function generatePerformanceExpectations(recording: any): any {
   const criticalSteps: string[] = [];
   
   // Identify critical path
@@ -382,14 +376,40 @@ export function generatePerformanceExpectations(recording: EnhancedRecordingData
 }
 
 /**
+ * Summarize captured inputs with explicit variable mapping
+ */
+function summarizeCapturedInputs(capturedInputs: any): string {
+  if (!capturedInputs || Object.keys(capturedInputs).length === 0) {
+    return 'No captured inputs';
+  }
+  
+  let summary = 'Fields with captured values (MUST use standard variable names in params):\n';
+  Object.entries(capturedInputs).forEach(([field, data]: [string, any]) => {
+    const value = data.value || '';
+    const type = data.type || 'text';
+    
+    // Provide explicit mapping instructions
+    if (field === 'LOGIN_ID' || field.toLowerCase().includes('email') || field.toLowerCase().includes('username')) {
+      summary += `  - ${field} (${type}): "${value}" → ADD "EMAIL_ADDRESS" to params\n`;
+    } else if (field === 'PASSWORD' || field.toLowerCase().includes('password')) {
+      summary += `  - ${field} (${type}): "${value}" → ADD "PASSWORD" to params\n`;
+    } else {
+      summary += `  - ${field} (${type}): "${value}"\n`;
+    }
+  });
+  
+  return summary;
+}
+
+/**
  * Summarize actions to avoid huge prompts
  */
 function summarizeActions(actions: any[]): string {
   if (!actions || !actions.length) return 'No actions captured';
   
   // Group actions by type
-  const actionGroups: Record<string, any[]> = {};
-  const inputFields: Record<string, string> = {};
+  const actionGroups: any = {};
+  const inputFields: any = {};
   
   actions.forEach(action => {
     const type = action.type || 'unknown';
@@ -411,11 +431,18 @@ function summarizeActions(actions: any[]): string {
   
   let summary = `Action Summary (${actions.length} total):\n`;
   
-  // Show input fields
+  // Show input fields with explicit mapping hints
   if (Object.keys(inputFields).length > 0) {
-    summary += '\nInput Fields Detected:\n';
+    summary += '\nInput Fields Detected (MUST map to standard variable names):\n';
     Object.entries(inputFields).forEach(([field, value]) => {
-      summary += `  - ${field}: "${value}"\n`;
+      // Add explicit hints for variable mapping
+      if (field === 'LOGIN_ID' || field.toLowerCase().includes('email') || field.toLowerCase().includes('username')) {
+        summary += `  - ${field}: "${value}" → MAP TO EMAIL_ADDRESS\n`;
+      } else if (field === 'PASSWORD' || field.toLowerCase().includes('password')) {
+        summary += `  - ${field}: "${value}" → MAP TO PASSWORD\n`;
+      } else {
+        summary += `  - ${field}: "${value}"\n`;
+      }
     });
   }
   
@@ -429,7 +456,7 @@ function summarizeActions(actions: any[]): string {
   
   // Show action type counts
   summary += '\nAction Type Counts:\n';
-  Object.entries(actionGroups).forEach(([type, items]) => {
+  Object.entries(actionGroups).forEach(([type, items]: [string, any]) => {
     summary += `  - ${type}: ${items.length}\n`;
   });
   
@@ -446,7 +473,7 @@ function summarizeDomSnapshots(snapshots: any[]): string {
   
   // With event-driven captures, each snapshot is meaningful
   // Group snapshots by URL to identify page transitions
-  const pageGroups: Record<string, any[]> = {};
+  const pageGroups: any = {};
   snapshots.forEach(snapshot => {
     const url = snapshot.url || 'unknown';
     if (!pageGroups[url]) pageGroups[url] = [];
@@ -455,7 +482,7 @@ function summarizeDomSnapshots(snapshots: any[]): string {
   
   // Show page flow
   summary += `\nPage Flow (${Object.keys(pageGroups).length} unique pages):\n`;
-  Object.entries(pageGroups).forEach(([url, snaps]) => {
+  Object.entries(pageGroups).forEach(([url, snaps]: [string, any]) => {
     summary += `  - ${url} (${snaps.length} snapshots)\n`;
   });
   
@@ -463,7 +490,7 @@ function summarizeDomSnapshots(snapshots: any[]): string {
   const eventSnapshots = snapshots.filter(s => s.reason);
   if (eventSnapshots.length > 0) {
     summary += `\nEvent-Triggered Snapshots:\n`;
-    const eventCounts: Record<string, number> = {};
+    const eventCounts: any = {};
     eventSnapshots.forEach(s => {
       eventCounts[s.reason] = (eventCounts[s.reason] || 0) + 1;
     });
@@ -473,7 +500,7 @@ function summarizeDomSnapshots(snapshots: any[]): string {
   }
   
   // Analyze first and last snapshot for each unique page
-  Object.entries(pageGroups).forEach(([url, snaps]) => {
+  Object.entries(pageGroups).forEach(([url, snaps]: [string, any]) => {
     const first = snaps[0];
     const last = snaps[snaps.length - 1];
     
@@ -503,7 +530,9 @@ function summarizeDomSnapshots(snapshots: any[]): string {
         el.tagName === 'BUTTON' || el.role === 'button'
       );
       if (buttons.length > 0) {
-        summary += `  - Available actions: ${buttons.slice(0, 3).map((b: any) => b.text || b.value || 'button').join(', ')}\n`;
+        summary += `  - Available actions: ${buttons.slice(0, 3).map((b: any) => 
+          b.text || b.value || 'button'
+        ).join(', ')}\n`;
       }
     }
     

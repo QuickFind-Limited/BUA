@@ -1,0 +1,314 @@
+{
+  "name": "Create Inventory Item in Zoho",
+  "description": "Automates creation of a new inventory item in Zoho Inventory with configurable name and pricing",
+  "url": "https://inventory.zoho.com/app/893870319#/home/gettingstarted",
+  "params": [
+    "ITEM_NAME",
+    "SELLING_PRICE",
+    "COST_PRICE"
+  ],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "",
+    "cookies": true,
+    "localStorage": true
+  },
+  "skipNavigationStates": [
+    "authenticated",
+    "inventory_dashboard"
+  ],
+  "steps": [
+    {
+      "name": "Navigate to Items page",
+      "ai_instruction": "Click on the Items menu or navigate to the items listing page",
+      "snippet": "await page.goto('https://inventory.zoho.com/app/893870319#/inventory/items?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[href*='/inventory/items']",
+        "text=Items",
+        "[data-menu='items']"
+      ],
+      "waitAfter": {
+        "type": "element",
+        "condition": "[title='Items | Zoho Inventory']",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "/inventory/items"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "Click navigation menu first"
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000
+      }
+    },
+    {
+      "name": "Click New Item button",
+      "ai_instruction": "Click the 'New' or '+' button to create a new item",
+      "snippet": "await page.click('[href*='/items/new']');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[href*='/items/new']",
+        "button:has-text('New')",
+        "[aria-label='Add new item']",
+        ".new-item-button"
+      ],
+      "waitBefore": {
+        "type": "time",
+        "condition": "delay",
+        "timeout": 1000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "[title='Add New Item | Zoho Inventory']",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "/inventory/items/new"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 2000,
+        "maxDuration": 8000
+      }
+    },
+    {
+      "name": "Select item type",
+      "ai_instruction": "Select 'Goods' as the item type",
+      "snippet": "await page.click('#f983a17a-7ba8-4645-835e-32975581bf38');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#f983a17a-7ba8-4645-835e-32975581bf38",
+        "[value='goods']",
+        "input[type='radio'][value='goods']",
+        "label:has-text('Goods')"
+      ],
+      "waitBefore": {
+        "type": "element",
+        "condition": "form",
+        "timeout": 3000
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": true
+      },
+      "performance": {
+        "expectedDuration": 500,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Enter item name",
+      "ai_instruction": "Enter the item name in the name field",
+      "snippet": "await page.fill('#a7c4e2c22', '{{ITEM_NAME}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#a7c4e2c22",
+        "[name='item_name']",
+        "[placeholder*='Item Name']",
+        "input[aria-label='Item name']"
+      ],
+      "value": "{{ITEM_NAME}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "#a7c4e2c22",
+        "timeout": 3000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "input value not empty"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 1000,
+        "maxDuration": 3000
+      }
+    },
+    {
+      "name": "Select unit",
+      "ai_instruction": "Select 'box' as the unit of measurement",
+      "snippet": "await page.selectOption('#ember435', 'box');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#ember435",
+        "select[name='unit']",
+        "[aria-label='Unit']"
+      ],
+      "value": "box",
+      "waitBefore": {
+        "type": "time",
+        "condition": "delay",
+        "timeout": 500
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 500,
+        "skipOnError": true
+      },
+      "performance": {
+        "expectedDuration": 500,
+        "maxDuration": 2000
+      }
+    },
+    {
+      "name": "Enter selling price",
+      "ai_instruction": "Enter the selling price for the item",
+      "snippet": "await page.fill('#aa22eb1bb', '{{SELLING_PRICE}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#aa22eb1bb",
+        "[name='selling_price']",
+        "[placeholder*='Selling Price']",
+        "input[aria-label='Selling price']"
+      ],
+      "value": "{{SELLING_PRICE}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "#aa22eb1bb",
+        "timeout": 2000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "input value numeric"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 500,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 800,
+        "maxDuration": 2500
+      }
+    },
+    {
+      "name": "Enter cost price",
+      "ai_instruction": "Enter the cost price for the item",
+      "snippet": "await page.fill('#ab9e6d2f6', '{{COST_PRICE}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#ab9e6d2f6",
+        "[name='cost_price']",
+        "[placeholder*='Cost Price']",
+        "input[aria-label='Cost price']"
+      ],
+      "value": "{{COST_PRICE}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "#ab9e6d2f6",
+        "timeout": 2000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "input value numeric"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 500,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 800,
+        "maxDuration": 2500
+      }
+    },
+    {
+      "name": "Save item",
+      "ai_instruction": "Click the Save button to create the item",
+      "snippet": "await page.click('button:has-text(\"Save\")');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "button:has-text('Save')",
+        "[type='submit']",
+        ".save-button",
+        "[aria-label='Save item']"
+      ],
+      "waitBefore": {
+        "type": "time",
+        "condition": "delay",
+        "timeout": 1000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "response status 200",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "/inventory/items/[0-9]+"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "Check for validation errors first"
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 15000
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "validations": [
+    {
+      "step": "after-save",
+      "check": "url",
+      "expected": "/inventory/items/[0-9]+"
+    },
+    {
+      "step": "item-created",
+      "check": "element",
+      "expected": ".success-message, .item-details"
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3
+  },
+  "performance": {
+    "totalExpectedDuration": 25000,
+    "criticalPath": [
+      "Enter item name",
+      "Enter selling price",
+      "Enter cost price",
+      "Save item"
+    ]
+  }
+}

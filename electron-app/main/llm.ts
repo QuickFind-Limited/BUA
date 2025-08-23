@@ -41,8 +41,31 @@ async function getQueryFunction() {
       // Send request to worker
       const result = await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
+          // Clean up worker process on timeout
+          if (workerProcess) {
+            workerProcess.kill();
+            workerProcess = null;
+            queryFunction = null;
+          }
           reject(new Error('Claude Code SDK timeout'));
         }, 120000); // 120 second timeout
+        
+        // Handle worker exit/error
+        workerProcess.once('exit', (code: number) => {
+          clearTimeout(timeout);
+          workerProcess = null;
+          queryFunction = null;
+          if (code !== 0) {
+            reject(new Error('Worker process exited unexpectedly'));
+          }
+        });
+        
+        workerProcess.once('error', (error: any) => {
+          clearTimeout(timeout);
+          workerProcess = null;
+          queryFunction = null;
+          reject(error);
+        });
         
         workerProcess.once('message', (msg: any) => {
           clearTimeout(timeout);
@@ -50,15 +73,29 @@ async function getQueryFunction() {
             if (msg.success) {
               resolve(msg.data);
             } else {
+              // Clean up on error
+              if (workerProcess) {
+                workerProcess.kill();
+                workerProcess = null;
+                queryFunction = null;
+              }
               reject(new Error(msg.error));
             }
           }
         });
         
-        workerProcess.send({
-          type: 'analyze',
-          prompt: options.prompt
-        });
+        // Wrap send in try-catch to handle closed channel
+        try {
+          workerProcess.send({
+            type: 'analyze',
+            prompt: options.prompt
+          });
+        } catch (error: any) {
+          console.error('Failed to send to worker:', error.message);
+          workerProcess = null;
+          queryFunction = null;
+          reject(new Error('Failed to communicate with worker process'));
+        }
       });
       
       // Yield the result in the expected format
@@ -486,11 +523,50 @@ function createAnalysisPrompt(recordingData: any): string {
   // This prompt utilizes all available data for robust Intent Specs
   if (actualRecordingData && typeof actualRecordingData === 'object') {
     console.log('🚀 Using ENHANCED BULLETPROOF prompt for comprehensive Intent Spec generation');
+    
+    // Extract captured inputs from console logs if not already present
+    if (!actualRecordingData.capturedInputs && actualRecordingData.console) {
+      const capturedInputs: any = {};
+      Object.values(actualRecordingData.console as any).forEach((logs: any) => {
+        if (Array.isArray(logs)) {
+          logs.forEach((log: any) => {
+            if (log.args) {
+              log.args.forEach((arg: any) => {
+                if (arg.value && typeof arg.value === 'string' && arg.value.includes('[RECORDER-DATA]')) {
+                  try {
+                    const data = JSON.parse(arg.value.replace('[RECORDER-DATA]', ''));
+                    if (data.field && data.value) {
+                      // Keep the latest value for each field
+                      capturedInputs[data.field] = {
+                        field: data.field,
+                        value: data.value,
+                        type: data.inputType || 'text',
+                        url: data.url || actualRecordingData.url,
+                        isLoginField: data.isLoginField || false
+                      };
+                    }
+                  } catch (e) {
+                    // Skip parsing errors
+                  }
+                }
+              });
+            }
+          });
+        }
+      });
+      
+      if (Object.keys(capturedInputs).length > 0) {
+        actualRecordingData.capturedInputs = capturedInputs;
+        console.log('📝 Extracted captured inputs:', Object.keys(capturedInputs).join(', '));
+      }
+    }
+    
     console.log('📊 Data includes:', {
       hasActions: !!actualRecordingData.actions,
       hasDomSnapshots: !!actualRecordingData.domSnapshots,
       hasNetworkData: !!actualRecordingData.networkRequests,
-      hasMutations: !!actualRecordingData.mutations
+      hasMutations: !!actualRecordingData.mutations,
+      hasCapturedInputs: !!actualRecordingData.capturedInputs
     });
     return generateBulletproofIntentSpecPrompt(actualRecordingData);
   }
