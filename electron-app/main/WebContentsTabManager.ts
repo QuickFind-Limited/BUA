@@ -347,6 +347,7 @@ export class WebContentsTabManager extends EventEmitter {
     // Show new tab
     tab.isActive = true;
     this.activeTabId = tabId;
+    console.log(`[TAB-MANAGER] Adding tab ${tabId} to window contentView`);
     this.window.contentView.addChildView(tab.view);
     this.updateTabBounds(tab);
 
@@ -443,12 +444,14 @@ export class WebContentsTabManager extends EventEmitter {
    */
   private updateTabBounds(tab: WebContentsTab): void {
     const bounds = this.window.getContentBounds();
-    tab.view.setBounds({
+    const tabBounds = {
       x: this.sidebarWidth,
       y: this.chromeHeight,
       width: bounds.width - this.sidebarWidth - this.varsPanelWidth,
       height: bounds.height - this.chromeHeight
-    });
+    };
+    console.log(`[TAB-MANAGER] Setting tab bounds for ${tab.id}:`, tabBounds, 'Window bounds:', bounds);
+    tab.view.setBounds(tabBounds);
   }
 
   /**

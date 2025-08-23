@@ -97,27 +97,8 @@ function createWindow(): void {
   });
 
   // Load the main UI (from source, not dist)
-  // Load UI with test mode flag if in E2E test
   const htmlPath = path.join(__dirname, '..', '..', 'ui', 'tabbar.html');
-  
-  // Check for test mode via environment variable or command line arg
-  const isTestMode = process.env.E2E_TEST === 'true' || 
-                     process.argv.includes('--e2e-test') ||
-                     process.argv.includes('--test');
-  
-  console.log('[DEBUG] Test mode check:', {
-    env: process.env.E2E_TEST,
-    args: process.argv,
-    isTestMode
-  });
-  
-  if (isTestMode) {
-    mainWindow.loadURL(`file://${htmlPath}?e2e_test=true`);
-    console.log('[E2E] Loading UI in test mode with query param');
-  } else {
-    mainWindow.loadFile(htmlPath);
-    console.log('[DEBUG] Loading UI in normal mode');
-  }
+  mainWindow.loadFile(htmlPath);
 
   // Show window maximized and bring to foreground once ready
   mainWindow.once('ready-to-show', () => {
@@ -134,7 +115,8 @@ function createWindow(): void {
   });
 
   // Register IPC handlers
-  registerIpcHandlers();
+  registerIpcHandlers(getTabManager, getMainWindow);
+  console.log('[MAIN] IPC handlers registered successfully');
   
   // Register settings manager IPC handlers
   settingsManager.registerIpcHandlers();

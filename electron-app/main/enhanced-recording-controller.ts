@@ -253,8 +253,12 @@ export class EnhancedRecordingController extends EventEmitter {
    * Start recording session
    */
   public async startRecording(webView: WebContentsView, startUrl?: string): Promise<string> {
+    // Connect to WebView if not already connected
     if (!this.isConnected) {
-      throw new Error('Not connected to WebView. Call connectToWebView first.');
+      const connected = await this.connectToWebView(webView);
+      if (!connected) {
+        throw new Error('Failed to connect to WebView');
+      }
     }
 
     const sessionId = `recording-${Date.now()}`;

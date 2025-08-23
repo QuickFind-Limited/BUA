@@ -10,7 +10,7 @@
     "build": "tsc",
     "start": "npm run build && electron .",
     "dev": "cross-env NODE_ENV=development npm run start",
-    "test:e2e": "npm run build && electron . --e2e-test",
+    "test:e2e": "npm run build && cross-env E2E_TEST=true electron .",
     "test:launch": "node launch-test.js",
     "electron": "electron .",
     "pack": "npm run build && electron-builder --dir",

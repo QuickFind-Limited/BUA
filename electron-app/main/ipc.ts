@@ -15,7 +15,7 @@ import {
 import { serializeRecording } from './recording-serializer';
 import { ScreenshotComparator } from './screenshot-comparator';
 // REMOVED: ExecutionEngine import - not used
-import { getTabManager, getMainWindow } from './main';
+// REMOVED: Circular dependency - getTabManager and getMainWindow will be passed as parameters
 
 // Type definitions for IPC events
 interface AnalyzeRecordingParams {
@@ -71,10 +71,18 @@ interface ExecuteWithValidationParams {
 // Initialize screenshot comparator
 const screenshotComparator = new ScreenshotComparator();
 
+// Store references to these functions to avoid circular dependency
+let getTabManagerRef: (() => any) | null = null;
+let getMainWindowRef: (() => any) | null = null;
+
 /**
  * Register all IPC handlers for secure communication between main and renderer processes
  */
-export function registerIpcHandlers(): void {
+export function registerIpcHandlers(getTabManager: () => any, getMainWindow: () => any): void {
+  // Store references for use in helper functions
+  getTabManagerRef = getTabManager;
+  getMainWindowRef = getMainWindow;
+  
   // LLM: Analyze recording handler with intelligent strategy selection
   ipcMain.handle('llm:analyzeRecording', async (event: IpcMainInvokeEvent, params: AnalyzeRecordingParams) => {
     console.log('==========================================');
@@ -1461,7 +1469,7 @@ async function executeFlowWithValidation(params: ExecuteWithValidationParams): P
  */
 async function takeCurrentScreenshot(): Promise<string | null> {
   try {
-    const tabManager = getTabManager();
+    const tabManager = getTabManagerRef ? getTabManagerRef() : null;
     if (!tabManager) {
       throw new Error('TabManager not available');
     }
@@ -1549,7 +1557,7 @@ async function executeFlowSteps(flowSpec: any, variables?: Record<string, any>):
     if (screenshotConfig.enabled) {
       try {
         // Take screenshot of final state
-        const tabManager = getTabManager();
+        const tabManager = getTabManagerRef ? getTabManagerRef() : null;
         const activeTab = tabManager ? (tabManager as any).getActiveTab() : null;
         if (activeTab?.view) {
           const screenshot = await activeTab.view.webContents.capturePage();
