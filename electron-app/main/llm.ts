@@ -289,9 +289,9 @@ interface QueryResponse {
 }
 
 /**
- * Analyze recording using Claude Code SDK with Opus 4.1 for complex reasoning
+ * Analyze recording using Claude Code SDK with Sonnet 4 for Intent Spec generation
  * This is used ONCE during analysis phase to create the Intent Spec
- * Opus is ideal for understanding intent and creating structured automation plans
+ * Sonnet 4 is faster and more reliable for structured JSON generation
  */
 export async function analyzeRecording(recordingData: any): Promise<IntentSpec> {
   const maxRetries = 3;
