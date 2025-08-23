@@ -62,17 +62,23 @@ ${viewportInsights}
 TAB NAVIGATION:
 ${tabPatterns}
 
-CRITICAL: VARIABLE NAME MAPPING
-================================
-You MUST extract ALL input fields as variables with STANDARD names:
-- If you see LOGIN_ID field → Add "EMAIL_ADDRESS" to params (NOT LOGIN_ID)
-- If you see PASSWORD field → Add "PASSWORD" to params
-- If you see username/email field → Add "EMAIL_ADDRESS" or "USERNAME" to params
-- If you see item_name field → Add "ITEM_NAME" to params
-- If you see quantity field → Add "QUANTITY" to params
+CRITICAL: VARIABLE NAME EXTRACTION
+===================================
+Analyze ALL input fields and create descriptive, semantic variable names:
 
-Example: Recording shows LOGIN_ID="admin@example.com" and PASSWORD="secret"
-Then params MUST be: ["EMAIL_ADDRESS", "PASSWORD", ...]
+NAMING PRINCIPLES:
+1. Use UPPERCASE with underscores for all variables
+2. Be specific and descriptive based on the field's purpose
+3. For numeric fields in inventory/commerce contexts:
+   - Price fields should specify their type (SELL_PRICE, BUY_PRICE, COST_PRICE)
+   - Quantity fields should be specific (STOCK_QUANTITY, ORDER_QUANTITY)
+4. For authentication fields:
+   - Email/username fields → EMAIL_ADDRESS or USERNAME
+   - Password fields → PASSWORD
+5. Use full words, not abbreviations (PHONE_NUMBER not PHONE or TEL)
+6. Include the field's business context in the name
+
+IMPORTANT: Analyze the actual page context and field labels to determine the most appropriate variable name. Don't use generic names like PRICE or QUANTITY when more specific names like SELL_PRICE or STOCK_QUANTITY would be clearer.
 
 CRITICAL RULES FOR BULLETPROOF INTENT SPEC:
 ==========================================
@@ -362,21 +368,23 @@ function summarizeCapturedInputs(capturedInputs) {
     if (!capturedInputs || Object.keys(capturedInputs).length === 0) {
         return 'No captured inputs';
     }
-    let summary = 'Fields with captured values (MUST use standard variable names in params):\n';
+    let summary = 'Fields with captured values (analyze context to determine appropriate variable names):\n';
     Object.entries(capturedInputs).forEach(([field, data]) => {
         const value = data.value || '';
         const type = data.type || 'text';
-        // Provide explicit mapping instructions
-        if (field === 'LOGIN_ID' || field.toLowerCase().includes('email') || field.toLowerCase().includes('username')) {
-            summary += `  - ${field} (${type}): "${value}" → ADD "EMAIL_ADDRESS" to params\n`;
-        }
-        else if (field === 'PASSWORD' || field.toLowerCase().includes('password')) {
-            summary += `  - ${field} (${type}): "${value}" → ADD "PASSWORD" to params\n`;
-        }
-        else {
-            summary += `  - ${field} (${type}): "${value}"\n`;
-        }
+        const placeholder = data.placeholder || '';
+        const label = data.label || '';
+        // Provide contextual information to help with variable naming
+        summary += `  - Field: ${field}\n`;
+        summary += `    Type: ${type}\n`;
+        summary += `    Value: "${value}"\n`;
+        if (placeholder)
+            summary += `    Placeholder: "${placeholder}"\n`;
+        if (label)
+            summary += `    Label: "${label}"\n`;
+        summary += '\n';
     });
+    summary += 'Remember: Use descriptive variable names based on the field\'s purpose and context.\n';
     return summary;
 }
 /**
@@ -407,21 +415,13 @@ function summarizeActions(actions) {
         }
     });
     let summary = `Action Summary (${actions.length} total):\n`;
-    // Show input fields with explicit mapping hints
+    // Show input fields detected
     if (Object.keys(inputFields).length > 0) {
-        summary += '\nInput Fields Detected (MUST map to standard variable names):\n';
+        summary += '\nInput Fields Detected (create descriptive variable names based on context):\n';
         Object.entries(inputFields).forEach(([field, value]) => {
-            // Add explicit hints for variable mapping
-            if (field === 'LOGIN_ID' || field.toLowerCase().includes('email') || field.toLowerCase().includes('username')) {
-                summary += `  - ${field}: "${value}" → MAP TO EMAIL_ADDRESS\n`;
-            }
-            else if (field === 'PASSWORD' || field.toLowerCase().includes('password')) {
-                summary += `  - ${field}: "${value}" → MAP TO PASSWORD\n`;
-            }
-            else {
-                summary += `  - ${field}: "${value}"\n`;
-            }
+            summary += `  - ${field}: "${value}"\n`;
         });
+        summary += 'Note: Use the field context and page purpose to determine appropriate variable names.\n';
     }
     // Show click/submit actions
     if (actionGroups.click) {
