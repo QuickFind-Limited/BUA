@@ -1,0 +1,642 @@
+{
+  "name": "Create New Inventory Item in Zoho",
+  "description": "Navigate to Zoho Inventory, login with credentials, and create a new inventory item with specified details",
+  "url": "https://www.google.com/?zx=1755968238395&no_sw_cr=1",
+  "params": [
+    "EMAIL_ADDRESS",
+    "PASSWORD",
+    "ITEM_NAME",
+    "SELLING_PRICE",
+    "COST_PRICE"
+  ],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "",
+    "cookies": false,
+    "localStorage": false
+  },
+  "skipNavigationStates": [
+    "authenticated",
+    "dashboard"
+  ],
+  "steps": [
+    {
+      "name": "Navigate to Zoho Inventory",
+      "ai_instruction": "Navigate to the Zoho Inventory login page",
+      "snippet": "await page.goto('https://inventory.zoho.com');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "body",
+        "html",
+        "[data-testid='page-container']",
+        ".login-page"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "body",
+          "required": true,
+          "alternativeSelectors": [
+            "html",
+            "head"
+          ],
+          "waitFor": "visible",
+          "timeout": 10000
+        }
+      ],
+      "skipConditions": [
+        {
+          "type": "url_match",
+          "value": "inventory.zoho.com/app",
+          "skipReason": "Already in Zoho Inventory app"
+        }
+      ],
+      "waitAfter": {
+        "type": "network",
+        "condition": "idle",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "zoho.com",
+        "screenshot": false,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": []
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Enter email address",
+      "ai_instruction": "Enter the email address in the login form",
+      "snippet": "await page.fill('input[name=\"LOGIN_ID\"]', '{{EMAIL_ADDRESS}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "input[name='LOGIN_ID']",
+        "#login_id",
+        "input[type='email']",
+        "input[placeholder*='email']",
+        "input[aria-label*='email']",
+        "[data-testid='email-input']",
+        "//input[@name='LOGIN_ID']"
+      ],
+      "value": "{{EMAIL_ADDRESS}}",
+      "preFlightChecks": [
+        {
+          "selector": "input[name='LOGIN_ID']",
+          "required": true,
+          "alternativeSelectors": [
+            "#login_id",
+            "input[type='email']"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "field_filled",
+        "screenshot": false,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": false,
+        "alternativeAction": "clear_and_retry",
+        "fallbackSelectors": [
+          "#login_id",
+          "input[type='email']",
+          "input[placeholder*='email']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 2000,
+        "maxDuration": 8000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Enter password",
+      "ai_instruction": "Enter the password in the login form",
+      "snippet": "await page.fill('input[name=\"PASSWORD\"]', '{{PASSWORD}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "input[name='PASSWORD']",
+        "#password",
+        "input[type='password']",
+        "input[placeholder*='password']",
+        "input[aria-label*='password']",
+        "[data-testid='password-input']",
+        "//input[@type='password']"
+      ],
+      "value": "{{PASSWORD}}",
+      "preFlightChecks": [
+        {
+          "selector": "input[name='PASSWORD']",
+          "required": true,
+          "alternativeSelectors": [
+            "#password",
+            "input[type='password']"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "field_filled",
+        "screenshot": false,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": false,
+        "alternativeAction": "clear_and_retry",
+        "fallbackSelectors": [
+          "#password",
+          "input[type='password']",
+          "input[placeholder*='password']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 2000,
+        "maxDuration": 8000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Submit login form",
+      "ai_instruction": "Click the login button to submit the credentials",
+      "snippet": "await page.click('button[type=\"submit\"], .login-button, #login-submit');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "button[type='submit']",
+        ".login-button",
+        "#login-submit",
+        "input[type='submit']",
+        "button:has-text('Sign In')",
+        "button:has-text('Login')",
+        "[aria-label*='login']",
+        "//button[contains(text(), 'Sign') or contains(text(), 'Login')]"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "button[type='submit']",
+          "required": true,
+          "alternativeSelectors": [
+            ".login-button",
+            "#login-submit"
+          ],
+          "waitFor": "enabled",
+          "timeout": 5000
+        }
+      ],
+      "waitAfter": {
+        "type": "network",
+        "condition": "response",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory.zoho.com/app",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": [
+          ".login-button",
+          "#login-submit",
+          "input[type='submit']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 8000,
+        "maxDuration": 20000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Navigate to Items section",
+      "ai_instruction": "Navigate to the inventory items section from the main dashboard",
+      "snippet": "await page.click('a[href*=\"items\"], .items-menu, #items-nav');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "a[href*='items']",
+        ".items-menu",
+        "#items-nav",
+        "text=Items",
+        "[aria-label*='items']",
+        ".nav-items",
+        "//a[contains(@href, 'items')]"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "a[href*='items']",
+          "required": true,
+          "alternativeSelectors": [
+            ".items-menu",
+            "text=Items"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "skipConditions": [
+        {
+          "type": "url_match",
+          "value": "/inventory/items",
+          "skipReason": "Already in items section"
+        }
+      ],
+      "waitAfter": {
+        "type": "network",
+        "condition": "idle",
+        "timeout": 8000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "/inventory/items",
+        "screenshot": false,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": false,
+        "alternativeAction": "navigate_via_url",
+        "fallbackSelectors": [
+          ".items-menu",
+          "text=Items",
+          "#items-nav"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Click Add New Item button",
+      "ai_instruction": "Click the button to add a new inventory item",
+      "snippet": "await page.click('button:has-text(\"Add\"), .add-item-btn, #new-item');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "button:has-text('Add')",
+        ".add-item-btn",
+        "#new-item",
+        "a[href*='/new']",
+        "button:has-text('New')",
+        "[aria-label*='add']",
+        ".btn-add",
+        "//button[contains(text(), 'Add') or contains(text(), 'New')]"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "button:has-text('Add')",
+          "required": true,
+          "alternativeSelectors": [
+            ".add-item-btn",
+            "#new-item"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "waitAfter": {
+        "type": "network",
+        "condition": "idle",
+        "timeout": 8000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "/new",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": false,
+        "alternativeAction": "navigate_via_url",
+        "fallbackSelectors": [
+          ".add-item-btn",
+          "#new-item",
+          "a[href*='/new']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Enter item name",
+      "ai_instruction": "Enter the item name in the product name field",
+      "snippet": "await page.fill('#a516721c3', '{{ITEM_NAME}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#a516721c3",
+        "input[name*='name']",
+        "input[placeholder*='name']",
+        ".item-name-field",
+        "[aria-label*='name']",
+        "input[type='text']:first-of-type",
+        "//input[contains(@placeholder, 'name') or contains(@name, 'name')]"
+      ],
+      "value": "{{ITEM_NAME}}",
+      "preFlightChecks": [
+        {
+          "selector": "#a516721c3",
+          "required": true,
+          "alternativeSelectors": [
+            "input[name*='name']",
+            "input[placeholder*='name']"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "field_filled",
+        "screenshot": false,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": false,
+        "alternativeAction": "clear_and_retry",
+        "fallbackSelectors": [
+          "input[name*='name']",
+          "input[placeholder*='name']",
+          ".item-name-field"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Enter selling price",
+      "ai_instruction": "Enter the selling price in the appropriate price field",
+      "snippet": "await page.fill('#ab2dbd8a4', '{{SELLING_PRICE}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#ab2dbd8a4",
+        "input[name*='sell']",
+        "input[placeholder*='sell']",
+        "input[name*='price']:first-of-type",
+        ".selling-price-field",
+        "[aria-label*='selling']",
+        "//input[contains(@placeholder, 'sell') or contains(@name, 'sell')]"
+      ],
+      "value": "{{SELLING_PRICE}}",
+      "preFlightChecks": [
+        {
+          "selector": "#ab2dbd8a4",
+          "required": true,
+          "alternativeSelectors": [
+            "input[name*='sell']",
+            "input[placeholder*='sell']"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "field_filled",
+        "screenshot": false,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": false,
+        "alternativeAction": "clear_and_retry",
+        "fallbackSelectors": [
+          "input[name*='sell']",
+          "input[placeholder*='sell']",
+          ".selling-price-field"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Enter cost price",
+      "ai_instruction": "Enter the cost price in the appropriate cost field",
+      "snippet": "await page.fill('#a6a46e8a4', '{{COST_PRICE}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#a6a46e8a4",
+        "input[name*='cost']",
+        "input[placeholder*='cost']",
+        "input[name*='price']:nth-of-type(2)",
+        ".cost-price-field",
+        "[aria-label*='cost']",
+        "//input[contains(@placeholder, 'cost') or contains(@name, 'cost')]"
+      ],
+      "value": "{{COST_PRICE}}",
+      "preFlightChecks": [
+        {
+          "selector": "#a6a46e8a4",
+          "required": true,
+          "alternativeSelectors": [
+            "input[name*='cost']",
+            "input[placeholder*='cost']"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "field_filled",
+        "screenshot": false,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": false,
+        "alternativeAction": "clear_and_retry",
+        "fallbackSelectors": [
+          "input[name*='cost']",
+          "input[placeholder*='cost']",
+          ".cost-price-field"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Save the new item",
+      "ai_instruction": "Click the save button to create the new inventory item",
+      "snippet": "await page.click('button:has-text(\"Save\"), .save-btn, #save-item');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "button:has-text('Save')",
+        ".save-btn",
+        "#save-item",
+        "button[type='submit']",
+        "input[type='submit']",
+        "[aria-label*='save']",
+        ".btn-primary",
+        "//button[contains(text(), 'Save') or contains(text(), 'Create')]"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "button:has-text('Save')",
+          "required": true,
+          "alternativeSelectors": [
+            ".save-btn",
+            "#save-item"
+          ],
+          "waitFor": "enabled",
+          "timeout": 5000
+        }
+      ],
+      "waitAfter": {
+        "type": "network",
+        "condition": "response",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "screenshot",
+        "expected": "matches_recording",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": [
+          ".save-btn",
+          "#save-item",
+          "button[type='submit']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 8000,
+        "maxDuration": 20000,
+        "fallbackToAI": true
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "screenshotValidation": {
+    "enabled": true,
+    "threshold": 80,
+    "checkpoints": [
+      "after-login",
+      "after-save"
+    ],
+    "ignoreRegions": [
+      ".timestamp",
+      ".dynamic-content"
+    ],
+    "compareMode": "structural"
+  },
+  "validations": [
+    {
+      "step": "after-login",
+      "check": "url",
+      "expected": "inventory.zoho.com/app"
+    },
+    {
+      "step": "final",
+      "check": "screenshot",
+      "expected": "matches_recording",
+      "threshold": 85
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3,
+    "fallbackToManual": false
+  },
+  "performance": {
+    "totalExpectedDuration": 84031,
+    "criticalPath": [
+      "login",
+      "navigate-to-items",
+      "save-item"
+    ],
+    "slowStepThreshold": 10000
+  }
+}

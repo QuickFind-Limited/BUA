@@ -88,45 +88,81 @@ IMPORTANT: Analyze the actual page context and field labels to determine the mos
 
 CRITICAL RULES FOR BULLETPROOF INTENT SPEC:
 ==========================================
-1. WAIT CONDITIONS:
-   - Add explicit waits after navigation (use network patterns)
-   - Wait for dynamic content to load (use DOM mutations)
-   - Add retry logic for flaky elements
+MANDATORY: Every step MUST include ALL of these elements for maximum resilience:
 
-2. SELECTOR STRATEGY:
-   - Provide 3+ selectors per element when possible
-   - Use data from DOM snapshots for alternative selectors
-   - Include aria-label, role, and text selectors
+1. MULTIPLE SELECTORS (minimum 4 per element):
+   - ID selector: #element-id
+   - Class selector: .element-class
+   - Attribute selector: [name="field"], [placeholder*="text"]
+   - Text selector: text=Button Text, :has-text("content")
+   - ARIA selector: [aria-label="label"], [role="button"]
+   - XPath fallback: //button[contains(text(), 'Submit')]
 
-3. ERROR HANDLING:
-   - Add skip conditions for optional steps (based on console errors)
-   - Include validation steps after critical actions
-   - Add recovery steps for common failures
+2. COMPREHENSIVE ERROR HANDLING:
+   Every step MUST have:
+   {
+     "errorHandling": {
+       "retry": 3,
+       "retryDelay": 1000-2000,
+       "skipOnError": false (true only for non-critical),
+       "alternativeAction": "specific fallback",
+       "fallbackSelectors": ["alt1", "alt2", "alt3"]
+     }
+   }
 
-4. TIMING OPTIMIZATION:
-   - Use actual timing from recording for realistic delays
-   - Add throttling for rapid successive actions
-   - Include performance.timing data for page load waits
+3. PRE-FLIGHT CHECKS (for interaction steps):
+   {
+     "preFlightChecks": [
+       {
+         "selector": "primary selector",
+         "required": true,
+         "alternativeSelectors": ["backup1", "backup2"],
+         "waitFor": "visible|enabled|interactive",
+         "timeout": 5000
+       }
+     ]
+   }
 
-5. VIEWPORT AWARENESS:
-   - Add viewport adjustment steps if needed
-   - Include scroll actions for elements below fold
-   - Handle responsive layouts
+4. INTELLIGENT WAIT CONDITIONS:
+   - waitBefore: Check element/network state BEFORE action
+   - waitAfter: Verify success AFTER action
+   - Use specific conditions not generic timeouts
 
-6. MULTI-TAB HANDLING:
-   - Track tab switches and window management
-   - Include tab synchronization waits
-   - Handle popup windows
+5. VALIDATION AFTER EVERY CRITICAL STEP:
+   {
+     "validation": {
+       "type": "element|text|url|network|screenshot",
+       "expected": "specific expectation",
+       "screenshot": true (for critical steps),
+       "continueOnFailure": false
+     }
+   }
 
-7. NETWORK AWARENESS:
-   - Wait for specific API calls to complete
-   - Handle offline/slow network scenarios
-   - Include request validation
+6. SKIP CONDITIONS (for auth/navigation):
+   {
+     "skipConditions": [
+       {
+         "type": "url_match",
+         "value": "dashboard|app|home",
+         "skipReason": "Already logged in"
+       },
+       {
+         "type": "element_exists", 
+         "value": ".user-menu, #logout-btn",
+         "skipReason": "User menu visible"
+       }
+     ]
+   }
 
-8. STATE MANAGEMENT:
-   - Track authentication state from cookies/localStorage
-   - Add conditional flows based on state
-   - Include state validation steps
+7. PERFORMANCE MONITORING:
+   {
+     "performance": {
+       "expectedDuration": [actual from recording],
+       "maxDuration": [3x expected],
+       "alert": "slow|timeout|failed",
+       "fallbackToAI": true
+     }
+   }
 
 OUTPUT THIS ENHANCED JSON STRUCTURE:
 {
@@ -144,35 +180,64 @@ OUTPUT THIS ENHANCED JSON STRUCTURE:
   "steps": [
     {
       "name": "Step name",
-      "ai_instruction": "Natural language instruction",
+      "ai_instruction": "Natural language instruction for AI fallback",
       "snippet": "await page.action();",
-      "prefer": "snippet or ai",
-      "fallback": "ai, snippet, or retry",
-      "selectors": ["primary", "secondary", "text-based", "aria-based"],
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#id-selector",
+        ".class-selector", 
+        "[name='field-name']",
+        "[placeholder*='text']",
+        "text=Exact Text",
+        "[aria-label='label']",
+        "[role='button']",
+        "//xpath/fallback"
+      ],
       "value": "value or {{VARIABLE}}",
+      "preFlightChecks": [
+        {
+          "selector": "#primary-selector",
+          "required": true,
+          "alternativeSelectors": [".backup1", ".backup2"],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "skipConditions": [
+        {
+          "type": "element_exists",
+          "value": ".already-done",
+          "skipReason": "Step already completed"
+        }
+      ],
       "waitBefore": {
         "type": "network|element|time",
         "condition": "specific condition",
         "timeout": 5000
       },
       "waitAfter": {
-        "type": "network|element|time",
+        "type": "network|element|time", 
         "condition": "specific condition",
         "timeout": 5000
       },
       "validation": {
-        "type": "element|text|url|network",
-        "expected": "expected value or pattern"
+        "type": "element|text|url|network|screenshot",
+        "expected": "expected value or pattern",
+        "screenshot": false,
+        "continueOnFailure": false
       },
       "errorHandling": {
         "retry": 3,
-        "retryDelay": 1000,
+        "retryDelay": 1500,
         "skipOnError": false,
-        "alternativeAction": "fallback action"
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": ["alt1", "alt2", "alt3"]
       },
       "performance": {
         "expectedDuration": ${recording.duration || 1000},
-        "maxDuration": 30000
+        "maxDuration": 30000,
+        "fallbackToAI": true
       }
     }
   ],
@@ -182,20 +247,35 @@ OUTPUT THIS ENHANCED JSON STRUCTURE:
     "form_interactions": "snippet",
     "validation": "ai"
   },
+  "screenshotValidation": {
+    "enabled": true,
+    "threshold": 80,
+    "checkpoints": ["after-login", "after-critical-action", "final"],
+    "ignoreRegions": [".timestamp", ".dynamic-content"],
+    "compareMode": "structural"
+  },
   "validations": [
     {
       "step": "after-login",
       "check": "element|url|cookie",
       "expected": "value"
+    },
+    {
+      "step": "final",
+      "check": "screenshot",
+      "expected": "matches_recording",
+      "threshold": 85
     }
   ],
   "errorRecovery": {
     "strategies": ["retry", "refresh", "restart"],
-    "maxAttempts": 3
+    "maxAttempts": 3,
+    "fallbackToManual": false
   },
   "performance": {
     "totalExpectedDuration": ${recording.duration},
-    "criticalPath": ["step1", "step3", "step5"]
+    "criticalPath": ["step1", "step3", "step5"],
+    "slowStepThreshold": 10000
   }
 }
 

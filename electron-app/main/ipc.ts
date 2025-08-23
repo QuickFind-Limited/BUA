@@ -1537,44 +1537,63 @@ async function executeFlowSteps(flowSpec: any, variables?: Record<string, any>):
     let finalScreenshot = null;
     let screenshotComparison = null;
     
-    try {
-      // Take screenshot of final state
-      const tabManager = getTabManager();
-      const activeTab = tabManager ? (tabManager as any).getActiveTab() : null;
-      if (activeTab?.view) {
-        const screenshot = await activeTab.view.webContents.capturePage();
-        const screenshotBuffer = screenshot.toPNG();
-        
-        // Save screenshot to file
-        const screenshotPath = path.join(
-          __dirname, 
-          '..', 
-          '..', 
-          `execution-screenshot-${Date.now()}.png`
-        );
-        fs.writeFileSync(screenshotPath, screenshotBuffer);
-        finalScreenshot = screenshotPath;
-        
-        console.log('Captured execution final screenshot:', screenshotPath);
-        
-        // Compare with recording screenshot if available
-        const recordingScreenshotPath = flowSpec.recordingScreenshot || 
-          path.join(__dirname, '..', '..', `recording-screenshot-${flowSpec.recordingId || 'latest'}.png`);
-        
-        if (fs.existsSync(recordingScreenshotPath)) {
-          console.log('Comparing with recording screenshot:', recordingScreenshotPath);
-          const comparison = await screenshotComparator.compareScreenshots(
-            screenshotPath,
-            recordingScreenshotPath
+    // Merge default config with Intent Spec overrides
+    const screenshotConfig = {
+      enabled: true,
+      threshold: 80,
+      checkpoints: ['final'],
+      ignoreRegions: [],
+      ...flowSpec.screenshotValidation  // Override with Intent Spec settings if present
+    };
+    
+    if (screenshotConfig.enabled) {
+      try {
+        // Take screenshot of final state
+        const tabManager = getTabManager();
+        const activeTab = tabManager ? (tabManager as any).getActiveTab() : null;
+        if (activeTab?.view) {
+          const screenshot = await activeTab.view.webContents.capturePage();
+          const screenshotBuffer = screenshot.toPNG();
+          
+          // Save screenshot to file
+          const screenshotPath = path.join(
+            __dirname, 
+            '..', 
+            '..', 
+            `execution-screenshot-${Date.now()}.png`
           );
-          screenshotComparison = comparison;
-          console.log(`Screenshot comparison result: ${comparison.match ? 'MATCH' : 'NO MATCH'} (${comparison.similarity}% similarity)`);
-        } else {
-          console.log('No recording screenshot found for comparison');
+          fs.writeFileSync(screenshotPath, screenshotBuffer);
+          finalScreenshot = screenshotPath;
+          
+          console.log('Captured execution final screenshot:', screenshotPath);
+          
+          // Compare with recording screenshot if available
+          const recordingScreenshotPath = flowSpec.recordingScreenshot || 
+            path.join(__dirname, '..', '..', `recording-screenshot-${flowSpec.recordingId || 'latest'}.png`);
+          
+          if (fs.existsSync(recordingScreenshotPath)) {
+            console.log(`Comparing with recording screenshot (threshold: ${screenshotConfig.threshold}%):`, recordingScreenshotPath);
+            const comparison = await screenshotComparator.compareScreenshots(
+              screenshotPath,
+              recordingScreenshotPath
+            );
+            screenshotComparison = comparison;
+            
+            // Use custom threshold from Intent Spec or default
+            const passed = comparison.similarity >= screenshotConfig.threshold;
+            console.log(`Screenshot comparison: ${passed ? 'PASSED' : 'FAILED'} (${comparison.similarity}% similarity, threshold: ${screenshotConfig.threshold}%)`);
+            
+            // Override match status based on custom threshold
+            screenshotComparison.match = passed;
+          } else {
+            console.log('No recording screenshot found for comparison');
+          }
         }
+      } catch (screenshotError) {
+        console.error('Screenshot capture/comparison error:', screenshotError);
       }
-    } catch (screenshotError) {
-      console.error('Screenshot capture/comparison error:', screenshotError);
+    } else {
+      console.log('Screenshot validation disabled in Intent Spec');
     }
     
     return {
@@ -1589,7 +1608,7 @@ async function executeFlowSteps(flowSpec: any, variables?: Record<string, any>):
       finalScreenshot: finalScreenshot,
       screenshotComparison: screenshotComparison,
       visualVerification: screenshotComparison ? 
-        (screenshotComparison.similarity > 80 ? 'passed' : 'failed') : 
+        (screenshotComparison.match ? 'passed' : 'failed') : 
         'not performed'
     };
     
