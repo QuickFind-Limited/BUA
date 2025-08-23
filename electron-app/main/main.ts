@@ -97,7 +97,14 @@ function createWindow(): void {
   });
 
   // Load the main UI (from source, not dist)
-  mainWindow.loadFile(path.join(__dirname, '..', '..', 'ui', 'tabbar.html'));
+  // Load UI with test mode flag if in E2E test
+  const htmlPath = path.join(__dirname, '..', '..', 'ui', 'tabbar.html');
+  if (process.env.E2E_TEST === 'true') {
+    mainWindow.loadURL(`file://${htmlPath}?e2e_test=true`);
+    console.log('[E2E] Loading UI in test mode');
+  } else {
+    mainWindow.loadFile(htmlPath);
+  }
 
   // Show window maximized and bring to foreground once ready
   mainWindow.once('ready-to-show', () => {

@@ -9,6 +9,67 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('📋 Available electronAPI methods:', Object.keys(window.electronAPI || {}));
     initializeUI();
     // Initial tab will be created by main process
+    
+    // Auto-load and analyze recording in test mode
+    // Check for test mode via query param or localStorage (set by main process)
+    const isTestMode = window.location.search.includes('e2e_test=true') || 
+                       localStorage.getItem('E2E_TEST') === 'true' ||
+                       (window.electronAPI && window.electronAPI.isE2ETest && window.electronAPI.isE2ETest());
+    
+    if (isTestMode) {
+        console.log('[E2E] Test mode detected - will auto-load and analyze recording');
+        setTimeout(async () => {
+            console.log('[E2E] Auto-loading test recording...');
+            try {
+                // Load the test recording
+                const testRecordingPath = 'recording-1755973886399.json';
+                const response = await fetch(testRecordingPath);
+                if (response.ok) {
+                    const recordingData = await response.text();
+                    window.lastRecordingSession = JSON.parse(recordingData);
+                    console.log('[E2E] Test recording loaded, triggering analysis...');
+                    
+                    // Trigger analysis
+                    await analyzeLastRecording();
+                    console.log('[E2E] Analysis triggered successfully');
+                    
+                    // After analysis completes, trigger execution
+                    window.electronAPI.onShowIntentSpec((intentSpec) => {
+                        console.log('[E2E] Intent Spec received, triggering execution...');
+                        setTimeout(() => {
+                            // Set test parameters
+                            const testParams = {
+                                LOGIN_ID: 'admin@quickfindai.com',
+                                PASSWORD: '#QuickFind',
+                                ITEM_NAME: 'Test Item ' + Date.now(),
+                                SELLING_PRICE: '299.99',
+                                COST_PRICE: '150.00'
+                            };
+                            
+                            // Trigger execution
+                            if (window.varsPanelManager && window.varsPanelManager.executeFlow) {
+                                console.log('[E2E] Executing flow with test parameters...');
+                                // Set the parameters in the form
+                                Object.entries(testParams).forEach(([key, value]) => {
+                                    const input = document.querySelector(`input[name="${key}"]`);
+                                    if (input) {
+                                        input.value = value;
+                                    }
+                                });
+                                
+                                // Execute the flow
+                                window.varsPanelManager.executeFlow();
+                            }
+                        }, 2000); // Wait for UI to update
+                    });
+                } else {
+                    console.error('[E2E] Failed to load test recording:', response.status);
+                }
+            } catch (error) {
+                console.error('[E2E] Error in auto-test:', error);
+            }
+        }, 3000); // Wait for app to fully initialize
+    }
 });
 
 function initializeUI() {
