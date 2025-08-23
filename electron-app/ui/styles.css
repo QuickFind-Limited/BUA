@@ -230,7 +230,7 @@ body {
 
 /* Analysing state for the enhanced recorder button */
 .enhanced-recorder-btn.analysing {
-  background: #9C27B0; /* Purple for analysing */
+  background: #2196F3; /* Blue for analysing */
   cursor: not-allowed;
   position: relative;
 }
@@ -361,6 +361,12 @@ body {
 .begin-analysis-btn:disabled {
   background: #cccccc;
   cursor: not-allowed;
+}
+
+.begin-analysis-btn.analyzing {
+  background: #2196F3; /* Blue for analyzing */
+  cursor: not-allowed;
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes pulse {

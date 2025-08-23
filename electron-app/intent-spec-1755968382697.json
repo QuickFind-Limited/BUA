@@ -1,0 +1,360 @@
+{
+  "name": "Create Zoho Inventory Item",
+  "description": "Log into Zoho Inventory and create a new item with specified details",
+  "url": "https://www.google.com/?zx=1755968238395&no_sw_cr=1",
+  "params": [
+    "EMAIL_ADDRESS",
+    "PASSWORD",
+    "ITEM_NAME",
+    "QUANTITY",
+    "PRICE"
+  ],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "Not captured",
+    "cookies": false,
+    "localStorage": false
+  },
+  "skipNavigationStates": [
+    "authenticated",
+    "dashboard"
+  ],
+  "steps": [
+    {
+      "name": "Navigate to Zoho Inventory",
+      "ai_instruction": "Navigate to Zoho Inventory login page",
+      "snippet": "await page.goto('https://inventory.zoho.com/app/893870319#/home/gettingstarted');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [],
+      "value": "",
+      "waitAfter": {
+        "type": "element",
+        "condition": "page fully loaded",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory.zoho.com"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000
+      }
+    },
+    {
+      "name": "Enter email address",
+      "ai_instruction": "Enter the email address in the login field",
+      "snippet": "await page.fill('[data-testid=\"login-email\"], input[type=\"email\"], input[name=\"LOGIN_ID\"]', '{{EMAIL_ADDRESS}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "input[name=\"LOGIN_ID\"]",
+        "input[type=\"email\"]",
+        "[data-testid=\"login-email\"]",
+        "input[placeholder*=\"email\"]"
+      ],
+      "value": "{{EMAIL_ADDRESS}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "login form visible",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "email field has value"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 1000,
+        "maxDuration": 3000
+      }
+    },
+    {
+      "name": "Enter password",
+      "ai_instruction": "Enter the password in the password field",
+      "snippet": "await page.fill('input[type=\"password\"], input[name=\"PASSWORD\"]', '{{PASSWORD}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "input[name=\"PASSWORD\"]",
+        "input[type=\"password\"]",
+        "[data-testid=\"login-password\"]"
+      ],
+      "value": "{{PASSWORD}}",
+      "validation": {
+        "type": "element",
+        "expected": "password field has value"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 1000,
+        "maxDuration": 3000
+      }
+    },
+    {
+      "name": "Click login button",
+      "ai_instruction": "Click the login button to authenticate",
+      "snippet": "await page.click('button[type=\"submit\"], .login-btn, #login-btn');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "button[type=\"submit\"]",
+        ".login-btn",
+        "#login-btn",
+        "input[type=\"submit\"]"
+      ],
+      "value": "",
+      "waitAfter": {
+        "type": "network",
+        "condition": "authentication complete",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory.zoho.com/app/"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000
+      }
+    },
+    {
+      "name": "Navigate to Items section",
+      "ai_instruction": "Navigate to the Items section in inventory",
+      "snippet": "await page.goto('https://inventory.zoho.com/app/893870319#/inventory/items?filter_by=Status.Active&per_page=25&sort_column=created_time&sort_order=D');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[href*=\"inventory/items\"]",
+        "a[title=\"Items\"]",
+        ".items-nav"
+      ],
+      "value": "",
+      "waitAfter": {
+        "type": "element",
+        "condition": "items list visible",
+        "timeout": 8000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory/items"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000
+      }
+    },
+    {
+      "name": "Click New Item button",
+      "ai_instruction": "Click the button to create a new item",
+      "snippet": "await page.click('.new-item-btn, [href*=\"/new\"], button:has-text(\"New Item\")');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        ".new-item-btn",
+        "[href*=\"/new\"]",
+        "button:has-text('New Item')",
+        ".add-item"
+      ],
+      "value": "",
+      "waitAfter": {
+        "type": "element",
+        "condition": "new item form visible",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "inventory/items/new"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 2000,
+        "maxDuration": 8000
+      }
+    },
+    {
+      "name": "Enter item name",
+      "ai_instruction": "Enter the item name in the name field",
+      "snippet": "await page.fill('#a516721c3, input[name=\"item_name\"], .item-name-field', '{{ITEM_NAME}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#a516721c3",
+        "input[name=\"item_name\"]",
+        ".item-name-field",
+        "[placeholder*=\"name\"]"
+      ],
+      "value": "{{ITEM_NAME}}",
+      "waitBefore": {
+        "type": "element",
+        "condition": "form fields loaded",
+        "timeout": 3000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "item name field has value"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 1000,
+        "maxDuration": 3000
+      }
+    },
+    {
+      "name": "Enter quantity",
+      "ai_instruction": "Enter the quantity in the quantity field",
+      "snippet": "await page.fill('#ab2dbd8a4, input[name=\"quantity\"], .quantity-field', '{{QUANTITY}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#ab2dbd8a4",
+        "input[name=\"quantity\"]",
+        ".quantity-field",
+        "[placeholder*=\"quantity\"]"
+      ],
+      "value": "{{QUANTITY}}",
+      "validation": {
+        "type": "element",
+        "expected": "quantity field has value"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 1000,
+        "maxDuration": 3000
+      }
+    },
+    {
+      "name": "Enter price",
+      "ai_instruction": "Enter the price in the price field",
+      "snippet": "await page.fill('#a6a46e8a4, input[name=\"price\"], .price-field', '{{PRICE}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#a6a46e8a4",
+        "input[name=\"price\"]",
+        ".price-field",
+        "[placeholder*=\"price\"]"
+      ],
+      "value": "{{PRICE}}",
+      "validation": {
+        "type": "element",
+        "expected": "price field has value"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 1000,
+        "maxDuration": 3000
+      }
+    },
+    {
+      "name": "Save item",
+      "ai_instruction": "Click the save button to create the item",
+      "snippet": "await page.click('#e77ab946-a5ee-4b16-8fe2-b8f05ddf3fba, .save-btn, button:has-text(\"Save\")');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#e77ab946-a5ee-4b16-8fe2-b8f05ddf3fba",
+        ".save-btn",
+        "button:has-text('Save')",
+        "input[type='submit']"
+      ],
+      "value": "",
+      "waitAfter": {
+        "type": "network",
+        "condition": "item created successfully",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "item created confirmation"
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 12000
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "validations": [
+    {
+      "step": "after-login",
+      "check": "url",
+      "expected": "inventory.zoho.com/app/"
+    },
+    {
+      "step": "after-save",
+      "check": "element",
+      "expected": "success message or item details page"
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3
+  },
+  "performance": {
+    "totalExpectedDuration": 84031,
+    "criticalPath": [
+      "Navigate to Zoho Inventory",
+      "Enter email address",
+      "Click login button",
+      "Save item"
+    ]
+  }
+}
