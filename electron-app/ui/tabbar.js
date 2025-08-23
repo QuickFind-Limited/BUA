@@ -3,6 +3,143 @@
 let activeTabId = null;
 let tabs = new Map();
 
+// Function to load the full Intent Spec from file
+async function loadFullIntentSpec() {
+    try {
+        // Try multiple paths to find the Intent Spec file
+        const paths = [
+            './intent-spec-1755985558961.json',
+            '../intent-spec-1755985558961.json',
+            'intent-spec-1755985558961.json'
+        ];
+        
+        for (const path of paths) {
+            try {
+                const response = await fetch(path);
+                if (response.ok) {
+                    const spec = await response.json();
+                    console.log(`✅ Loaded Intent Spec from ${path}`);
+                    return spec;
+                }
+            } catch (e) {
+                // Try next path
+            }
+        }
+        
+        // If file loading fails, check localStorage
+        const storedSpec = localStorage.getItem('lastIntentSpec');
+        if (storedSpec) {
+            console.log('✅ Loaded Intent Spec from localStorage');
+            return JSON.parse(storedSpec);
+        }
+        
+    } catch (error) {
+        console.error('Failed to load Intent Spec:', error);
+    }
+    
+    return null;
+}
+
+// Test Flow Function for Zoho Inventory
+window.runTestFlow = async function() {
+    console.log('🧪 Running test flow for Zoho Inventory...');
+    
+    // Test values
+    const testValues = {
+        LOGIN_ID: "admin@quickfindai.com",
+        PASSWORD: "#QuickFind2024",
+        ITEM_NAME: "Test Box 3676",
+        SELLING_PRICE: "400",
+        COST_PRICE: "300"
+    };
+    
+    try {
+        // First priority: Use the last generated Intent Spec if available
+        let intentSpec = window.lastIntentSpec;
+        
+        if (intentSpec) {
+            console.log('✅ Using last generated Intent Spec');
+        } else {
+            // Second priority: Load the full Intent Spec from saved file
+            console.log('Loading full Intent Spec from file...');
+            
+            // Use the full Intent Spec data directly (embedded for reliability)
+            intentSpec = await loadFullIntentSpec();
+            
+            if (intentSpec) {
+                console.log('✅ Loaded full Intent Spec with', intentSpec.steps?.length, 'steps');
+                // Store it for future use
+                window.lastIntentSpec = intentSpec;
+            }
+        }
+        
+        // Show the vars panel with the Intent Spec
+        if (window.varsPanelManager) {
+            window.varsPanelManager.showVarsPanel(intentSpec);
+            
+            // Auto-fill the test values after a short delay
+            setTimeout(() => {
+                Object.keys(testValues).forEach(key => {
+                    const input = document.querySelector(`#var-${key}`);
+                    if (input) {
+                        input.value = testValues[key];
+                        // Trigger change event
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                });
+                
+                console.log('✅ Test values filled. Starting automation directly...');
+                
+                // Automatically execute the flow with the test values
+                setTimeout(() => {
+                    console.log('🚀 Executing test flow with Magnitude...');
+                    
+                    // Use runMagnitudeWithWebView which is the correct handler
+                    if (window.electronAPI && window.electronAPI.runMagnitudeWithWebView) {
+                        window.electronAPI.runMagnitudeWithWebView(intentSpec, testValues)
+                            .then(result => {
+                                console.log('Test execution result:', result);
+                                
+                                // Show result notification
+                                const notification = document.createElement('div');
+                                notification.style.cssText = `
+                                    position: fixed;
+                                    top: 100px;
+                                    right: 20px;
+                                    background: ${result.success ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#ff4444'};
+                                    color: white;
+                                    padding: 15px 20px;
+                                    border-radius: 8px;
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                                    z-index: 10000;
+                                    animation: slideIn 0.3s ease;
+                                `;
+                                notification.innerHTML = result.success 
+                                    ? '✅ Test flow completed successfully!' 
+                                    : `❌ Test failed: ${result.error || 'Unknown error'}`;
+                                document.body.appendChild(notification);
+                                
+                                setTimeout(() => notification.remove(), 5000);
+                            })
+                            .catch(error => {
+                                console.error('Test execution error:', error);
+                                alert(`Test execution failed: ${error.message}`);
+                            });
+                    } else {
+                        console.error('runMagnitudeWithWebView API not available');
+                        alert('Execution API not available. Please check the configuration.');
+                    }
+                }, 1000); // Small delay to let the UI update
+            }, 500);
+        } else {
+            console.error('Vars panel manager not available');
+        }
+    } catch (error) {
+        console.error('Failed to load test configuration:', error);
+        alert('Please complete a recording first to generate an Intent Spec.');
+    }
+}
+
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Initializing tab manager...');
@@ -1073,6 +1210,19 @@ function handleRecordingCompleteIntent(intentSpec) {
 }
 
 function showVarsPanel(intentSpec) {
+    // Save the Intent Spec for future use
+    if (intentSpec && intentSpec.steps && intentSpec.steps.length > 0) {
+        window.lastIntentSpec = intentSpec;
+        
+        // Also save to localStorage for persistence
+        try {
+            localStorage.setItem('lastIntentSpec', JSON.stringify(intentSpec));
+            console.log('✅ Intent Spec saved to localStorage');
+        } catch (e) {
+            console.warn('Could not save Intent Spec to localStorage:', e);
+        }
+    }
+    
     // Access the vars panel manager from the global scope
     if (window.varsPanelManager) {
         window.varsPanelManager.showVarsPanel(intentSpec);

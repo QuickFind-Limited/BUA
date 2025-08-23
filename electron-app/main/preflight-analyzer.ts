@@ -494,41 +494,72 @@ export class PreFlightAnalyzer {
    */
   private async extractPageContent(page: Page, step: any): Promise<PreFlightAnalysis['pageContent']> {
     try {
-      // Initialize Magnitude agent for extraction
-      if (!this.magnitudeAgent) {
-        this.magnitudeAgent = await getMagnitudeAgent();
-      }
+      // Direct extraction without Magnitude's extract method to avoid Zod schema error
+      // Use page evaluation to get structured data
+      const pageContent = await page.evaluate(() => {
+        // Extract form fields
+        const formFields: Array<{name: string; type: string; value: string; label?: string}> = [];
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach((input: any) => {
+          const label = document.querySelector(`label[for="${input.id}"]`)?.textContent?.trim() ||
+                       input.getAttribute('aria-label') ||
+                       input.getAttribute('placeholder');
+          
+          formFields.push({
+            name: input.name || input.id || '',
+            type: input.type || 'text',
+            value: input.value || '',
+            label: label || undefined
+          });
+        });
 
-      // Use Magnitude's extract to get structured page data
-      const extractionSchema = {
-        relevantText: 'string',
-        formFields: [{
-          name: 'string',
-          type: 'string',
-          value: 'string',
-          label: 'string?'
-        }],
-        buttons: [{
-          text: 'string',
-          selector: 'string'
-        }]
-      };
+        // Extract buttons
+        const buttons: Array<{text: string; selector: string}> = [];
+        const buttonElements = document.querySelectorAll('button, [role="button"], input[type="submit"], input[type="button"]');
+        buttonElements.forEach((btn: any, index: number) => {
+          const text = btn.textContent?.trim() || btn.value || btn.getAttribute('aria-label') || '';
+          let selector = '';
+          
+          // Build a selector for the button
+          if (btn.id) {
+            selector = `#${btn.id}`;
+          } else if (btn.className) {
+            selector = `.${btn.className.split(' ')[0]}:nth-of-type(${index + 1})`;
+          } else {
+            selector = `${btn.tagName.toLowerCase()}:nth-of-type(${index + 1})`;
+          }
+          
+          if (text) {
+            buttons.push({ text, selector });
+          }
+        });
 
-      const extracted = await this.magnitudeAgent.extract({
-        page,
-        schema: extractionSchema,
-        prompt: `Extract form fields and buttons relevant to: ${step.name}`
+        // Get relevant text (first 1000 chars of visible text)
+        const relevantText = document.body?.innerText?.substring(0, 1000) || '';
+
+        return {
+          relevantText,
+          formFields: formFields.slice(0, 20), // Limit to 20 fields
+          buttons: buttons.slice(0, 10) // Limit to 10 buttons
+        };
       });
 
-      return extracted;
+      return pageContent;
     } catch (error) {
       console.error('Error extracting page content:', error);
       
       // Fallback to basic extraction
-      const relevantText = await page.locator('body').textContent();
-      return {
-        relevantText: relevantText?.substring(0, 1000) // Limit text length
-      };
+      try {
+        const relevantText = await page.locator('body').textContent();
+        return {
+          relevantText: relevantText?.substring(0, 1000) // Limit text length
+        };
+      } catch (fallbackError) {
+        console.error('Fallback extraction also failed:', fallbackError);
+        return {
+          relevantText: 'Unable to extract page content'
+        };
+      }
     }
   }
 
@@ -667,24 +698,67 @@ export class PreFlightAnalyzer {
    */
   private async findAlternativeSelectors(page: Page, step: any, originalSelector: string): Promise<string[]> {
     try {
-      if (!this.magnitudeAgent) {
-        this.magnitudeAgent = await getMagnitudeAgent();
-      }
-
-      // Use Magnitude's query to find alternatives
-      const result = await this.magnitudeAgent.query({
-        page,
-        prompt: `Find alternative selectors for element that was supposed to match: ${originalSelector}. 
-                 The step is trying to: ${step.name}.
-                 Return up to 3 alternative selectors as a JSON array.`
-      });
-
-      if (Array.isArray(result)) {
-        return result;
-      }
-
-      return [];
-    } catch {
+      // Use direct page evaluation to find alternative selectors
+      const alternatives = await page.evaluate(({ selector, stepName }: { selector: string; stepName: string }) => {
+        const alternatives: string[] = [];
+        
+        // Try to find elements with similar text content
+        if (stepName) {
+          // Extract keywords from step name
+          const keywords = stepName.toLowerCase().split(/\s+/);
+          
+          // Search for elements containing these keywords
+          keywords.forEach(keyword => {
+            if (keyword.length > 3) { // Skip short words
+              // Check buttons
+              const buttons = document.querySelectorAll('button, [role="button"]');
+              buttons.forEach((btn: any) => {
+                if (btn.textContent?.toLowerCase().includes(keyword)) {
+                  if (btn.id) {
+                    alternatives.push(`#${btn.id}`);
+                  } else if (btn.className) {
+                    alternatives.push(`button:has-text("${btn.textContent.trim().substring(0, 20)}")`);
+                  }
+                }
+              });
+              
+              // Check inputs by placeholder or label
+              const inputs = document.querySelectorAll('input, textarea, select');
+              inputs.forEach((input: any) => {
+                const placeholder = input.getAttribute('placeholder')?.toLowerCase();
+                const label = document.querySelector(`label[for="${input.id}"]`)?.textContent?.toLowerCase();
+                
+                if (placeholder?.includes(keyword) || label?.includes(keyword)) {
+                  if (input.id) {
+                    alternatives.push(`#${input.id}`);
+                  } else if (input.name) {
+                    alternatives.push(`[name="${input.name}"]`);
+                  }
+                }
+              });
+            }
+          });
+        }
+        
+        // Also try to find elements by partial selector match
+        if (selector.includes('#')) {
+          // Try to find by partial ID match
+          const partialId = selector.replace('#', '').substring(0, 10);
+          const elements = document.querySelectorAll(`[id*="${partialId}"]`);
+          elements.forEach((el: any) => {
+            if (el.id) {
+              alternatives.push(`#${el.id}`);
+            }
+          });
+        }
+        
+        // Return unique alternatives (max 3)
+        return [...new Set(alternatives)].slice(0, 3);
+      }, { selector: originalSelector, stepName: step.name || '' });
+      
+      return alternatives;
+    } catch (error) {
+      console.error('Error finding alternative selectors:', error);
       return [];
     }
   }

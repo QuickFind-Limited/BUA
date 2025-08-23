@@ -450,29 +450,62 @@ export class EnhancedMagnitudeController {
    * Generate executable code for an action
    */
   private async generateActionCode(instruction: string, context: any): Promise<string> {
-    // Use AI to generate JavaScript code that can be evaluated
-    // For now, return a simple heuristic-based solution
-    if (instruction.includes('click') && instruction.includes('Sales')) {
-      return `
-        const elements = Array.from(document.querySelectorAll('*')).filter(el => 
-          el.textContent && el.textContent.trim() === 'Sales' && 
-          (el.tagName === 'BUTTON' || el.tagName === 'A' || el.tagName === 'LABEL' || el.tagName === 'SPAN')
-        );
-        if (elements.length > 0) {
-          // Find the most likely candidate (visible and clickable)
+    // Actually use AI to generate JavaScript code that can be evaluated
+    try {
+      const prompt = `Generate browser JavaScript code to: ${instruction}
+Context: Page URL is ${context.url}, title is "${context.title}"
+
+IMPORTANT: Be intelligent about navigation:
+- If asked to fill a login form but no login fields exist, look for and click a "Sign In" or "Login" link/button first
+- If asked to enter credentials but not on a login page, navigate to the login page first
+- Look for elements by text content, not just selectors
+
+Return ONLY executable JavaScript code that can run in page.evaluate().
+The code should return true if successful, false if failed.
+Use document.querySelector, querySelectorAll, or search by text content.
+For clicks, use element.click(). For inputs, use element.value = 'text'.
+
+Example for finding by text:
+const signInLink = Array.from(document.querySelectorAll('a, button')).find(el => 
+  el.textContent && el.textContent.match(/sign\s*in|log\s*in/i)
+);
+if (signInLink) { signInLink.click(); return true; }
+
+Your code:`;
+      
+      const result = await executeRuntimeAIAction(prompt, JSON.stringify(context));
+      
+      // Extract code from AI response
+      let code = result.result;
+      
+      // Clean up the response - remove markdown code blocks if present
+      code = code.replace(/```javascript\n?/g, '').replace(/```\n?/g, '');
+      
+      // Ensure it returns something
+      if (!code.includes('return')) {
+        code += '\nreturn true;';
+      }
+      
+      return code;
+    } catch (error) {
+      console.error('AI code generation failed, using heuristic fallback:', error);
+      // Fallback to heuristic-based solution
+      if (instruction.toLowerCase().includes('click')) {
+        const target = instruction.match(/click[^\w]*([^"']+)/i)?.[1] || '';
+        return `
+          const elements = Array.from(document.querySelectorAll('*')).filter(el => 
+            el.textContent && el.textContent.toLowerCase().includes('${target.toLowerCase()}')
+          );
           const visible = elements.find(el => {
             const rect = el.getBoundingClientRect();
             return rect.width > 0 && rect.height > 0;
           });
-          if (visible) {
-            visible.click();
-            return true;
-          }
-        }
-        return false;
-      `;
+          if (visible) { visible.click(); return true; }
+          return false;
+        `;
+      }
+      return 'return false;';
     }
-    return 'return false;';
   }
 
   /**

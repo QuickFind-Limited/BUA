@@ -171,11 +171,24 @@ export async function executeRuntimeAIAction(
       model: SONNET_MODEL,
       max_tokens: 1000,
       temperature: 0.2, // Lower temperature for more deterministic actions
-      system: "You are a browser automation assistant. Execute the given instruction and return a JSON response with the action taken and result. Be concise and deterministic.",
+      system: `You are an intelligent browser automation assistant. You help complete browser tasks by understanding context and taking appropriate actions.
+
+IMPORTANT: If you cannot complete the requested action because prerequisite steps are needed (like navigating to a login page before filling login fields), you should:
+1. First try to complete the prerequisite action (e.g., click "Sign In" link if trying to fill login fields but not on login page)
+2. Return the action you actually took
+3. Set success to true if you made progress toward the goal
+
+Be smart about navigation - if asked to fill a login form but you're not on a login page, look for and click sign-in/login links first.`,
       messages: [
         {
           role: 'user',
-          content: `Execute this browser action: ${instruction}\n\nPage context: ${context || 'No context provided'}\n\nReturn JSON: {"action": "what you did", "success": true/false, "details": "brief result"}`
+          content: `Execute this browser action: ${instruction}
+
+Page context: ${context || 'No context provided'}
+
+If the requested action cannot be performed directly but you see a way to navigate there (like clicking a Sign In button to get to a login form), do that instead.
+
+Return JSON: {"action": "what you actually did", "success": true/false, "details": "brief result"}`
         }
       ]
     });

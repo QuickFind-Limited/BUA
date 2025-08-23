@@ -53,6 +53,32 @@
     <div id="analysis-sidebar" class="analysis-sidebar">
         <!-- Removed sidebar-header with Workflow Analysis text -->
         <div class="sidebar-content">
+            <!-- Test Button for Quick Zoho Testing -->
+            <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <button id="test-zoho-btn" title="Test Zoho Inventory Flow" onclick="runTestFlow()" style="
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    padding: 10px 15px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    font-size: 13px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+                ">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 3l14 9-14 9V3z" fill="currentColor" stroke="none"></path>
+                        <rect x="3" y="8" width="3" height="8" fill="currentColor" stroke="none"></rect>
+                    </svg>
+                    <span>Test Zoho Flow</span>
+                </button>
+            </div>
             <!-- Collapsible Analysis Progress Section -->
             <div class="collapsible-section no-border" id="analysis-progress-section">
                 <div class="section-header no-background" onclick="toggleSection('analysis-progress')">

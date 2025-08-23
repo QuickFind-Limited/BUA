@@ -3,6 +3,14 @@ const { app, BrowserWindow, ipcMain, WebContentsView } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 
+// Load environment variables
+require('dotenv').config();
+if (process.env.ANTHROPIC_API_KEY) {
+  console.log('ANTHROPIC_API_KEY loaded successfully');
+} else {
+  console.warn('⚠️ ANTHROPIC_API_KEY not found in environment');
+}
+
 // Clean up old session directories on startup
 async function cleanupOldSessions() {
   try {
@@ -1928,6 +1936,58 @@ ipcMain.handle('tabs:reload', async () => {
     return true;
   }
   return false;
+});
+
+// Handler for Magnitude execution in WebView
+ipcMain.handle('run-magnitude-webview', async (event, params) => {
+  try {
+    console.log('📥 run-magnitude-webview received params:', JSON.stringify({
+      hasFlowSpec: !!params.flowSpec,
+      flowSpecName: params.flowSpec?.name,
+      variables: params.variables
+    }));
+    
+    // Import the enhanced flow executor
+    const { EnhancedFlowExecutor } = require('./dist/main/enhanced-flow-executor');
+    const executor = new EnhancedFlowExecutor();
+    
+    // Use the current webView
+    if (!webView || !webView.webContents) {
+      throw new Error('No active WebView found');
+    }
+    
+    // Set the correct CDP port for this session
+    process.env.CDP_PORT = String(CDP_PORT);
+    
+    // Ensure ANTHROPIC_API_KEY is available
+    if (!process.env.ANTHROPIC_API_KEY) {
+      // Try to load from .env file
+      require('dotenv').config();
+    }
+    
+    // Set up progress callback to forward to renderer
+    executor.onProgress((progress) => {
+      event.sender.send('flow-progress', progress);
+    });
+    
+    // Execute the flow
+    const result = await executor.executeFlow(params.flowSpec, params.variables, webView);
+    
+    // Return a serializable result
+    return {
+      success: result.success,
+      results: [],
+      errors: result.errors ? result.errors.map(e => e.error || e) : [],
+      completedSteps: result.completedSteps || 0,
+      totalSteps: result.totalSteps || 0
+    };
+  } catch (error) {
+    console.error('Error in run-magnitude-webview:', error);
+    return {
+      success: false,
+      error: error.message || 'Unknown error'
+    };
+  }
 });
 
 app.whenReady().then(async () => {
