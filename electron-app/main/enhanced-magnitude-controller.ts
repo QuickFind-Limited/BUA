@@ -437,6 +437,10 @@ export class EnhancedMagnitudeController {
         // Use autonomous AI executor for all AI tasks
         console.log(`🤖 Using Autonomous AI for: ${instruction}`);
         
+        // Get current page state directly from Playwright
+        const currentUrl = await this.playwrightPage.url();
+        const currentTitle = await this.playwrightPage.title();
+        
         // Build context for autonomous AI
         const failureContext: FailureContext = {
           step: {
@@ -444,7 +448,8 @@ export class EnhancedMagnitudeController {
             snippet: step.snippet,
             aiInstruction: instruction,
             selectors: step.selectors || [],
-            value: step.value
+            value: step.value,
+            successCriteria: step.successCriteria
           },
           error: {
             message: 'Direct AI execution requested',
@@ -452,10 +457,10 @@ export class EnhancedMagnitudeController {
           },
           attemptedSelectors: [],
           currentPageState: {
-            url: preFlightAnalysis.pageState.url,
-            title: preFlightAnalysis.pageState.title,
-            hasLoginForm: !!preFlightAnalysis.pageContent?.formFields?.some(f => f.type === 'password'),
-            visibleElements: preFlightAnalysis.pageContent
+            url: currentUrl,
+            title: currentTitle,
+            // Additional page state will be gathered by the AI executor
+            visibleElements: null
           }
         };
 
