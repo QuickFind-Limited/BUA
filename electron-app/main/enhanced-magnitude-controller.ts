@@ -290,7 +290,7 @@ export class EnhancedMagnitudeController {
   }
 
   /**
-   * Execute step using Playwright snippet
+   * Execute step using Playwright snippet via Magnitude
    */
   private async executeWithSnippet(
     step: any,
@@ -304,10 +304,23 @@ export class EnhancedMagnitudeController {
     }
 
     try {
-      console.log(`📝 Executing snippet: ${snippetToExecute.substring(0, 100)}...`);
+      console.log(`📝 Executing snippet via Magnitude: ${snippetToExecute.substring(0, 100)}...`);
 
-      // Execute snippet directly (pre-flight analysis disabled for performance)
-      const result = await this.evaluateSnippet(snippetToExecute);
+      // Get CDP endpoint from our WebView browser
+      const cdpPort = process.env.CDP_PORT || '9335';
+      const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+      
+      // Import getMagnitudeAgent from llm module
+      const { getMagnitudeAgent } = await import('./llm');
+      
+      // Get Magnitude agent connected to our WebView browser
+      const magnitudeAgent = await getMagnitudeAgent(cdpEndpoint);
+      
+      // Execute the Playwright snippet directly through Magnitude's act() function
+      // Magnitude can understand and execute Playwright code
+      const result = await magnitudeAgent.act(snippetToExecute);
+      
+      console.log(`✅ Magnitude executed snippet successfully`);
       
       return {
         success: true,
@@ -386,7 +399,14 @@ export class EnhancedMagnitudeController {
               
               // Retry the original snippet now that we're on the right page
               try {
-                const retryResult = await this.evaluateSnippet(snippetToExecute);
+                // Get CDP endpoint and Magnitude agent
+                const cdpPort = process.env.CDP_PORT || '9335';
+                const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+                const { getMagnitudeAgent } = await import('./llm');
+                const magnitudeAgent = await getMagnitudeAgent(cdpEndpoint);
+                
+                // Execute snippet via Magnitude
+                const retryResult = await magnitudeAgent.act(snippetToExecute);
                 return {
                   success: true,
                   data: retryResult,
@@ -876,7 +896,9 @@ Your code:`;
   }
 
   /**
-   * Evaluate Playwright snippet with strict mode handling
+   * Evaluate Playwright snippet via Magnitude with strict mode handling
+   * Note: This method now routes through Magnitude's act() function
+   * which provides better error handling and automatic retries
    */
   private async evaluateSnippet(snippet: string): Promise<any> {
     if (!this.playwrightPage) {
@@ -886,17 +908,14 @@ Your code:`;
     const page = this.playwrightPage;
     
     try {
-      // Create a function that executes the snippet
-      // Replace 'await' at the beginning since we'll await the whole thing
-      const cleanSnippet = snippet.replace(/^await\s+/, '');
+      // Use Magnitude to execute the snippet
+      const cdpPort = process.env.CDP_PORT || '9335';
+      const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+      const { getMagnitudeAgent } = await import('./llm');
+      const magnitudeAgent = await getMagnitudeAgent(cdpEndpoint);
       
-      // Use Function constructor to create executable code
-      // This allows us to execute arbitrary Playwright code
-      const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
-      const executeSnippet = new AsyncFunction('page', `return ${cleanSnippet}`);
-      
-      // Execute the snippet with the page object
-      return await executeSnippet(page);
+      // Execute the snippet through Magnitude's act() function
+      return await magnitudeAgent.act(snippet);
     } catch (error) {
       // If dynamic execution fails, fall back to pattern matching
       console.log('Dynamic execution failed, trying pattern matching:', error);
