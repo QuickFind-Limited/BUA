@@ -1074,7 +1074,12 @@ Your code:`;
     const cdpPort = process.env.CDP_PORT || '9335';
     console.log(`🔍 Using CDP_PORT from environment: ${cdpPort}`);
     
-    // First try the actual CDP port, then fallbacks
+    // If we have the CDP port from environment, just use it directly
+    if (cdpPort && cdpPort !== '9335') {
+      return `http://127.0.0.1:${cdpPort}`;
+    }
+    
+    // Otherwise try common ports
     const portsToTry = [cdpPort, '9335', '9222', '9344', '9363', '9340', '9341', '9342', '9343', '9345', '9346', '9347', '9348', '9349', '9350'];
     
     for (const port of portsToTry) {
