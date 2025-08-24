@@ -270,6 +270,15 @@ export class AutonomousAIExecutor {
     instruction += `\nContext:\n`;
     instruction += `- Previous error: ${failureContext.error.message}\n`;
     instruction += `- Error type: ${failureContext.error.type}\n`;
+    
+    // Add smarter navigation guidance
+    if (failureContext.error.message?.includes('Timeout') && failureContext.step.selectors?.length > 0) {
+      instruction += `- The required elements (${failureContext.step.selectors[0]}) are not present on the current page\n`;
+      instruction += `- IMPORTANT: First navigate to where these elements would exist, then perform the action\n`;
+      instruction += `- For login fields: Look for Sign In/Login buttons to reach the login page\n`;
+      instruction += `- For app features: Ensure you're logged in first\n`;
+    }
+    
     instruction += `- IMPORTANT: You are on ${siteName}, NOT on any other website. Do not navigate to different domains.\n`;
     
     if (failureContext.attemptedSelectors?.length > 0) {
