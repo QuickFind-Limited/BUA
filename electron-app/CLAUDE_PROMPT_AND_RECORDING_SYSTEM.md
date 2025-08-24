@@ -77,16 +77,13 @@ function extractEssentialData(recording) {
         essential.extractedInputs = recording.extractedInputs;
     }
     
-    // 4. Keep only first and last DOM snapshots (for context)
-    essential.domSnapshots = [
-        recording.domSnapshots[0],
-        recording.domSnapshots[recording.domSnapshots.length - 1]
-    ].map(snap => ({
-        timestamp: snap.timestamp,
-        url: snap.url,
-        title: snap.title
-        // HTML content removed - saves 100s of KB
-    }));
+    // 4. Extract strategic DOM snapshots (not just first/last)
+    essential.domSnapshots = extractKeySnapshots(recording.domSnapshots);
+    // This function intelligently selects up to 10 snapshots:
+    // - Keeps snapshots at 0%, 25%, 50%, 75%, 100% of timeline
+    // - Plus all URL navigation points
+    // - Returns only metadata (timestamp, url, title)
+    // - HTML content removed - saves 100s of KB
     
     // 5. Extract API patterns only (not full network data)
     const apis = new Set();
@@ -154,7 +151,11 @@ function extractEssentialData(recording) {
   },
   "domSnapshots": [
     {"timestamp": 1755985558961, "url": "https://inventory.zoho.com", "title": "Login"},
-    {"timestamp": 1755985646648, "url": "https://inventory.zoho.com/app/", "title": "Dashboard"}
+    {"timestamp": 1755985580000, "url": "https://inventory.zoho.com/signin", "title": "Sign In"},
+    {"timestamp": 1755985600000, "url": "https://inventory.zoho.com/app/", "title": "Dashboard"},
+    {"timestamp": 1755985620000, "url": "https://inventory.zoho.com/app/items", "title": "Items"},
+    {"timestamp": 1755985646648, "url": "https://inventory.zoho.com/app/items/new", "title": "New Item"}
+    // Up to 10 strategic snapshots: at 0%, 25%, 50%, 75%, 100% + navigation points
   ],
   "apiPatterns": [
     "inventory.zoho.com/api/v1",
