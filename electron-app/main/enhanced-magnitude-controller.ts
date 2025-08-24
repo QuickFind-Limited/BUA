@@ -324,6 +324,10 @@ export class EnhancedMagnitudeController {
         const currentUrl = await this.playwrightPage.url();
         const currentTitle = await this.playwrightPage.title();
         
+        // Check if this is a "element not found" error that might need navigation
+        const isElementMissing = error.message?.includes('Timeout') || 
+                                error.message?.includes('waiting for locator');
+        
         // Build failure context for AI
         const failureContext: FailureContext = {
           step: {
@@ -347,7 +351,58 @@ export class EnhancedMagnitudeController {
           }
         };
 
-        // Use autonomous AI executor with Magnitude's act() function
+        // If elements are missing, first ask AI to navigate to the right place
+        if (isElementMissing && step.selectors && step.selectors.length > 0) {
+          console.log('📍 Elements not found, asking AI to navigate to correct page first...');
+          
+          // Modify the instruction to focus on navigation
+          const navigationContext = { ...failureContext };
+          navigationContext.step.aiInstruction = 
+            `The element "${step.selectors[0]}" is not present on the current page. ` +
+            `Navigate to where this element would exist. ` +
+            `For login fields: Look for and click Sign In/Login buttons. ` +
+            `For app features: Ensure you're logged in first. ` +
+            `Once on the correct page with the element visible, stop.`;
+          
+          // Use AI to navigate to the right place
+          const aiExecutor = new AutonomousAIExecutor(this.playwrightPage!, {
+            maxAttempts: 3,
+            debug: true
+          });
+          
+          const navResult = await aiExecutor.executeAutonomously(navigationContext, variables);
+          
+          if (navResult.success) {
+            console.log('✅ AI navigation completed, checking if elements now exist...');
+            
+            // Wait for page to stabilize
+            await this.playwrightPage.waitForTimeout(2000);
+            
+            // Check if the required element now exists
+            const elementExists = await this.checkElementExists(step.selectors[0]);
+            
+            if (elementExists) {
+              console.log('🔄 Element now exists, retrying original snippet...');
+              
+              // Retry the original snippet now that we're on the right page
+              try {
+                const retryResult = await this.evaluateSnippet(snippet);
+                return {
+                  success: true,
+                  data: retryResult,
+                  executionMethod: 'snippet_after_ai_navigation'
+                };
+              } catch (retryError) {
+                console.log('❌ Snippet still failed after navigation, using AI for the action...');
+                // Continue to use AI for the actual action below
+              }
+            } else {
+              console.log('⚠️ Element still not found after navigation, using AI for the full task...');
+            }
+          }
+        }
+
+        // Use AI executor for the full task (navigation + action)
         const aiExecutor = new AutonomousAIExecutor(this.playwrightPage!, {
           maxAttempts: 5,
           debug: true
@@ -364,6 +419,18 @@ export class EnhancedMagnitudeController {
       }
       
       throw error;
+    }
+  }
+
+  /**
+   * Check if an element exists on the page
+   */
+  private async checkElementExists(selector: string): Promise<boolean> {
+    try {
+      const count = await this.playwrightPage.locator(selector).count();
+      return count > 0;
+    } catch {
+      return false;
     }
   }
 
