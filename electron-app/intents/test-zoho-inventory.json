@@ -3,7 +3,7 @@
   "description": "Test flow for creating inventory items in Zoho with pre-filled values",
   "testValues": {
     "LOGIN_ID": "admin@quickfindai.com",
-    "PASSWORD": "#QuickFind2024",
+    "PASSWORD": "#QuickFind",
     "ITEM_NAME": "Test Box 3676",
     "SELLING_PRICE": "400",
     "COST_PRICE": "300"
