@@ -90,13 +90,16 @@ export class EnhancedMagnitudeController {
       // Import chromium from playwright
       const { chromium } = await import('playwright');
       
-      // Try to find the actual CDP port by checking multiple possible ports
-      // The WebView might use a different port than what we set
+      // Get the actual CDP port from environment variable (set by main-comprehensive.js)
+      // The CDP port is randomly generated between 9335-9435
+      const cdpPort = process.env.CDP_PORT || '9335';
+      console.log(`🔍 CDP_PORT from environment: ${cdpPort}`);
+      
       let cdpEndpoint = '';
       let connected = false;
       
-      // Try common CDP ports
-      const portsToTry = ['9335', '9222', '9363', '9364', '9365'];
+      // First try the actual CDP port from environment, then fallbacks
+      const portsToTry = [cdpPort, '9335', '9222', '9344', '9363', '9340', '9341', '9342', '9343', '9345', '9346', '9347', '9348', '9349', '9350'];
       
       for (const port of portsToTry) {
         try {
@@ -333,7 +336,7 @@ export class EnhancedMagnitudeController {
       // Get CDP endpoint from our WebView browser
       // Try multiple ports as WebView might use a different one
       let cdpEndpoint = '';
-      const portsToTry = ['9335', '9222', '9363', '9364', '9365'];
+      const portsToTry = ['9335', '9222', '9344', '9363', '9340', '9341', '9342', '9343', '9345', '9346', '9347', '9348', '9349', '9350'];
       
       for (const port of portsToTry) {
         try {
@@ -1067,7 +1070,12 @@ Your code:`;
    * Find the CDP endpoint by trying multiple ports
    */
   private async findCdpEndpoint(): Promise<string> {
-    const portsToTry = ['9335', '9222', '9363', '9364', '9365'];
+    // Get the actual CDP port from environment variable (set by main-comprehensive.js)
+    const cdpPort = process.env.CDP_PORT || '9335';
+    console.log(`🔍 Using CDP_PORT from environment: ${cdpPort}`);
+    
+    // First try the actual CDP port, then fallbacks
+    const portsToTry = [cdpPort, '9335', '9222', '9344', '9363', '9340', '9341', '9342', '9343', '9345', '9346', '9347', '9348', '9349', '9350'];
     
     for (const port of portsToTry) {
       try {
