@@ -195,56 +195,62 @@ export class EnhancedMagnitudeController {
     this.executionStats.totalSteps++;
 
     try {
-      // STEP 1: Pre-Flight Analysis
-      console.log(`🔍 Pre-flight analysis for: ${step.name}`);
-      const preFlightAnalysis = await this.preFlightAnalyzer.analyzeBeforeStep(
-        this.playwrightPage,
-        step,
-        variables
-      );
-
-      // STEP 2: Check Skip Conditions
-      if (preFlightAnalysis.skipRecommendation.shouldSkip) {
-        console.log(`⏭️ Skipping step: ${preFlightAnalysis.skipRecommendation.reason}`);
-        this.executionStats.skippedSteps++;
+      // STEP 1: Quick Skip Check (without full pre-flight analysis)
+      console.log(`📝 Executing step: ${step.name}`);
+      
+      // Check basic skip conditions if present
+      if (step.skipConditions && Array.isArray(step.skipConditions)) {
+        const currentUrl = await this.playwrightPage.url();
         
-        return {
-          success: true,
-          skipped: true,
-          skipReason: preFlightAnalysis.skipRecommendation.reason,
-          executionMethod: 'snippet' // Not actually executed
-        };
+        for (const condition of step.skipConditions) {
+          if (condition.type === 'url_match' && currentUrl.includes(condition.value)) {
+            console.log(`⏭️ Skipping step: ${condition.skipReason || 'URL condition matched'}`);
+            this.executionStats.skippedSteps++;
+            
+            return {
+              success: true,
+              skipped: true,
+              skipReason: condition.skipReason || `URL matches ${condition.value}`,
+              executionMethod: 'snippet' // Not actually executed, but need valid type
+            };
+          }
+        }
       }
 
-      // STEP 3: Execute Based on Strategy
-      const executionMethod = preFlightAnalysis.executionStrategy.method;
-      console.log(`🎯 Execution strategy: ${executionMethod} - ${preFlightAnalysis.executionStrategy.reason}`);
-
+      // STEP 2: Direct Execution - Try Snippet First
+      console.log(`🎯 Trying snippet-first execution for: ${step.name}`);
+      
       let result: ExecutionResult;
 
-      switch (executionMethod) {
-        case 'snippet':
-          result = await this.executeWithSnippet(step, variables, preFlightAnalysis);
-          break;
-          
-        case 'ai':
-          result = await this.executeWithAI(step, variables, preFlightAnalysis);
-          break;
-          
-        case 'hybrid':
-          result = await this.executeHybrid(step, variables, preFlightAnalysis);
-          break;
-          
-        default:
-          result = await this.executeWithSnippet(step, variables, preFlightAnalysis);
+      // Always try snippet first if available (it's fastest)
+      if (step.snippet || step.prefer === 'snippet') {
+        result = await this.executeWithSnippet(step, variables, null);
+      } else if (step.ai_instruction || step.prefer === 'ai') {
+        // If no snippet or AI is preferred, go straight to AI
+        result = await this.executeWithAI(step, variables);
+      } else {
+        // Fallback to snippet attempt
+        result = await this.executeWithSnippet(step, variables, null);
       }
 
-      // Update statistics
+      // If snippet failed and we have AI fallback, try AI
+      if (!result.success && step.fallback === 'ai' && step.ai_instruction) {
+        console.log(`🔄 Snippet failed, falling back to AI...`);
+        result = await this.executeWithAI(step, variables);
+      }
+
+      // Update statistics based on what method succeeded
       if (result.success) {
-        if (executionMethod === 'ai') {
+        if (result.executionMethod === 'ai') {
           this.executionStats.aiSuccess++;
-        } else {
+        } else if (result.executionMethod === 'snippet') {
           this.executionStats.snippetSuccess++;
+        }
+      } else {
+        if (result.executionMethod === 'ai') {
+          this.executionStats.aiFailure++;
+        } else if (result.executionMethod === 'snippet') {
+          this.executionStats.snippetFailure++;
         }
       }
 
@@ -289,7 +295,7 @@ export class EnhancedMagnitudeController {
   private async executeWithSnippet(
     step: any,
     variables: Record<string, string>,
-    preFlightAnalysis: PreFlightAnalysis
+    preFlightAnalysis?: PreFlightAnalysis | null
   ): Promise<ExecutionResult> {
     try {
       // Replace variables in snippet
@@ -336,7 +342,7 @@ export class EnhancedMagnitudeController {
 
     } catch (error) {
       // If snippet fails and we have AI fallback, use autonomous AI
-      if (preFlightAnalysis.executionStrategy.fallbackMethod === 'ai') {
+      if (step.fallback === 'ai') {
         console.log('🤖 Snippet failed, falling back to Autonomous AI...');
         
         // Build failure context for AI
@@ -406,7 +412,7 @@ export class EnhancedMagnitudeController {
   private async executeWithAI(
     step: any,
     variables: Record<string, string>,
-    preFlightAnalysis: PreFlightAnalysis
+    preFlightAnalysis?: PreFlightAnalysis | null
   ): Promise<ExecutionResult> {
     try {
       // Prepare instruction for AI

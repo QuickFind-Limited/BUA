@@ -20,6 +20,15 @@ export interface FailureContext {
     aiInstruction?: string;
     selectors?: string[];
     value?: any;
+    successCriteria?: {
+      type: 'element_exists' | 'element_has_value' | 'navigation' | 'custom' | 'ai_verify';
+      selector?: string;
+      expectedValue?: string;
+      urlPattern?: string;
+      waitForElement?: string;
+      description?: string;
+      customCheck?: string;
+    };
   };
   error: {
     message: string;
@@ -79,7 +88,7 @@ export class AutonomousAIExecutor {
 
   /**
    * Autonomously complete a failed task using Magnitude's act() function
-   * AI will try multiple approaches until success or max attempts
+   * Fully generic - no hardcoded assumptions about task types
    */
   async executeAutonomously(
     failureContext: FailureContext,
@@ -89,96 +98,72 @@ export class AutonomousAIExecutor {
     const agent = await this.initMagnitudeAgent();
     
     const allActions: string[] = [];
-    let currentPageState = failureContext.currentPageState;
     let attempts = 0;
     
-    // Build comprehensive context for AI
-    const goalDescription = this.extractGoal(failureContext);
+    // Build comprehensive instruction including success criteria
+    const fullInstruction = this.buildGenericInstruction(failureContext, variables);
     
     while (attempts < this.maxAttempts) {
       attempts++;
       
       if (this.debug) {
-        console.log(`\n🤖 AI Autonomous Attempt ${attempts}/${this.maxAttempts}`);
+        console.log(`\n🤖 Magnitude Autonomous Attempt ${attempts}/${this.maxAttempts}`);
       }
 
       try {
-        // Get current page state
-        currentPageState = await this.getCurrentPageState();
-        
-        // Build task instruction for Magnitude's act() function
-        const taskInstruction = this.buildTaskForMagnitude(
-          failureContext,
-          goalDescription,
-          currentPageState,
-          allActions,
-          attempts,
-          variables
-        );
+        // Build dynamic instruction with context from previous attempts
+        const contextualInstruction = attempts > 1 
+          ? `${fullInstruction}\n\nPrevious attempts: ${allActions.join('; ')}\nPlease try a different approach.`
+          : fullInstruction;
 
+        if (this.debug) {
+          console.log(`   🎯 Executing: ${contextualInstruction.substring(0, 150)}...`);
+        }
+        
         // Execute using Magnitude's act() function
-        // This leverages Magnitude's dual-agent architecture:
-        // - Planner agent (Opus) for reasoning
-        // - Executor agent (Sonnet) for actions
-        if (this.debug) {
-          console.log(`   🎯 Using Magnitude act() for: ${taskInstruction.substring(0, 100)}...`);
+        // Magnitude handles:
+        // - Planning the approach (Opus)
+        // - Executing the action (Sonnet)  
+        // - Verifying completion
+        // - Retrying if needed
+        await agent.act(contextualInstruction);
+        
+        // Record action
+        const actionDescription = `Attempt ${attempts}: Executed "${failureContext.step.name}"`;
+        allActions.push(actionDescription);
+        
+        // Wait for stability
+        await this.page.waitForTimeout(1500);
+        
+        // Verify success using the provided criteria or Magnitude's verification
+        const verificationResult = await this.verifySuccess(failureContext, variables);
+        
+        if (verificationResult.success) {
+          if (this.debug) {
+            console.log(`   ✅ Success verified: ${verificationResult.evidence}`);
+          }
+          
+          return {
+            success: true,
+            finalAction: actionDescription,
+            allActions,
+            pageState: await this.getCurrentPageState()
+          };
         }
         
-        // Execute the action using Magnitude
-        try {
-          await agent.act(taskInstruction);
-          
-          // Record the action taken
-          const actionDescription = `Magnitude act(): ${goalDescription}`;
-          allActions.push(actionDescription);
-          
-          if (this.debug) {
-            console.log(`   ✅ Magnitude act() completed successfully`);
-          }
-          
-          // Wait for page to stabilize
-          await this.page.waitForTimeout(1000);
-          
-          // Check if we've achieved the goal
-          const isComplete = await this.checkGoalCompletion(failureContext, currentPageState);
-          
-          if (isComplete) {
-            return {
-              success: true,
-              finalAction: actionDescription,
-              allActions,
-              pageState: await this.getCurrentPageState()
-            };
-          }
-          
-          if (this.debug) {
-            console.log(`   ↻ Action completed but goal not yet achieved, continuing...`);
-          }
-          
-        } catch (magnitudeError) {
-          if (this.debug) {
-            console.error(`   ⚠️ Magnitude act() failed:`, magnitudeError);
-          }
-          allActions.push(`Failed: ${magnitudeError.message}`);
+        if (this.debug) {
+          console.log(`   ↻ Action executed but verification failed: ${verificationResult.reason}`);
         }
-
-        // If no progress and we have more attempts, try different approach
-        if (attempts < this.maxAttempts) {
-          if (this.debug) {
-            console.log(`   ⚠ No progress, trying different approach...`);
-          }
-          await this.page.waitForTimeout(500);
-        }
-
+        
       } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
         if (this.debug) {
-          console.error(`   ❌ Attempt ${attempts} error:`, error);
+          console.error(`   ⚠️ Attempt ${attempts} failed:`, errorMsg);
         }
+        allActions.push(`Failed: ${errorMsg}`);
         
-        // Try recovery strategies
-        if (attempts < this.maxAttempts) {
-          await this.tryRecoveryStrategy(error, currentPageState);
-        }
+        // Let Magnitude handle recovery on next attempt
+        await this.page.waitForTimeout(1000);
       }
     }
 
@@ -187,208 +172,265 @@ export class AutonomousAIExecutor {
       success: false,
       finalAction: allActions[allActions.length - 1] || 'No actions taken',
       allActions,
-      error: `Failed after ${attempts} attempts`,
-      pageState: currentPageState
+      error: `Failed after ${attempts} attempts. Magnitude could not complete the task.`,
+      pageState: await this.getCurrentPageState()
     };
   }
 
   /**
-   * Build task instruction for Magnitude's act() function
+   * Build generic instruction for Magnitude without hardcoded assumptions
    */
-  private buildTaskForMagnitude(
+  private buildGenericInstruction(
     failureContext: FailureContext,
-    goal: string,
-    currentPageState: any,
-    previousActions: string[],
-    attemptNumber: number,
     variables: Record<string, string>
   ): string {
-    // Replace variables in the instruction
-    let instruction = failureContext.step.aiInstruction || failureContext.step.name || '';
-    for (const [key, value] of Object.entries(variables)) {
-      instruction = instruction.replace(new RegExp(`{{${key}}}`, 'g'), value);
+    // Replace variables in all text
+    const replaceVariables = (text: string): string => {
+      let result = text;
+      for (const [key, value] of Object.entries(variables)) {
+        result = result.replace(new RegExp(`{{${key}}}`, 'g'), value);
+      }
+      return result;
+    };
+
+    // Build the base instruction
+    const taskName = failureContext.step.name || 'Complete the action';
+    const aiInstruction = failureContext.step.aiInstruction 
+      ? replaceVariables(failureContext.step.aiInstruction)
+      : null;
+    const value = failureContext.step.value 
+      ? replaceVariables(failureContext.step.value)
+      : null;
+
+    // Extract domain context from current URL (generic approach)
+    const currentDomain = failureContext.currentPageState.url ? 
+      new URL(failureContext.currentPageState.url).hostname : 'unknown';
+    const siteName = currentDomain.replace('www.', '').split('.')[0];
+
+    // Build success criteria description
+    let successDescription = '';
+    if (failureContext.step.successCriteria) {
+      const criteria = failureContext.step.successCriteria;
+      if (criteria.description) {
+        successDescription = replaceVariables(criteria.description);
+      } else {
+        // Generate description from criteria type
+        switch (criteria.type) {
+          case 'element_exists':
+            successDescription = `Ensure element "${criteria.selector}" exists on the page`;
+            break;
+          case 'element_has_value':
+            successDescription = `Ensure element "${criteria.selector}" has value "${replaceVariables(criteria.expectedValue || '')}"`;
+            break;
+          case 'navigation':
+            successDescription = `Ensure navigation to URL matching "${criteria.urlPattern}"`;
+            break;
+          case 'ai_verify':
+            successDescription = 'Verify the action completed successfully using visual confirmation';
+            break;
+        }
+      }
     }
 
-    // Build context-aware instruction for Magnitude
-    const context = `
-Failed step: ${failureContext.step.name}
-Error: ${failureContext.error.message}
-Current URL: ${currentPageState.url}
-${previousActions.length > 0 ? `Previous attempts: ${previousActions.join(', ')}` : ''}
-${instruction ? `Specific instruction: ${instruction}` : ''}
-${failureContext.step.value ? `Value to use: ${failureContext.step.value}` : ''}
-`;
-
-    // Return a clear, actionable instruction for Magnitude's act() function
-    return `${goal}. ${context.trim()}`;
+    // Construct the full instruction for Magnitude
+    let instruction = `Task: ${taskName}\n`;
+    
+    // Add website context (generic - works for any site)
+    instruction += `Website: You are working on ${siteName} (${currentDomain})\n`;
+    instruction += `Current URL: ${failureContext.currentPageState.url}\n`;
+    
+    if (aiInstruction) {
+      instruction += `Instructions: ${aiInstruction}\n`;
+    }
+    
+    if (value) {
+      instruction += `Value to use: ${value}\n`;
+    }
+    
+    if (failureContext.step.selectors && failureContext.step.selectors.length > 0) {
+      instruction += `Target elements: ${failureContext.step.selectors.join(', ')}\n`;
+    }
+    
+    instruction += `\nContext:\n`;
+    instruction += `- Previous error: ${failureContext.error.message}\n`;
+    instruction += `- Error type: ${failureContext.error.type}\n`;
+    instruction += `- IMPORTANT: You are on ${siteName}, NOT on any other website. Do not navigate to different domains.\n`;
+    
+    if (failureContext.attemptedSelectors?.length > 0) {
+      instruction += `- Failed selectors: ${failureContext.attemptedSelectors.join(', ')}\n`;
+    }
+    
+    if (successDescription) {
+      instruction += `\nSuccess criteria: ${successDescription}\n`;
+    } else {
+      instruction += `\nComplete this action successfully and verify it worked.\n`;
+    }
+    
+    return instruction.trim();
   }
 
   /**
-   * Check if the goal has been completed
+   * Verify success using provided criteria or AI verification
    */
-  private async checkGoalCompletion(failureContext: FailureContext, previousPageState: any): Promise<boolean> {
+  private async verifySuccess(
+    failureContext: FailureContext,
+    variables: Record<string, string>
+  ): Promise<{ success: boolean; evidence?: string; reason?: string }> {
+    const criteria = failureContext.step.successCriteria;
+    
+    // If no criteria provided, use AI verification
+    if (!criteria || criteria.type === 'ai_verify') {
+      return await this.verifyWithAI(failureContext);
+    }
+    
+    // Replace variables in criteria values
+    const replaceVariables = (text: string): string => {
+      let result = text;
+      for (const [key, value] of Object.entries(variables)) {
+        result = result.replace(new RegExp(`{{${key}}}`, 'g'), value);
+      }
+      return result;
+    };
+    
     try {
-      const currentState = await this.getCurrentPageState();
-      
-      // Check for common success indicators
-      if (failureContext.step.name?.toLowerCase().includes('login')) {
-        // Check if we've navigated away from login page
-        if (currentState.url !== previousPageState.url && !currentState.hasLoginForm) {
-          return true;
-        }
+      switch (criteria.type) {
+        case 'element_exists':
+          if (!criteria.selector) {
+            return { success: false, reason: 'No selector provided for element_exists check' };
+          }
+          const exists = await this.page.locator(criteria.selector).count() > 0;
+          return {
+            success: exists,
+            evidence: exists ? `Element ${criteria.selector} found` : undefined,
+            reason: exists ? undefined : `Element ${criteria.selector} not found`
+          };
+          
+        case 'element_has_value':
+          if (!criteria.selector || !criteria.expectedValue) {
+            return { success: false, reason: 'Missing selector or expected value' };
+          }
+          const expectedValue = replaceVariables(criteria.expectedValue);
+          const actualValue = await this.page.locator(criteria.selector).inputValue().catch(() => '');
+          const matches = actualValue === expectedValue;
+          return {
+            success: matches,
+            evidence: matches ? `Element has expected value: ${expectedValue}` : undefined,
+            reason: matches ? undefined : `Expected "${expectedValue}" but got "${actualValue}"`
+          };
+          
+        case 'navigation':
+          if (!criteria.urlPattern) {
+            return { success: false, reason: 'No URL pattern provided' };
+          }
+          const currentUrl = this.page.url();
+          const pattern = new RegExp(criteria.urlPattern);
+          const navigated = pattern.test(currentUrl);
+          
+          // Also check for wait element if specified
+          if (navigated && criteria.waitForElement) {
+            const elementFound = await this.page.locator(criteria.waitForElement)
+              .waitFor({ timeout: 5000 })
+              .then(() => true)
+              .catch(() => false);
+            
+            return {
+              success: elementFound,
+              evidence: elementFound ? `Navigated to ${currentUrl} and found ${criteria.waitForElement}` : undefined,
+              reason: elementFound ? undefined : `Navigated but ${criteria.waitForElement} not found`
+            };
+          }
+          
+          return {
+            success: navigated,
+            evidence: navigated ? `Successfully navigated to ${currentUrl}` : undefined,
+            reason: navigated ? undefined : `URL ${currentUrl} doesn't match pattern ${criteria.urlPattern}`
+          };
+          
+        case 'custom':
+          if (!criteria.customCheck) {
+            return { success: false, reason: 'No custom check code provided' };
+          }
+          const result = await this.page.evaluate(criteria.customCheck);
+          return {
+            success: !!result,
+            evidence: result ? 'Custom check passed' : undefined,
+            reason: result ? undefined : 'Custom check failed'
+          };
+          
+        default:
+          return await this.verifyWithAI(failureContext);
       }
-      
-      if (failureContext.step.name?.toLowerCase().includes('fill') || 
-          failureContext.step.name?.toLowerCase().includes('enter')) {
-        // Check if the value was entered
-        if (failureContext.step.value) {
-          const hasValue = currentState.visibleElements?.inputs?.some(
-            (input: any) => input.value === failureContext.step.value
-          );
-          if (hasValue) return true;
-        }
-      }
-      
-      if (failureContext.step.name?.toLowerCase().includes('click')) {
-        // Check if page changed after click
-        if (currentState.url !== previousPageState.url || 
-            currentState.title !== previousPageState.title) {
-          return true;
-        }
-      }
-      
-      return false;
     } catch (error) {
-      return false;
+      return {
+        success: false,
+        reason: `Verification error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
     }
   }
 
   /**
-   * Build comprehensive prompt for autonomous AI execution (fallback)
+   * Use AI to verify if the action was successful
    */
-  private buildAutonomousPrompt(
-    failureContext: FailureContext,
-    goal: string,
-    currentPageState: any,
-    previousActions: string[],
-    attemptNumber: number,
-    variables: Record<string, string>
-  ): string {
-    // Replace variables in the instruction
-    let instruction = failureContext.step.aiInstruction || failureContext.step.name || '';
-    for (const [key, value] of Object.entries(variables)) {
-      instruction = instruction.replace(new RegExp(`{{${key}}}`, 'g'), value);
-    }
-
-    return `You are an autonomous browser automation AI. Your task is to complete a specific goal by taking whatever actions are necessary.
-
-CONTEXT OF FAILURE:
-- Original Task: ${failureContext.step.name}
-- Failed Snippet: ${failureContext.step.snippet || 'N/A'}
-- Error: ${failureContext.error.message}
-- Error Type: ${failureContext.error.type}
-- Selectors That Failed: ${failureContext.attemptedSelectors.join(', ')}
-
-ULTIMATE GOAL:
-${goal}
-${instruction ? `Specific instruction: ${instruction}` : ''}
-${failureContext.step.value ? `Value to enter: ${failureContext.step.value}` : ''}
-
-CURRENT PAGE STATE:
-- URL: ${currentPageState.url}
-- Title: ${currentPageState.title}
-- Has Login Form: ${currentPageState.hasLoginForm}
-- Visible Elements: ${JSON.stringify(currentPageState.visibleElements, null, 2)}
-
-PREVIOUS ACTIONS IN THIS SESSION:
-${previousActions.length > 0 ? previousActions.map((a, i) => `${i + 1}. ${a}`).join('\n') : 'None yet'}
-
-ATTEMPT NUMBER: ${attemptNumber}/${this.maxAttempts}
-
-YOUR TASK:
-1. Analyze why the original action failed
-2. Determine what needs to be done to achieve the goal
-3. Take the necessary action(s) - this may require multiple steps
-4. Be creative - if direct approach fails, try alternatives
-
-IMPORTANT:
-- You can take multiple actions in sequence (e.g., click Sign In, wait, then fill form)
-- If you need to navigate somewhere first, do it
-- If you need to wait for elements to appear, include that
-- Return executable JavaScript code that will run in the browser
-
-Return your response as JSON:
-{
-  "analysis": "Why the original failed and what needs to be done",
-  "actionTaken": "Description of what you did",
-  "code": "JavaScript code to execute in the browser",
-  "taskComplete": true/false,
-  "madeProgress": true/false,
-  "success": true/false
-}`;
-  }
-
-  /**
-   * Execute AI action with actual browser control
-   */
-  private async executeAIAction(prompt: string, pageState: any): Promise<any> {
+  private async verifyWithAI(
+    failureContext: FailureContext
+  ): Promise<{ success: boolean; evidence?: string; reason?: string }> {
     try {
-      // Get AI response
-      const aiResponse = await executeRuntimeAIAction(prompt, JSON.stringify(pageState));
+      const pageState = await this.getCurrentPageState();
+      const taskDescription = failureContext.step.name || 'the action';
       
-      // Parse response
+      const verificationPrompt = `
+Task: Verify if "${taskDescription}" was completed successfully.
+
+Original instruction: ${failureContext.step.aiInstruction || failureContext.step.name}
+${failureContext.step.value ? `Expected value: ${failureContext.step.value}` : ''}
+
+Current page state:
+- URL: ${pageState.url}
+- Title: ${pageState.title}
+- Visible elements: ${JSON.stringify(pageState.visibleElements, null, 2)}
+
+Determine if the task was completed successfully. Return JSON:
+{
+  "success": true/false,
+  "evidence": "what indicates success or failure",
+  "confidence": 0-100
+}`;
+
+      const result = await executeRuntimeAIAction(verificationPrompt, JSON.stringify(pageState));
+      
+      // Parse AI response
       let parsed;
       try {
-        // Extract JSON from response if wrapped in markdown
-        const jsonMatch = aiResponse.result.match(/```json\s*([\s\S]*?)\s*```/);
+        const jsonMatch = result.result.match(/```json\s*([\s\S]*?)\s*```/);
         if (jsonMatch) {
           parsed = JSON.parse(jsonMatch[1]);
         } else {
-          parsed = JSON.parse(aiResponse.result);
+          parsed = JSON.parse(result.result);
         }
       } catch {
-        // Fallback if parsing fails
-        parsed = {
-          actionTaken: aiResponse.result,
-          success: aiResponse.success,
-          taskComplete: false,
-          madeProgress: false,
-          code: null
+        // If parsing fails, assume not successful
+        return {
+          success: false,
+          reason: 'Could not parse AI verification response'
         };
       }
-
-      // Execute the code if provided
-      if (parsed.code) {
-        try {
-          if (this.debug) {
-            console.log(`   Executing: ${parsed.code.substring(0, 100)}...`);
-          }
-          
-          // Execute in browser context
-          const result = await this.page.evaluate(parsed.code);
-          
-          // Update parsed result based on execution
-          parsed.executionResult = result;
-          parsed.success = true;
-          
-        } catch (execError) {
-          if (this.debug) {
-            console.error(`   Code execution failed:`, execError);
-          }
-          parsed.success = false;
-          parsed.error = execError.message;
-        }
-      }
-
-      return parsed;
-
+      
+      return {
+        success: parsed.success === true,
+        evidence: parsed.evidence,
+        reason: parsed.success ? undefined : parsed.evidence
+      };
+      
     } catch (error) {
-      throw new Error(`AI execution failed: ${error.message}`);
+      return {
+        success: false,
+        reason: `AI verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
     }
   }
 
   /**
-   * Get current page state for AI context
+   * Get current page state for context
    */
   private async getCurrentPageState(): Promise<any> {
     try {
@@ -443,32 +485,6 @@ Return your response as JSON:
         error: 'Failed to extract page state'
       };
     }
-  }
-
-  /**
-   * Extract the goal from failure context
-   */
-  private extractGoal(failureContext: FailureContext): string {
-    const step = failureContext.step;
-    
-    if (step.name?.toLowerCase().includes('login email')) {
-      return 'Enter the login email address in the appropriate field';
-    } else if (step.name?.toLowerCase().includes('password')) {
-      return 'Enter the password in the password field';
-    } else if (step.name?.toLowerCase().includes('click login')) {
-      return 'Click the login/submit button to authenticate';
-    } else if (step.snippet) {
-      // Try to extract from snippet
-      if (step.snippet.includes('fill')) {
-        return `Fill the field with value: ${step.value || 'specified value'}`;
-      } else if (step.snippet.includes('click')) {
-        return 'Click the specified element';
-      } else if (step.snippet.includes('goto')) {
-        return 'Navigate to the specified URL';
-      }
-    }
-    
-    return step.aiInstruction || step.name || 'Complete the specified action';
   }
 
   /**

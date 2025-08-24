@@ -28,6 +28,17 @@ export interface IntentStep {
   selector?: string;        // Optional selector for AI
   value?: string;           // Optional value with {{variables}}
   
+  // Success criteria for generic validation
+  successCriteria?: {
+    type: 'element_exists' | 'element_has_value' | 'navigation' | 'custom' | 'ai_verify';
+    selector?: string;        // For element-based checks
+    expectedValue?: string;   // For value checks (supports {{variables}})
+    urlPattern?: string;      // For navigation checks (regex pattern)
+    waitForElement?: string;  // Element to wait for after action
+    description?: string;     // Human-readable success description
+    customCheck?: string;     // JavaScript code to evaluate (returns boolean)
+  };
+  
   // Legacy fields for backward compatibility
   action?: string;
   target?: string;

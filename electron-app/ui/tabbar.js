@@ -7,7 +7,12 @@ let tabs = new Map();
 async function loadFullIntentSpec() {
     try {
         // Try multiple paths to find the Intent Spec file
+        // Using the latest generated Intent Spec
         const paths = [
+            './intent-spec-1756038275999.json',
+            '../intent-spec-1756038275999.json',
+            'intent-spec-1756038275999.json',
+            // Fallback to older spec if new one not found
             './intent-spec-1755985558961.json',
             '../intent-spec-1755985558961.json',
             'intent-spec-1755985558961.json'
