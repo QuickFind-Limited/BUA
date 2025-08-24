@@ -483,7 +483,9 @@ export class EnhancedMagnitudeController {
 
           // Try using Magnitude with minimal context first
           if (!this.magnitudeAgent) {
-            this.magnitudeAgent = await getMagnitudeAgent();
+            const cdpPort = process.env.CDP_PORT || '9335';
+            const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+            this.magnitudeAgent = await getMagnitudeAgent(cdpEndpoint);
           }
 
           // Attempt workaround: Execute AI action without passing page directly
@@ -810,7 +812,9 @@ Your code:`;
       case 'use_ai':
         // Switch to AI execution
         if (!this.magnitudeAgent) {
-          this.magnitudeAgent = await getMagnitudeAgent();
+          const cdpPort = process.env.CDP_PORT || '9335';
+          const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+          this.magnitudeAgent = await getMagnitudeAgent(cdpEndpoint);
         }
         
         const aiResult = await this.executeWithAI(

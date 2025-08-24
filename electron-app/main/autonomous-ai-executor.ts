@@ -74,9 +74,13 @@ export class AutonomousAIExecutor {
   private async initMagnitudeAgent(): Promise<BrowserAgent> {
     if (!this.magnitudeAgent) {
       try {
-        this.magnitudeAgent = await getMagnitudeAgent();
+        // Get CDP endpoint to connect Magnitude to our WebView browser
+        const cdpPort = process.env.CDP_PORT || '9335';
+        const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+        
+        this.magnitudeAgent = await getMagnitudeAgent(cdpEndpoint);
         if (this.debug) {
-          console.log('🤖 Magnitude agent initialized with act() function for autonomous execution');
+          console.log(`🤖 Magnitude agent initialized with CDP endpoint: ${cdpEndpoint}`);
         }
       } catch (error) {
         console.error('Failed to initialize Magnitude agent:', error);

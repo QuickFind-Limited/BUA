@@ -254,7 +254,7 @@ Return JSON with these exact fields:
 // Magnitude agent singleton
 let magnitudeAgent: any = null;
 
-export async function getMagnitudeAgent() {
+export async function getMagnitudeAgent(cdpEndpoint?: string) {
   if (!magnitudeAgent) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
@@ -299,12 +299,16 @@ export async function getMagnitudeAgent() {
           roles: ['query'] as const
         }
       ],
-      browser: { 
+      browser: cdpEndpoint ? {
+        // Connect to existing browser via CDP endpoint
+        cdp: cdpEndpoint
+      } : { 
+        // Launch new browser if no CDP endpoint provided
         launchOptions: { 
-          headless: true // Set to false for debugging
+          headless: false // Set to false for debugging
         } 
       },
-      narration: { level: 'silent' } // Set to 'normal' for debugging
+      narration: { level: 'normal' } // Set to 'normal' for debugging
     } as any);
   }
   return magnitudeAgent;
