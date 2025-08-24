@@ -261,6 +261,41 @@ export async function getMagnitudeAgent(cdpEndpoint?: string) {
       throw new Error('ANTHROPIC_API_KEY environment variable is required for Magnitude');
     }
 
+    // If CDP endpoint is provided, convert HTTP to WebSocket URL
+    let browserConfig: any;
+    if (cdpEndpoint) {
+      try {
+        // Get the WebSocket URL from the CDP HTTP endpoint
+        // CDP exposes a JSON endpoint at /json/version that provides the WebSocket URL
+        const fetch = (await import('node-fetch')).default;
+        const response = await fetch(`${cdpEndpoint}/json/version`);
+        const data = await response.json();
+        const webSocketUrl = data.webSocketDebuggerUrl;
+        
+        console.log('🔗 Connecting Magnitude to existing WebView via WebSocket:', webSocketUrl);
+        
+        browserConfig = {
+          // Use WebSocket URL for CDP connection
+          cdp: webSocketUrl
+        };
+      } catch (error) {
+        console.error('Failed to get WebSocket URL from CDP endpoint:', error);
+        console.log('⚠️ Falling back to launching new browser instance');
+        browserConfig = {
+          launchOptions: { 
+            headless: false
+          }
+        };
+      }
+    } else {
+      // No CDP endpoint provided, launch new browser
+      browserConfig = {
+        launchOptions: { 
+          headless: false
+        }
+      };
+    }
+
     // Initialize Magnitude with proper model configuration
     // Using array format for multiple model configurations
     magnitudeAgent = await startBrowserAgent({
@@ -299,15 +334,7 @@ export async function getMagnitudeAgent(cdpEndpoint?: string) {
           roles: ['query'] as const
         }
       ],
-      browser: cdpEndpoint ? {
-        // Connect to existing browser via CDP endpoint
-        cdp: cdpEndpoint
-      } : { 
-        // Launch new browser if no CDP endpoint provided
-        launchOptions: { 
-          headless: false // Set to false for debugging
-        } 
-      },
+      browser: browserConfig,
       narration: { level: 'normal' } // Set to 'normal' for debugging
     } as any);
   }

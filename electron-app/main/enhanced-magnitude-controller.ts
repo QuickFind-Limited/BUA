@@ -90,14 +90,38 @@ export class EnhancedMagnitudeController {
       // Import chromium from playwright
       const { chromium } = await import('playwright');
       
-      // Get CDP port from environment or use the same port as main.ts
-      const cdpPort = process.env.CDP_PORT || '9335';
-      const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+      // Try to find the actual CDP port by checking multiple possible ports
+      // The WebView might use a different port than what we set
+      let cdpEndpoint = '';
+      let connected = false;
       
-      console.log(`Connecting Playwright to CDP endpoint: ${cdpEndpoint}`);
+      // Try common CDP ports
+      const portsToTry = ['9335', '9222', '9363', '9364', '9365'];
       
-      // Connect to the browser via CDP
-      this.playwrightBrowser = await chromium.connectOverCDP(cdpEndpoint);
+      for (const port of portsToTry) {
+        try {
+          const testEndpoint = `http://127.0.0.1:${port}`;
+          console.log(`Trying CDP endpoint: ${testEndpoint}`);
+          
+          // Try to connect
+          const browser = await chromium.connectOverCDP(testEndpoint);
+          if (browser) {
+            this.playwrightBrowser = browser;
+            cdpEndpoint = testEndpoint;
+            connected = true;
+            console.log(`✅ Successfully connected to CDP on port ${port}`);
+            break;
+          }
+        } catch (err) {
+          // This port didn't work, try next
+          continue;
+        }
+      }
+      
+      if (!connected) {
+        console.error('Failed to connect to CDP on any port');
+        return false;
+      }
       
       if (!this.playwrightBrowser) {
         console.error('Failed to connect browser via CDP');
@@ -307,8 +331,29 @@ export class EnhancedMagnitudeController {
       console.log(`📝 Executing snippet via Magnitude: ${snippetToExecute.substring(0, 100)}...`);
 
       // Get CDP endpoint from our WebView browser
-      const cdpPort = process.env.CDP_PORT || '9335';
-      const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+      // Try multiple ports as WebView might use a different one
+      let cdpEndpoint = '';
+      const portsToTry = ['9335', '9222', '9363', '9364', '9365'];
+      
+      for (const port of portsToTry) {
+        try {
+          const testEndpoint = `http://127.0.0.1:${port}`;
+          const fetch = (await import('node-fetch')).default;
+          const response = await fetch(`${testEndpoint}/json/version`);
+          if (response.ok) {
+            cdpEndpoint = testEndpoint;
+            console.log(`Found CDP endpoint at port ${port}`);
+            break;
+          }
+        } catch {
+          continue;
+        }
+      }
+      
+      if (!cdpEndpoint) {
+        console.error('Could not find CDP endpoint');
+        cdpEndpoint = 'http://127.0.0.1:9335'; // Fallback
+      }
       
       // Import getMagnitudeAgent from llm module
       const { getMagnitudeAgent } = await import('./llm');
@@ -400,8 +445,7 @@ export class EnhancedMagnitudeController {
               // Retry the original snippet now that we're on the right page
               try {
                 // Get CDP endpoint and Magnitude agent
-                const cdpPort = process.env.CDP_PORT || '9335';
-                const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+                const cdpEndpoint = await this.findCdpEndpoint();
                 const { getMagnitudeAgent } = await import('./llm');
                 const magnitudeAgent = await getMagnitudeAgent(cdpEndpoint);
                 
@@ -503,8 +547,7 @@ export class EnhancedMagnitudeController {
 
           // Try using Magnitude with minimal context first
           if (!this.magnitudeAgent) {
-            const cdpPort = process.env.CDP_PORT || '9335';
-            const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+            const cdpEndpoint = await this.findCdpEndpoint();
             this.magnitudeAgent = await getMagnitudeAgent(cdpEndpoint);
           }
 
@@ -832,8 +875,7 @@ Your code:`;
       case 'use_ai':
         // Switch to AI execution
         if (!this.magnitudeAgent) {
-          const cdpPort = process.env.CDP_PORT || '9335';
-          const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+          const cdpEndpoint = await this.findCdpEndpoint();
           this.magnitudeAgent = await getMagnitudeAgent(cdpEndpoint);
         }
         
@@ -909,8 +951,7 @@ Your code:`;
     
     try {
       // Use Magnitude to execute the snippet
-      const cdpPort = process.env.CDP_PORT || '9335';
-      const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+      const cdpEndpoint = await this.findCdpEndpoint();
       const { getMagnitudeAgent } = await import('./llm');
       const magnitudeAgent = await getMagnitudeAgent(cdpEndpoint);
       
@@ -1020,5 +1061,29 @@ Your code:`;
    */
   public async getPlaywrightPage(): Promise<any> {
     return this.playwrightPage;
+  }
+
+  /**
+   * Find the CDP endpoint by trying multiple ports
+   */
+  private async findCdpEndpoint(): Promise<string> {
+    const portsToTry = ['9335', '9222', '9363', '9364', '9365'];
+    
+    for (const port of portsToTry) {
+      try {
+        const testEndpoint = `http://127.0.0.1:${port}`;
+        const fetch = (await import('node-fetch')).default;
+        const response = await fetch(`${testEndpoint}/json/version`, { timeout: 1000 });
+        if (response.ok) {
+          console.log(`Found CDP endpoint at port ${port}`);
+          return testEndpoint;
+        }
+      } catch {
+        continue;
+      }
+    }
+    
+    console.warn('Could not find CDP endpoint, using default port 9335');
+    return 'http://127.0.0.1:9335';
   }
 }
