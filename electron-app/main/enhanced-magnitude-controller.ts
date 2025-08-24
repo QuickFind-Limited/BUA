@@ -297,17 +297,17 @@ export class EnhancedMagnitudeController {
     variables: Record<string, string>,
     preFlightAnalysis?: PreFlightAnalysis | null
   ): Promise<ExecutionResult> {
-    try {
-      // Replace variables in snippet
-      let snippet = step.snippet || '';
-      for (const [key, value] of Object.entries(variables)) {
-        snippet = snippet.replace(new RegExp(`{{${key}}}`, 'g'), value);
-      }
+    // Replace variables in snippet
+    let snippetToExecute = step.snippet || '';
+    for (const [key, value] of Object.entries(variables)) {
+      snippetToExecute = snippetToExecute.replace(new RegExp(`{{${key}}}`, 'g'), value);
+    }
 
-      console.log(`📝 Executing snippet: ${snippet.substring(0, 100)}...`);
+    try {
+      console.log(`📝 Executing snippet: ${snippetToExecute.substring(0, 100)}...`);
 
       // Execute snippet directly (pre-flight analysis disabled for performance)
-      const result = await this.evaluateSnippet(snippet);
+      const result = await this.evaluateSnippet(snippetToExecute);
       
       return {
         success: true,
@@ -386,11 +386,11 @@ export class EnhancedMagnitudeController {
               
               // Retry the original snippet now that we're on the right page
               try {
-                const retryResult = await this.evaluateSnippet(snippet);
+                const retryResult = await this.evaluateSnippet(snippetToExecute);
                 return {
                   success: true,
                   data: retryResult,
-                  executionMethod: 'snippet_after_ai_navigation'
+                  executionMethod: 'hybrid'
                 };
               } catch (retryError) {
                 console.log('❌ Snippet still failed after navigation, using AI for the action...');
