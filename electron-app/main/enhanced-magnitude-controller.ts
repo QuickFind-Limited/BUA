@@ -4,6 +4,7 @@ import { PreFlightAnalyzer, PreFlightAnalysis } from './preflight-analyzer';
 import { ErrorAnalyzer, ErrorAnalysis } from './error-analyzer';
 import { getMagnitudeAgent, executeRuntimeAIAction } from './llm';
 import { FallbackStrategies, handleStrictModeViolation, executeWithAllFallbacks } from './fallback-strategies';
+import { AutonomousAIExecutor, FailureContext } from './autonomous-ai-executor';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -21,6 +22,7 @@ interface ExecutionResult {
   executionMethod?: 'snippet' | 'ai' | 'hybrid';
   retryCount?: number;
   recoveryActions?: string[];
+  allActions?: string[];  // All actions taken by autonomous AI
 }
 
 interface StepExecutionContext {
@@ -333,14 +335,69 @@ export class EnhancedMagnitudeController {
       };
 
     } catch (error) {
-      // If snippet fails and we have AI fallback, use it
+      // If snippet fails and we have AI fallback, use autonomous AI
       if (preFlightAnalysis.executionStrategy.fallbackMethod === 'ai') {
-        console.log('🤖 Snippet failed, falling back to AI...');
-        return await this.executeWithAI(step, variables, preFlightAnalysis);
+        console.log('🤖 Snippet failed, falling back to Autonomous AI...');
+        
+        // Build failure context for AI
+        const failureContext: FailureContext = {
+          step: {
+            name: step.name || 'Unknown step',
+            snippet: step.snippet,
+            aiInstruction: step.ai_instruction || step.aiInstruction,
+            selectors: step.selectors || [],
+            value: step.value
+          },
+          error: {
+            message: error.message || 'Unknown error',
+            type: this.classifyError(error)
+          },
+          attemptedSelectors: [
+            preFlightAnalysis.targetElement?.selector,
+            ...(preFlightAnalysis.targetElement?.alternativeSelectors || [])
+          ].filter(Boolean),
+          currentPageState: {
+            url: preFlightAnalysis.pageState.url,
+            title: preFlightAnalysis.pageState.title,
+            hasLoginForm: !!preFlightAnalysis.pageContent?.formFields?.some(f => f.type === 'password'),
+            visibleElements: preFlightAnalysis.pageContent
+          }
+        };
+
+        // Use autonomous AI executor with Magnitude's act() function
+        const aiExecutor = new AutonomousAIExecutor(this.playwrightPage!, {
+          maxAttempts: 5,
+          debug: true
+        });
+
+        const result = await aiExecutor.executeAutonomously(failureContext, variables);
+        
+        return {
+          success: result.success,
+          data: result.finalAction,
+          executionMethod: 'ai',
+          allActions: result.allActions
+        };
       }
       
       throw error;
     }
+  }
+
+  /**
+   * Classify error type for AI context
+   */
+  private classifyError(error: any): string {
+    const message = error.message?.toLowerCase() || '';
+    
+    if (message.includes('timeout')) return 'timeout';
+    if (message.includes('not found') || message.includes('no element')) return 'selector_not_found';
+    if (message.includes('navigation')) return 'navigation';
+    if (message.includes('network')) return 'network';
+    if (message.includes('click')) return 'click_failed';
+    if (message.includes('fill') || message.includes('type')) return 'input_failed';
+    
+    return 'unknown';
   }
 
   /**
@@ -394,18 +451,44 @@ export class EnhancedMagnitudeController {
           return await this.executeDirectAutomation(instruction, step);
         }
       } else {
-        // Simple AI decisions use Sonnet directly (faster, cheaper)
-        const pageContextString = JSON.stringify(preFlightAnalysis.pageContent);
-        const result = await executeRuntimeAIAction(
-          instruction,
-          pageContextString
-        );
+        // Use autonomous AI executor for all AI tasks
+        console.log(`🤖 Using Autonomous AI for: ${instruction}`);
+        
+        // Build context for autonomous AI
+        const failureContext: FailureContext = {
+          step: {
+            name: step.name || instruction,
+            snippet: step.snippet,
+            aiInstruction: instruction,
+            selectors: step.selectors || [],
+            value: step.value
+          },
+          error: {
+            message: 'Direct AI execution requested',
+            type: 'ai_fallback'
+          },
+          attemptedSelectors: [],
+          currentPageState: {
+            url: preFlightAnalysis.pageState.url,
+            title: preFlightAnalysis.pageState.title,
+            hasLoginForm: !!preFlightAnalysis.pageContent?.formFields?.some(f => f.type === 'password'),
+            visibleElements: preFlightAnalysis.pageContent
+          }
+        };
 
-        console.log(`✅ Sonnet 4 completed: ${result.result} (confidence: ${result.confidence})`);
+        // Use autonomous AI executor with Magnitude's act() function
+        const aiExecutor = new AutonomousAIExecutor(this.playwrightPage!, {
+          maxAttempts: 5,
+          debug: true
+        });
+
+        const result = await aiExecutor.executeAutonomously(failureContext, variables);
+        
         return {
           success: result.success,
-          data: result.result,
-          executionMethod: 'ai'
+          data: result.finalAction,
+          executionMethod: 'ai',
+          allActions: result.allActions
         };
       }
 

@@ -132,19 +132,40 @@ export class PreFlightAnalyzer {
    * Get current page state
    */
   private async getPageState(page: Page): Promise<PreFlightAnalysis['pageState']> {
-    const [url, title, readyState, hasErrors] = await Promise.all([
-      page.url(),
-      page.title(),
-      page.evaluate(() => document.readyState),
-      page.evaluate(() => {
+    try {
+      const [url, title, readyState, hasErrors] = await Promise.all([
+        page.url(),
+        page.title(),
+        page.evaluate(() => document.readyState).catch(() => 'unknown'),
+        page.evaluate(() => {
         // Check for common error indicators
         const errorKeywords = ['error', 'failed', '404', '500', 'not found', 'unauthorized'];
         const pageText = document.body?.innerText?.toLowerCase() || '';
         return errorKeywords.some(keyword => pageText.includes(keyword));
-      })
+      }).catch(() => false)
     ]);
 
-    return { url, title, readyState, hasErrors };
+      return { url, title, readyState, hasErrors };
+    } catch (error) {
+      console.warn('Error getting page state, using defaults:', error);
+      
+      // Try to get URL and title with fallbacks
+      let url = 'unknown';
+      let title = 'unknown';
+      try {
+        url = await page.url();
+      } catch {}
+      try {
+        title = await page.title();
+      } catch {}
+      
+      return {
+        url,
+        title,
+        readyState: 'unknown' as any,
+        hasErrors: false
+      };
+    }
   }
 
   /**
@@ -494,6 +515,11 @@ export class PreFlightAnalyzer {
    */
   private async extractPageContent(page: Page, step: any): Promise<PreFlightAnalysis['pageContent']> {
     try {
+      // Wait for page to stabilize after navigation
+      await page.waitForLoadState('domcontentloaded', { timeout: 2000 }).catch(() => {
+        console.log('Page still loading, proceeding with extraction anyway');
+      });
+      
       // Direct extraction without Magnitude's extract method to avoid Zod schema error
       // Use page evaluation to get structured data
       const pageContent = await page.evaluate(() => {

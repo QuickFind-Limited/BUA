@@ -171,14 +171,30 @@ export async function executeRuntimeAIAction(
       model: SONNET_MODEL,
       max_tokens: 1000,
       temperature: 0.2, // Lower temperature for more deterministic actions
-      system: `You are an intelligent browser automation assistant. You help complete browser tasks by understanding context and taking appropriate actions.
+      system: `You are an intelligent browser automation assistant that completes tasks autonomously.
 
-IMPORTANT: If you cannot complete the requested action because prerequisite steps are needed (like navigating to a login page before filling login fields), you should:
-1. First try to complete the prerequisite action (e.g., click "Sign In" link if trying to fill login fields but not on login page)
-2. Return the action you actually took
-3. Set success to true if you made progress toward the goal
+Your goal is to COMPLETE the requested action, taking whatever steps are necessary to achieve it.
 
-Be smart about navigation - if asked to fill a login form but you're not on a login page, look for and click sign-in/login links first.`,
+APPROACH:
+1. Analyze the current page state
+2. If the requested action can be performed directly, do it
+3. If prerequisites are needed (e.g., navigating to login page before filling login fields):
+   - Take ALL necessary steps to complete the task
+   - This may include clicking buttons, navigating, waiting for elements, etc.
+4. Keep trying different approaches until you succeed or determine it's impossible
+
+IMPORTANT:
+- You have ONE chance to complete the entire task
+- Take multiple actions if needed (e.g., click Sign In, then fill the field)
+- Only return success:true if you COMPLETED the requested action
+- Return success:false if you couldn't complete it after trying everything
+- In the "action" field, describe ALL steps you took
+
+Example: If asked to "fill login email" but you're not on a login page:
+- Click the Sign In link/button
+- Wait for the login page to load
+- Fill the email field
+- Return success:true because you completed the task`,
       messages: [
         {
           role: 'user',
@@ -188,25 +204,43 @@ Page context: ${context || 'No context provided'}
 
 If the requested action cannot be performed directly but you see a way to navigate there (like clicking a Sign In button to get to a login form), do that instead.
 
-Return JSON: {"action": "what you actually did", "success": true/false, "details": "brief result"}`
+Return JSON with these exact fields:
+{
+  "action": "describe EXACTLY what you did (e.g., 'clicked Sign In link' or 'filled email field with admin@quickfindai.com')",
+  "success": true ONLY if you completed the requested action, false if you did something else,
+  "details": "explain why you took this action",
+  "needsRetry": true if the original action still needs to be done
+}`
         }
       ]
     });
 
     const responseText = response.content[0].type === 'text' ? response.content[0].text : '';
     
+    // Extract JSON from markdown code blocks if present
+    let jsonText = responseText;
+    const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
+    if (jsonMatch) {
+      jsonText = jsonMatch[1];
+    }
+    
     // Try to parse JSON response
     try {
-      const parsed = JSON.parse(responseText);
+      const parsed = JSON.parse(jsonText);
       return {
-        success: parsed.success !== false,
-        result: parsed.details || parsed.action || responseText,
+        success: parsed.success === true, // Only true if explicitly set to true
+        result: parsed.action || parsed.details || responseText,
         confidence: parsed.confidence || 0.85
       };
     } catch {
-      // If not JSON, still return the response
+      // If not JSON, check if the response mentions failure
+      const failureIndicators = ['failed', 'could not', 'unable to', 'cannot', 'not found', 'doesn\'t exist'];
+      const isFailure = failureIndicators.some(indicator => 
+        responseText.toLowerCase().includes(indicator)
+      );
+      
       return {
-        success: true,
+        success: !isFailure,
         result: responseText,
         confidence: 0.7
       };
