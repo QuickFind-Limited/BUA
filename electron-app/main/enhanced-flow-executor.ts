@@ -1,5 +1,5 @@
 import { WebContentsView } from 'electron';
-import { EnhancedMagnitudeController } from './enhanced-magnitude-controller';
+import { MagnitudeOnlyController } from './magnitude-only-controller';
 import { executionLogger } from './execution-logger';
 
 /**
@@ -36,11 +36,11 @@ export interface FlowProgress {
 }
 
 export class EnhancedFlowExecutor {
-  private controller: EnhancedMagnitudeController;
+  private controller: MagnitudeOnlyController;
   private progressCallback?: (progress: FlowProgress) => void;
 
   constructor() {
-    this.controller = new EnhancedMagnitudeController();
+    this.controller = new MagnitudeOnlyController();
   }
 
   /**
