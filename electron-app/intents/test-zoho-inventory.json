@@ -1,0 +1,17 @@
+{
+  "name": "Test Zoho Inventory Item Creation",
+  "description": "Test flow for creating inventory items in Zoho with pre-filled values",
+  "testValues": {
+    "LOGIN_ID": "admin@quickfindai.com",
+    "PASSWORD": "#QuickFind2024",
+    "ITEM_NAME": "Test Box 3676",
+    "SELLING_PRICE": "400",
+    "COST_PRICE": "300"
+  },
+  "intentSpecFile": "intent-spec-1755985558961.json",
+  "metadata": {
+    "createdAt": "2025-08-23T21:48:00Z",
+    "purpose": "Quick testing of Zoho inventory automation",
+    "expectedOutcome": "Creates a new inventory item with specified values"
+  }
+}
