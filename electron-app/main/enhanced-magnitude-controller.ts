@@ -306,32 +306,7 @@ export class EnhancedMagnitudeController {
 
       console.log(`📝 Executing snippet: ${snippet.substring(0, 100)}...`);
 
-      // If target element doesn't exist but we have alternatives, try them
-      if (preFlightAnalysis.targetElement && 
-          !preFlightAnalysis.targetElement.exists && 
-          preFlightAnalysis.targetElement.alternativeSelectors?.length) {
-        
-        console.log('🔄 Trying alternative selectors...');
-        for (const altSelector of preFlightAnalysis.targetElement.alternativeSelectors) {
-          try {
-            const altSnippet = snippet.replace(
-              preFlightAnalysis.targetElement.selector,
-              altSelector
-            );
-            const result = await this.evaluateSnippet(altSnippet);
-            return {
-              success: true,
-              data: result,
-              executionMethod: 'snippet'
-            };
-          } catch {
-            // Try next alternative
-            continue;
-          }
-        }
-      }
-
-      // Execute original snippet
+      // Execute snippet directly (pre-flight analysis disabled for performance)
       const result = await this.evaluateSnippet(snippet);
       
       return {
@@ -345,6 +320,10 @@ export class EnhancedMagnitudeController {
       if (step.fallback === 'ai') {
         console.log('🤖 Snippet failed, falling back to Autonomous AI...');
         
+        // Get current page state directly
+        const currentUrl = await this.playwrightPage.url();
+        const currentTitle = await this.playwrightPage.title();
+        
         // Build failure context for AI
         const failureContext: FailureContext = {
           step: {
@@ -352,21 +331,19 @@ export class EnhancedMagnitudeController {
             snippet: step.snippet,
             aiInstruction: step.ai_instruction || step.aiInstruction,
             selectors: step.selectors || [],
-            value: step.value
+            value: step.value,
+            successCriteria: step.successCriteria
           },
           error: {
             message: error.message || 'Unknown error',
             type: this.classifyError(error)
           },
-          attemptedSelectors: [
-            preFlightAnalysis.targetElement?.selector,
-            ...(preFlightAnalysis.targetElement?.alternativeSelectors || [])
-          ].filter(Boolean),
+          attemptedSelectors: step.selectors || [],
           currentPageState: {
-            url: preFlightAnalysis.pageState.url,
-            title: preFlightAnalysis.pageState.title,
-            hasLoginForm: !!preFlightAnalysis.pageContent?.formFields?.some(f => f.type === 'password'),
-            visibleElements: preFlightAnalysis.pageContent
+            url: currentUrl,
+            title: currentTitle,
+            // Additional page state will be gathered by the AI executor
+            visibleElements: null
           }
         };
 
