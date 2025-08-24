@@ -135,12 +135,32 @@ export class AutonomousAIExecutor {
         // Wait for stability
         await this.page.waitForTimeout(1500);
         
-        // Verify success using the provided criteria or Magnitude's verification
-        const verificationResult = await this.verifySuccess(failureContext, variables);
-        
-        if (verificationResult.success) {
+        // For Magnitude execution, trust its built-in verification
+        // Only verify if we have explicit success criteria
+        if (failureContext.step.successCriteria && 
+            failureContext.step.successCriteria.type !== 'ai_verify') {
+          const verificationResult = await this.verifySuccess(failureContext, variables);
+          
+          if (verificationResult.success) {
+            if (this.debug) {
+              console.log(`   ✅ Success verified: ${verificationResult.evidence}`);
+            }
+            
+            return {
+              success: true,
+              finalAction: actionDescription,
+              allActions,
+              pageState: await this.getCurrentPageState()
+            };
+          }
+          
           if (this.debug) {
-            console.log(`   ✅ Success verified: ${verificationResult.evidence}`);
+            console.log(`   ↻ Action executed but verification failed: ${verificationResult.reason}`);
+          }
+        } else {
+          // Trust Magnitude's execution when no explicit criteria
+          if (this.debug) {
+            console.log(`   ✅ Magnitude execution completed (trusting built-in verification)`);
           }
           
           return {
@@ -149,10 +169,6 @@ export class AutonomousAIExecutor {
             allActions,
             pageState: await this.getCurrentPageState()
           };
-        }
-        
-        if (this.debug) {
-          console.log(`   ↻ Action executed but verification failed: ${verificationResult.reason}`);
         }
         
       } catch (error) {
