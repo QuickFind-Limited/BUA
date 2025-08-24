@@ -261,34 +261,20 @@ export async function getMagnitudeAgent(cdpEndpoint?: string) {
       throw new Error('ANTHROPIC_API_KEY environment variable is required for Magnitude');
     }
 
-    // If CDP endpoint is provided, convert HTTP to WebSocket URL
+    // Configure browser connection for Magnitude
     let browserConfig: any;
     if (cdpEndpoint) {
-      try {
-        // Get the WebSocket URL from the CDP HTTP endpoint
-        // CDP exposes a JSON endpoint at /json/version that provides the WebSocket URL
-        const fetch = (await import('node-fetch')).default;
-        const response = await fetch(`${cdpEndpoint}/json/version`);
-        const data = await response.json();
-        const webSocketUrl = data.webSocketDebuggerUrl;
-        
-        console.log('🔗 Connecting Magnitude to existing WebView via WebSocket:', webSocketUrl);
-        
-        browserConfig = {
-          // Use WebSocket URL for CDP connection
-          cdp: webSocketUrl
-        };
-      } catch (error) {
-        console.error('Failed to get WebSocket URL from CDP endpoint:', error);
-        console.log('⚠️ Falling back to launching new browser instance');
-        browserConfig = {
-          launchOptions: { 
-            headless: false
-          }
-        };
-      }
+      // Magnitude expects HTTP CDP endpoint (e.g., 'http://localhost:9222')
+      // It will internally call chromium.connectOverCDP(options.cdp)
+      console.log('🔗 Connecting Magnitude to existing WebView via CDP:', cdpEndpoint);
+      
+      browserConfig = {
+        // Pass HTTP CDP endpoint directly - Magnitude handles the connection
+        cdp: cdpEndpoint
+      };
     } else {
       // No CDP endpoint provided, launch new browser
+      console.log('⚠️ No CDP endpoint provided, launching new browser instance');
       browserConfig = {
         launchOptions: { 
           headless: false
