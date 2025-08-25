@@ -9,7 +9,6 @@
  * - Falls back to Opus 4.1 for complex reasoning if needed
  */
 
-import { Page } from 'playwright';
 import { executeRuntimeAIAction, getMagnitudeAgent } from './llm';
 import { BrowserAgent } from 'magnitude-core/dist/agent/browserAgent';
 
@@ -56,13 +55,13 @@ export interface ExecutionResult {
 }
 
 export class AutonomousAIExecutor {
-  private page: Page;
+  private magnitudeAgent: BrowserAgent | null = null;
   private maxAttempts: number = 5;
   private debug: boolean = false;
-  private magnitudeAgent: BrowserAgent | null = null;
+  private cdpEndpoint: string | undefined;
 
-  constructor(page: Page, options: { maxAttempts?: number; debug?: boolean } = {}) {
-    this.page = page;
+  constructor(cdpEndpoint?: string, options: { maxAttempts?: number; debug?: boolean } = {}) {
+    this.cdpEndpoint = cdpEndpoint;
     this.maxAttempts = options.maxAttempts || 5;
     this.debug = options.debug || false;
   }
@@ -74,9 +73,8 @@ export class AutonomousAIExecutor {
   private async initMagnitudeAgent(): Promise<BrowserAgent> {
     if (!this.magnitudeAgent) {
       try {
-        // Get CDP endpoint to connect Magnitude to our WebView browser
-        const cdpPort = process.env.CDP_PORT || '9335';
-        const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+        // Use provided CDP endpoint or get from environment
+        const cdpEndpoint = this.cdpEndpoint || `http://127.0.0.1:${process.env.CDP_PORT || '9335'}`;
         
         this.magnitudeAgent = await getMagnitudeAgent(cdpEndpoint);
         if (this.debug) {
@@ -137,7 +135,7 @@ export class AutonomousAIExecutor {
         allActions.push(actionDescription);
         
         // Wait for stability
-        await this.page.waitForTimeout(1500);
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
         // For Magnitude execution, trust its built-in verification
         // Only verify if we have explicit success criteria
@@ -183,7 +181,7 @@ export class AutonomousAIExecutor {
         allActions.push(`Failed: ${errorMsg}`);
         
         // Let Magnitude handle recovery on next attempt
-        await this.page.waitForTimeout(1000);
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
 
@@ -327,7 +325,12 @@ export class AutonomousAIExecutor {
           if (!criteria.selector) {
             return { success: false, reason: 'No selector provided for element_exists check' };
           }
-          const exists = await this.page.locator(criteria.selector).count() > 0;
+          // Use Magnitude's page property to check element existence
+          const page = this.magnitudeAgent?.page;
+          if (!page) {
+            return { success: false, reason: 'Magnitude page not available' };
+          }
+          const exists = await page.locator(criteria.selector).count() > 0;
           return {
             success: exists,
             evidence: exists ? `Element ${criteria.selector} found` : undefined,
@@ -338,8 +341,12 @@ export class AutonomousAIExecutor {
           if (!criteria.selector || !criteria.expectedValue) {
             return { success: false, reason: 'Missing selector or expected value' };
           }
+          const page2 = this.magnitudeAgent?.page;
+          if (!page2) {
+            return { success: false, reason: 'Magnitude page not available' };
+          }
           const expectedValue = replaceVariables(criteria.expectedValue);
-          const actualValue = await this.page.locator(criteria.selector).inputValue().catch(() => '');
+          const actualValue = await page2.locator(criteria.selector).inputValue().catch(() => '');
           const matches = actualValue === expectedValue;
           return {
             success: matches,
@@ -351,13 +358,17 @@ export class AutonomousAIExecutor {
           if (!criteria.urlPattern) {
             return { success: false, reason: 'No URL pattern provided' };
           }
-          const currentUrl = this.page.url();
+          const page3 = this.magnitudeAgent?.page;
+          if (!page3) {
+            return { success: false, reason: 'Magnitude page not available' };
+          }
+          const currentUrl = page3.url();
           const pattern = new RegExp(criteria.urlPattern);
           const navigated = pattern.test(currentUrl);
           
           // Also check for wait element if specified
           if (navigated && criteria.waitForElement) {
-            const elementFound = await this.page.locator(criteria.waitForElement)
+            const elementFound = await page3.locator(criteria.waitForElement)
               .waitFor({ timeout: 5000 })
               .then(() => true)
               .catch(() => false);
@@ -379,7 +390,11 @@ export class AutonomousAIExecutor {
           if (!criteria.customCheck) {
             return { success: false, reason: 'No custom check code provided' };
           }
-          const result = await this.page.evaluate(criteria.customCheck);
+          const page4 = this.magnitudeAgent?.page;
+          if (!page4) {
+            return { success: false, reason: 'Magnitude page not available' };
+          }
+          const result = await page4.evaluate(criteria.customCheck);
           return {
             success: !!result,
             evidence: result ? 'Custom check passed' : undefined,
@@ -463,7 +478,14 @@ Determine if the task was completed successfully. Return JSON:
    */
   private async getCurrentPageState(): Promise<any> {
     try {
-      const pageData = await this.page.evaluate(() => {
+      const page = this.magnitudeAgent?.page;
+      if (!page) {
+        return {
+          error: 'Magnitude page not available'
+        };
+      }
+      
+      const pageData = await page.evaluate(() => {
         // Find all interactive elements
         const inputs = Array.from(document.querySelectorAll('input, select, textarea')).map(el => ({
           type: el.getAttribute('type'),
@@ -508,9 +530,15 @@ Determine if the task was completed successfully. Return JSON:
 
       return pageData;
     } catch (error) {
+      const page = this.magnitudeAgent?.page;
+      if (page) {
+        return {
+          url: await page.url(),
+          title: await page.title(),
+          error: 'Failed to extract page state'
+        };
+      }
       return {
-        url: await this.page.url(),
-        title: await this.page.title(),
         error: 'Failed to extract page state'
       };
     }
@@ -525,22 +553,27 @@ Determine if the task was completed successfully. Return JSON:
     }
 
     try {
+      const page = this.magnitudeAgent?.page;
+      if (!page) {
+        return;
+      }
+      
       // If we're on an error page, try to go back
       if (pageState.title?.toLowerCase().includes('error') || 
           pageState.bodyText?.toLowerCase().includes('404')) {
-        await this.page.goBack().catch(() => {});
-        await this.page.waitForTimeout(1000);
+        await page.goBack().catch(() => {});
+        await new Promise(resolve => setTimeout(resolve, 1000));
         return;
       }
 
       // If timeout error, wait and retry
       if (error.message?.includes('timeout')) {
-        await this.page.waitForTimeout(2000);
+        await new Promise(resolve => setTimeout(resolve, 2000));
         return;
       }
 
       // Generic recovery - wait a bit
-      await this.page.waitForTimeout(1000);
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
     } catch (recoveryError) {
       if (this.debug) {

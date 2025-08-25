@@ -25,15 +25,28 @@ export function generateBulletproofIntentSpecPrompt(recording: any): string {
   // Analyze tab switches for multi-tab workflows
   const tabPatterns = analyzeTabSessions(recording.tabSessions || {});
 
+  // Determine the actual workflow URL from actions (where user actually interacted)
+  let actualWorkflowUrl = recording.url;
+  if (recording.actions && recording.actions.length > 0) {
+    // Use the URL from the first action as the actual workflow URL
+    const firstActionUrl = recording.actions[0].url;
+    if (firstActionUrl && firstActionUrl !== recording.url) {
+      actualWorkflowUrl = firstActionUrl;
+    }
+  }
+
   return `You are an expert at creating BULLETPROOF Intent Specifications from comprehensive recording data.
 
 Your task: Analyze the recording and output a STRICT JSON Intent Spec. NO prose, NO explanations, NO markdown - ONLY valid JSON.
+
+IMPORTANT: Focus on the ACTUAL USER WORKFLOW, not the initial page load. The user's actual workflow is at: ${actualWorkflowUrl}
 
 COMPREHENSIVE RECORDING DATA:
 ==========================
 Session: ${recording.sessionId}
 Duration: ${recording.duration}ms
-Start URL: ${recording.url}
+Initial URL: ${recording.url}
+Actual Workflow URL: ${actualWorkflowUrl}
 Viewport: ${JSON.stringify(recording.viewport || { width: 1920, height: 1080 })}
 User Agent: ${recording.userAgent || 'Not captured'}
 
@@ -168,9 +181,9 @@ MANDATORY: Every step MUST include ALL of these elements for maximum resilience:
 
 OUTPUT THIS ENHANCED JSON STRUCTURE:
 {
-  "name": "Descriptive name",
+  "name": "Descriptive name based on the actual workflow at ${actualWorkflowUrl} (NOT 'Google' unless it's actually a Google workflow)",
   "description": "What this automation does",
-  "url": "${recording.url}",
+  "url": "${actualWorkflowUrl}",
   "params": ["LOGIN_ID", "PASSWORD", "OTHER_VARIABLE_NAMES"],
   "environment": {
     "viewport": ${JSON.stringify(recording.viewport || {})},

@@ -1,0 +1,203 @@
+{
+  "name": "Google Homepage Navigation",
+  "description": "Navigate to Google homepage and wait for page load",
+  "url": "https://www.google.com/?zx=1756102526245&no_sw_cr=1",
+  "params": [],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "",
+    "cookies": false,
+    "localStorage": false
+  },
+  "skipNavigationStates": [],
+  "steps": [
+    {
+      "name": "Navigate to Google Homepage",
+      "ai_instruction": "Navigate to Google homepage and wait for the page to fully load",
+      "snippet": "await page.goto('https://www.google.com/?zx=1756102526245&no_sw_cr=1', { waitUntil: 'networkidle' });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "body",
+        ".gb_g",
+        "#hplogo",
+        "[name='q']",
+        ".RNNXgb",
+        "text=Google Search",
+        "[aria-label='Search']",
+        "//body[contains(@class, 'hp')]"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "body",
+          "required": true,
+          "alternativeSelectors": [
+            "html",
+            "document"
+          ],
+          "waitFor": "visible",
+          "timeout": 10000
+        }
+      ],
+      "skipConditions": [
+        {
+          "type": "url_match",
+          "value": "google.com",
+          "skipReason": "Already on Google homepage"
+        }
+      ],
+      "waitBefore": {
+        "type": "network",
+        "condition": "idle",
+        "timeout": 5000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "[name='q']:visible",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "[name='q']",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": [
+          "body",
+          "html",
+          "#main"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Wait for Page Complete Load",
+      "ai_instruction": "Wait for Google homepage to be fully interactive with search box visible",
+      "snippet": "await page.waitForSelector('[name=\"q\"]', { state: 'visible', timeout: 10000 });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[name='q']",
+        ".RNNXgb",
+        "#APjFqb",
+        ".gLFyf",
+        "[aria-label='Search']",
+        "input[type='text']",
+        "[role='combobox']",
+        "//input[@name='q']"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "[name='q']",
+          "required": true,
+          "alternativeSelectors": [
+            ".RNNXgb",
+            "#APjFqb",
+            ".gLFyf"
+          ],
+          "waitFor": "visible",
+          "timeout": 10000
+        }
+      ],
+      "skipConditions": [
+        {
+          "type": "element_exists",
+          "value": "[name='q']:visible",
+          "skipReason": "Search box already visible"
+        }
+      ],
+      "waitBefore": {
+        "type": "element",
+        "condition": "body:visible",
+        "timeout": 5000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "[name='q']:enabled",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "[name='q']:visible:enabled",
+        "screenshot": false,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": false,
+        "alternativeAction": "reload_page",
+        "fallbackSelectors": [
+          ".RNNXgb",
+          "#APjFqb",
+          ".gLFyf"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 2000,
+        "maxDuration": 10000,
+        "fallbackToAI": true
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "screenshotValidation": {
+    "enabled": true,
+    "threshold": 80,
+    "checkpoints": [
+      "final"
+    ],
+    "ignoreRegions": [
+      ".timestamp",
+      ".dynamic-content",
+      "[data-ved]"
+    ],
+    "compareMode": "structural"
+  },
+  "validations": [
+    {
+      "step": "final",
+      "check": "element",
+      "expected": "[name='q']:visible"
+    },
+    {
+      "step": "final",
+      "check": "url",
+      "expected": "google.com"
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3,
+    "fallbackToManual": false
+  },
+  "performance": {
+    "totalExpectedDuration": 67047,
+    "criticalPath": [
+      "Navigate to Google Homepage",
+      "Wait for Page Complete Load"
+    ],
+    "slowStepThreshold": 10000
+  }
+}

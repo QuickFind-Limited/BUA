@@ -52,7 +52,7 @@ window.runTestFlow = async function() {
     // Test values
     const testValues = {
         LOGIN_ID: "admin@quickfindai.com",
-        PASSWORD: "#QuickFind2024",
+        PASSWORD: "#QuickFind",
         ITEM_NAME: "Test Box 3676",
         SELLING_PRICE: "400",
         COST_PRICE: "300"

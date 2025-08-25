@@ -1,0 +1,133 @@
+{
+  "name": "Google Homepage Navigation",
+  "description": "Navigate to Google homepage and wait for page load",
+  "url": "https://www.google.com/?zx=1756099297350&no_sw_cr=1",
+  "params": [],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "",
+    "cookies": false,
+    "localStorage": false
+  },
+  "skipNavigationStates": [],
+  "steps": [
+    {
+      "name": "Navigate to Google homepage",
+      "ai_instruction": "Navigate to the Google homepage and wait for the page to fully load",
+      "snippet": "await page.goto('https://www.google.com/?zx=1756099297350&no_sw_cr=1', { waitUntil: 'networkidle' });",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#hplogo",
+        ".logo",
+        "[alt='Google']",
+        "img[src*='logo']",
+        "[role='img'][aria-label='Google']",
+        ".searchboxinput",
+        "//img[@alt='Google']",
+        "//div[@id='hplogo']"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "body",
+          "required": true,
+          "alternativeSelectors": [
+            "html",
+            "head"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "skipConditions": [
+        {
+          "type": "url_match",
+          "value": "google.com",
+          "skipReason": "Already on Google homepage"
+        }
+      ],
+      "waitBefore": {
+        "type": "time",
+        "condition": "page_load_start",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "networkidle",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "#hplogo or .logo visible",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": [
+          ".searchboxinput",
+          "#lst-ib",
+          "[name='q']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000,
+        "fallbackToAI": true
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "screenshotValidation": {
+    "enabled": true,
+    "threshold": 80,
+    "checkpoints": [
+      "after-navigation"
+    ],
+    "ignoreRegions": [
+      ".timestamp",
+      ".dynamic-content"
+    ],
+    "compareMode": "structural"
+  },
+  "validations": [
+    {
+      "step": "after-navigation",
+      "check": "element",
+      "expected": "#hplogo visible"
+    },
+    {
+      "step": "final",
+      "check": "screenshot",
+      "expected": "matches_recording",
+      "threshold": 85
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3,
+    "fallbackToManual": false
+  },
+  "performance": {
+    "totalExpectedDuration": 54166,
+    "criticalPath": [
+      "Navigate to Google homepage"
+    ],
+    "slowStepThreshold": 10000
+  }
+}

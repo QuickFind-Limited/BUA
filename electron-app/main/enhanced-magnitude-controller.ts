@@ -426,7 +426,9 @@ export class EnhancedMagnitudeController {
             `Once on the correct page with the element visible, stop.`;
           
           // Use AI to navigate to the right place
-          const aiExecutor = new AutonomousAIExecutor(this.playwrightPage!, {
+          const cdpPort = process.env.CDP_PORT || '9335';
+          const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
+          const aiExecutor = new AutonomousAIExecutor(cdpEndpoint, {
             maxAttempts: 3,
             debug: true
           });
@@ -470,7 +472,9 @@ export class EnhancedMagnitudeController {
         }
 
         // Use AI executor for the full task (navigation + action)
-        const aiExecutor = new AutonomousAIExecutor(this.playwrightPage!, {
+        const cdpPort2 = process.env.CDP_PORT || '9335';
+        const cdpEndpoint2 = `http://127.0.0.1:${cdpPort2}`;
+        const aiExecutor = new AutonomousAIExecutor(cdpEndpoint2, {
           maxAttempts: 5,
           debug: true
         });
@@ -600,7 +604,9 @@ export class EnhancedMagnitudeController {
         };
 
         // Use autonomous AI executor with Magnitude's act() function
-        const aiExecutor = new AutonomousAIExecutor(this.playwrightPage!, {
+        const cdpPort3 = process.env.CDP_PORT || '9335';
+        const cdpEndpoint3 = `http://127.0.0.1:${cdpPort3}`;
+        const aiExecutor = new AutonomousAIExecutor(cdpEndpoint3, {
           maxAttempts: 5,
           debug: true
         });

@@ -130,6 +130,7 @@ async function getQueryFunction() {
 
 import Anthropic from '@anthropic-ai/sdk';
 import { startBrowserAgent } from 'magnitude-core';
+import { getWebViewCDPEndpoint, getCDPTargets } from './cdp-target-filter';
 import { z } from 'zod';
 import { IntentSpec } from '../flows/types';
 import { validateIntentSpec, sanitizeIntentSpec } from './intent-spec-validator';
@@ -254,7 +255,27 @@ Return JSON with these exact fields:
 // Magnitude agent singleton
 let magnitudeAgent: any = null;
 
-export async function getMagnitudeAgent(cdpEndpoint?: string) {
+// Special flag to indicate we should skip the browser connection issue
+export async function getMagnitudeAgentWithoutBrowser() {
+  // This creates a Magnitude agent without a browser
+  // We'll need to provide the browser/page separately
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error('ANTHROPIC_API_KEY environment variable is required for Magnitude');
+  }
+  
+  // Return a minimal agent that we can use for AI operations
+  return {
+    act: async (instruction: string) => {
+      // Use the AI to generate actions
+      console.log('🤖 Magnitude AI act:', instruction);
+      // This will use the AI models but not have a browser connection
+      throw new Error('Browser-less Magnitude not fully implemented');
+    }
+  };
+}
+
+export async function getMagnitudeAgent(cdpEndpoint?: string, playwrightPage?: any) {
   if (!magnitudeAgent) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
@@ -263,15 +284,53 @@ export async function getMagnitudeAgent(cdpEndpoint?: string) {
 
     // Configure browser connection for Magnitude
     let browserConfig: any;
-    if (cdpEndpoint) {
-      // Magnitude expects HTTP CDP endpoint (e.g., 'http://localhost:9222')
-      // It will internally call chromium.connectOverCDP(options.cdp)
-      console.log('🔗 Connecting Magnitude to existing WebView via CDP:', cdpEndpoint);
-      
+    
+    // OPTION 1: If we have a Playwright page, use it directly
+    if (playwrightPage) {
+      console.log('🎯 Using provided Playwright page for Magnitude');
+      // Magnitude internally uses Playwright, so we can pass the page directly
+      // We'll initialize Magnitude with a custom browser config that uses the existing page
       browserConfig = {
-        // Pass HTTP CDP endpoint directly - Magnitude handles the connection
-        cdp: cdpEndpoint
+        // Pass the existing Playwright page's browser context
+        context: playwrightPage.context(),
+        // Tell Magnitude to use the existing page instead of creating a new one
+        page: playwrightPage
       };
+    } else if (cdpEndpoint) {
+      try {
+        // OPTION 2: Connect to CDP endpoint
+        // Handle both HTTP and WebSocket endpoints
+        let webSocketUrl = cdpEndpoint;
+        
+        // Only convert HTTP endpoints to WebSocket
+        if (cdpEndpoint.startsWith('http://')) {
+          // Get the WebSocket URL from the CDP HTTP endpoint
+          const fetch = (await import('node-fetch')).default;
+          console.log('🔍 Fetching WebSocket URL from CDP HTTP endpoint...');
+          const response = await fetch(`${cdpEndpoint}/json/version`);
+          const data = await response.json();
+          webSocketUrl = data.webSocketDebuggerUrl;
+          console.log('✅ Got WebSocket URL:', webSocketUrl);
+        } else if (cdpEndpoint.startsWith('ws://') || cdpEndpoint.startsWith('wss://')) {
+          // Already a WebSocket URL - use as-is
+          console.log('🔗 Using provided WebSocket URL directly:', webSocketUrl);
+        }
+        
+        console.log('🎯 Connecting Magnitude to SPECIFIC target via WebSocket:', webSocketUrl);
+        
+        browserConfig = {
+          // Use WebSocket URL for CDP connection
+          cdp: webSocketUrl
+        };
+      } catch (error) {
+        console.error('Failed to get WebSocket URL from CDP endpoint:', error);
+        console.log('⚠️ Falling back to launching new browser instance');
+        browserConfig = {
+          launchOptions: { 
+            headless: false
+          }
+        };
+      }
     } else {
       // No CDP endpoint provided, launch new browser
       console.log('⚠️ No CDP endpoint provided, launching new browser instance');
@@ -282,6 +341,14 @@ export async function getMagnitudeAgent(cdpEndpoint?: string) {
       };
     }
 
+    // Add a small delay to let WebView fully initialize
+    console.log('⏳ Waiting for WebView to stabilize...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // HACK: For CDP connections, we need to handle the page creation issue
+    // Magnitude will try to create a new page if context.pages() is empty
+    // We'll monkey-patch the browser agent after creation
+    
     // Initialize Magnitude with proper model configuration
     // Using array format for multiple model configurations
     magnitudeAgent = await startBrowserAgent({

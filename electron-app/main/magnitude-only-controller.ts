@@ -1,35 +1,39 @@
 import { WebContentsView } from 'electron';
 import { getMagnitudeAgent } from './llm';
 import { AutonomousAIExecutor, FailureContext } from './autonomous-ai-executor';
+import { MagnitudeElectronAdapter } from './magnitude-electron-adapter';
 
 interface ExecutionResult {
   success: boolean;
   data?: any;
   error?: string;
-  executionMethod?: 'snippet' | 'ai' | 'hybrid';
+  aiUsed?: boolean;
+  method?: 'snippet' | 'ai' | 'mixed';
+}
+
+interface StepResult {
+  success: boolean;
+  action?: string;
+  method?: 'snippet' | 'ai' | 'magnitude-snippet';
+  error?: string;
+  needsRetry?: boolean;
   skipped?: boolean;
   skipReason?: string;
-  retryCount?: number;
-  recoveryActions?: string[];
+  executionMethod?: string;
 }
 
 /**
- * Simplified controller that uses ONLY Magnitude for all browser interactions
+ * MagnitudeOnlyController - Uses only Magnitude for all browser automation
+ * This replaces the hybrid Playwright + Magnitude approach
+ * All automation (snippets and AI) goes through Magnitude's act() function
  */
 export class MagnitudeOnlyController {
   private webView: WebContentsView | null = null;
   private magnitudeAgent: any = null;
-  private isConnected = false;
-  
-  // Execution statistics
-  private executionStats = {
-    snippetSuccess: 0,
-    snippetFailure: 0,
-    aiSuccess: 0,
-    aiFailure: 0,
-    skippedSteps: 0,
-    totalSteps: 0
-  };
+  private isConnected: boolean = false;
+  private aiExecutor: AutonomousAIExecutor | null = null;
+  private executionLogs: any[] = [];
+  private playwrightPage: any = null; // Store the WebView-specific page
 
   constructor() {
     console.log('🚀 MagnitudeOnlyController initialized');
@@ -42,21 +46,77 @@ export class MagnitudeOnlyController {
     try {
       this.webView = webView;
       
-      // Get the actual CDP port from environment variable
+      // Import chromium from playwright to connect to CDP first
+      const { chromium } = await import('playwright');
+      
+      // Get the CDP port from environment
       const cdpPort = process.env.CDP_PORT || '9335';
-      const cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
-      console.log(`🔗 Connecting Magnitude to CDP endpoint: ${cdpEndpoint}`);
+      let cdpEndpoint = `http://127.0.0.1:${cdpPort}`;
       
-      // Get Magnitude agent connected to our WebView browser
-      this.magnitudeAgent = await getMagnitudeAgent(cdpEndpoint);
+      console.log(`🔗 Connecting to CDP endpoint: ${cdpEndpoint}`);
       
-      if (!this.magnitudeAgent) {
+      // Connect Playwright to CDP first
+      const playwrightBrowser = await chromium.connectOverCDP(cdpEndpoint);
+      if (!playwrightBrowser) {
+        console.error('Failed to connect Playwright to CDP');
+        return false;
+      }
+      
+      // Get existing contexts
+      const contexts = playwrightBrowser.contexts();
+      if (contexts.length === 0) {
+        console.error('No contexts found in connected browser');
+        return false;
+      }
+      
+      // Find the WebView page (not Electron UI pages)
+      const context = contexts[0];
+      const pages = context.pages();
+      let webViewPage = null;
+      
+      for (const page of pages) {
+        const url = page.url();
+        console.log(`Found page with URL: ${url}`);
+        
+        // ONLY use pages with http/https URLs (actual web content)
+        // Skip everything else (file://, chrome://, about:, etc.)
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+          webViewPage = page;
+          console.log('✅ Found WebView page with web content');
+          break;
+        } else {
+          console.log(`⚠️ Skipping non-web page: ${url}`);
+        }
+      }
+      
+      if (!webViewPage) {
+        console.error('No WebView page found, only Electron UI pages detected');
+        await playwrightBrowser.close();
+        return false;
+      }
+      
+      // Store the WebView page for direct use
+      this.playwrightPage = webViewPage;
+      
+      // PATCHED MAGNITUDE APPROACH: Magnitude controls everything but ONLY WebView pages
+      // The patched Magnitude will ignore all non-http/https pages (Electron UI)
+      
+      console.log('🎯 Using patched Magnitude - controls WebView pages only');
+      
+      // Initialize Magnitude with the CDP endpoint
+      // It will now automatically filter out non-WebView pages
+      const magnitudeAgent = await getMagnitudeAgent(cdpEndpoint);
+      
+      if (!magnitudeAgent) {
         console.error('Failed to initialize Magnitude agent');
         return false;
       }
       
+      this.magnitudeAgent = magnitudeAgent;
+      console.log('✅ Patched Magnitude ready - will control ONLY WebView pages!');
+      
       this.isConnected = true;
-      console.log('✅ Successfully connected Magnitude to WebView');
+      console.log('✅ Successfully connected to WebView page ONLY (not entire Electron UI)');
       return true;
     } catch (error) {
       console.error('Failed to connect to WebView:', error);
@@ -68,250 +128,397 @@ export class MagnitudeOnlyController {
    * Execute a step using Magnitude
    */
   public async executeStepEnhanced(
-    step: any,
-    variables: Record<string, string> = {}
-  ): Promise<ExecutionResult> {
-    if (!this.isConnected || !this.magnitudeAgent) {
-      return {
-        success: false,
-        error: 'Not connected to WebView'
-      };
+    step: any, 
+    variables: Record<string, string>,
+    options: {
+      retryOnFailure?: boolean;
+      maxRetries?: number;
+      fallbackToAI?: boolean;
+    } = {}
+  ): Promise<StepResult> {
+    const { 
+      retryOnFailure = true, 
+      maxRetries = 3, 
+      fallbackToAI = true 
+    } = options;
+
+    console.log(`📝 Executing step: ${step.name}`);
+
+    // Replace variables in snippet
+    let snippetToExecute = step.snippet;
+    if (snippetToExecute && variables) {
+      Object.entries(variables).forEach(([key, value]) => {
+        snippetToExecute = snippetToExecute.replace(new RegExp(`{{${key}}}`, 'g'), value);
+      });
     }
 
-    this.executionStats.totalSteps++;
+    let attempts = 0;
+    let lastError: Error | null = null;
+    let result: StepResult | null = null;
 
-    try {
-      console.log(`📝 Executing step: ${step.name}`);
+    // Try snippet execution first if preferred
+    if (step.prefer === 'snippet' && snippetToExecute) {
+      // Only retry if we don't have alternative selectors
+      const hasAlternatives = (step.selectors && step.selectors.length > 1) || 
+                              (step.errorHandling?.fallbackSelectors && step.errorHandling.fallbackSelectors.length > 0);
       
-      // Check skip conditions using Magnitude
-      if (step.skipConditions && Array.isArray(step.skipConditions)) {
-        const currentUrl = await this.getCurrentUrl();
-        
-        for (const condition of step.skipConditions) {
-          if (condition.type === 'url_match' && currentUrl.includes(condition.value)) {
-            console.log(`⏭️ Skipping step: ${condition.skipReason || 'URL condition matched'}`);
-            this.executionStats.skippedSteps++;
-            
-            return {
-              success: true,
-              skipped: true,
-              skipReason: condition.skipReason || `URL matches ${condition.value}`,
-              executionMethod: 'snippet'
-            };
+      const retriesToAttempt = hasAlternatives ? 1 : maxRetries; // If we have alternatives, only try once
+      
+      while (attempts < retriesToAttempt) {
+        attempts++;
+        try {
+          result = await this.executeWithSnippet(step, variables);
+          if (result.success) {
+            return result;
+          }
+        } catch (error) {
+          lastError = error as Error;
+          console.log(`Snippet execution failed: ${lastError.message}`);
+          if (attempts < retriesToAttempt) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
           }
         }
       }
-
-      // Try snippet first if available
-      let result: ExecutionResult;
-      if (step.snippet || step.prefer === 'snippet') {
-        result = await this.executeWithSnippet(step, variables);
-      } else if (step.ai_instruction || step.prefer === 'ai') {
-        result = await this.executeWithAI(step, variables);
-      } else {
-        result = await this.executeWithSnippet(step, variables);
-      }
-
-      // If snippet failed and we have AI fallback, try AI
-      if (!result.success && step.fallback === 'ai' && step.ai_instruction) {
-        console.log(`🔄 Snippet failed, falling back to AI...`);
-        result = await this.executeWithAI(step, variables);
-      }
-
-      // Update statistics
-      if (result.success) {
-        if (result.executionMethod === 'ai') {
-          this.executionStats.aiSuccess++;
-        } else if (result.executionMethod === 'snippet') {
-          this.executionStats.snippetSuccess++;
-        }
-      } else {
-        if (result.executionMethod === 'ai') {
-          this.executionStats.aiFailure++;
-        } else {
-          this.executionStats.snippetFailure++;
-        }
-      }
-
-      return result;
-    } catch (error) {
-      console.error(`❌ Step execution failed: ${error}`);
-      this.executionStats.snippetFailure++;
-      
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
     }
+
+    // Fallback to AI if snippet failed and fallback is enabled
+    console.log('🔍 Checking AI fallback conditions:');
+    console.log('  - fallbackToAI:', fallbackToAI);
+    console.log('  - step.fallback:', step.fallback);
+    console.log('  - step.ai_instruction exists:', !!step.ai_instruction);
+    console.log('  - All retries exhausted:', attempts >= maxRetries);
+    
+    if (fallbackToAI && step.fallback === 'ai' && step.ai_instruction) {
+      console.log('🤖 Preparing for AI fallback...');
+      
+      try {
+        // Initialize AI executor if not already done
+        if (!this.aiExecutor) {
+          this.aiExecutor = new AutonomousAIExecutor();
+        }
+
+        // Create failure context for AI (matching the expected interface)
+        const failureContext: FailureContext = {
+          step: {
+            name: step.name,
+            snippet: step.snippet,
+            aiInstruction: step.ai_instruction,
+            selectors: step.selectors || [],
+            value: step.value
+          },
+          error: {
+            message: lastError?.message || 'Snippet execution failed',
+            type: 'snippet_failure'
+          },
+          attemptedSelectors: step.selectors || [],
+          currentPageState: await this.getPageState(),
+          previousAttempts: []
+        };
+
+        // Execute with AI using Magnitude's act() function
+        // Replace variables with actual values in the AI instruction
+        let aiInstruction = step.ai_instruction.replace(/{{(\w+)}}/g, (match, key) => {
+          return variables[key] || match;
+        });
+        
+        // For fill actions, make sure to include the actual value in the instruction
+        if (step.value) {
+          const actualValue = step.value.replace(/{{(\w+)}}/g, (match, key) => {
+            return variables[key] || match;
+          });
+          aiInstruction = `${aiInstruction} The value to enter is: "${actualValue}"`;
+        }
+        
+        // CRITICAL: For AI, we still need Magnitude but we should ensure
+        // it's operating on the correct page context
+        console.log('🤖 Executing AI instruction on WebView page:', aiInstruction);
+        
+        // Ensure we're on the right page before AI execution
+        if (this.playwrightPage) {
+          // Make sure the WebView page is focused
+          await this.playwrightPage.bringToFront();
+        }
+        
+        const aiResult = await this.magnitudeAgent.act(aiInstruction);
+
+        // Magnitude's act() doesn't return success/failure, it just executes
+        // If we get here without throwing, consider it successful
+        return {
+          success: true,
+          action: step.ai_instruction,
+          method: 'ai'
+        };
+      } catch (aiError) {
+        console.error('AI fallback failed:', aiError);
+        lastError = aiError as Error;
+      }
+    }
+
+    // If everything failed, return failure
+    return {
+      success: false,
+      error: lastError?.message || 'Step execution failed',
+      needsRetry: false
+    };
   }
 
   /**
-   * Execute step using Magnitude with Playwright snippet
+   * Execute a step using direct Playwright with intelligent validation
    */
   private async executeWithSnippet(
     step: any,
     variables: Record<string, string>
-  ): Promise<ExecutionResult> {
-    // Replace variables in snippet
-    let snippetToExecute = step.snippet || '';
-    for (const [key, value] of Object.entries(variables)) {
-      snippetToExecute = snippetToExecute.replace(new RegExp(`{{${key}}}`, 'g'), value);
+  ): Promise<StepResult> {
+    // Get Magnitude's underlying Playwright page
+    const page = this.magnitudeAgent.page;
+    if (!page) {
+      throw new Error('No Playwright page available from Magnitude');
     }
 
+    // Replace variables in snippet
+    let snippetToExecute = step.snippet;
+    if (snippetToExecute && variables) {
+      Object.entries(variables).forEach(([key, value]) => {
+        snippetToExecute = snippetToExecute.replace(new RegExp(`{{${key}}}`, 'g'), value);
+      });
+    }
+
+    console.log(`⚡ Executing snippet DIRECTLY with validation: ${snippetToExecute.substring(0, 100)}...`);
+
+    // For fill and click operations, try alternative selectors if the first fails
+    if (snippetToExecute.includes('page.fill(') || snippetToExecute.includes('page.click(')) {
+      // Get all possible selectors
+      const selectors = step.selectors || [];
+      const fallbackSelectors = step.errorHandling?.fallbackSelectors || [];
+      const allSelectors = [...new Set([...selectors, ...fallbackSelectors])]; // Remove duplicates
+      
+      // Extract the value for fill operations
+      const fillMatch = snippetToExecute.match(/(?:await\s+)?page\.fill\(['"](.+?)['"],\s*['"](.+?)['"]\)/);
+      const clickMatch = snippetToExecute.match(/(?:await\s+)?page\.click\(['"](.+?)['"]\)/);
+      
+      if (fillMatch && allSelectors.length > 0) {
+        const valueToFill = fillMatch[2];
+        console.log(`🔄 Trying ${allSelectors.length} selectors for fill operation...`);
+        
+        // Try each selector ONCE with validation
+        for (const selector of allSelectors) {
+          try {
+            console.log(`  → Trying selector: ${selector}`);
+            
+            // Check element exists and is visible before filling
+            const element = await page.locator(selector).first();
+            if (!await element.isVisible({ timeout: 1000 })) {
+              throw new Error('Element not visible');
+            }
+            
+            // Execute the fill
+            await page.fill(selector, valueToFill, { timeout: 5000 });
+            
+            // Validate the fill worked
+            const actualValue = await element.inputValue();
+            if (actualValue !== valueToFill) {
+              throw new Error(`Validation failed: expected "${valueToFill}", got "${actualValue}"`);
+            }
+            
+            console.log(`  ✓ Success with selector: ${selector} (validated)`);
+            return {
+              success: true,
+              action: `page.fill('${selector}', '${valueToFill}')`,
+              method: 'snippet'
+            };
+          } catch (error) {
+            console.log(`  ✗ Failed with selector ${selector}: ${error.message}`);
+            // Continue to next selector
+          }
+        }
+        
+        // All selectors failed - fall back to Magnitude AI
+        console.log(`❌ All selectors failed validation. Falling back to Magnitude AI...`);
+        return await this.executeWithMagnitudeAI(step, variables, 'fill');
+        
+      } else if (clickMatch && allSelectors.length > 0) {
+        console.log(`🔄 Trying ${allSelectors.length} selectors for click operation...`);
+        
+        // Try each selector ONCE with validation
+        for (const selector of allSelectors) {
+          try {
+            console.log(`  → Trying selector: ${selector}`);
+            
+            // Check element exists and is clickable before clicking
+            const element = await page.locator(selector).first();
+            if (!await element.isVisible({ timeout: 1000 })) {
+              throw new Error('Element not visible');
+            }
+            if (!await element.isEnabled({ timeout: 1000 })) {
+              throw new Error('Element not enabled');
+            }
+            
+            // Store current URL to detect navigation
+            const urlBefore = page.url();
+            
+            // Execute the click
+            await page.click(selector, { timeout: 5000 });
+            
+            // Basic validation - wait a bit to see if action had effect
+            await page.waitForTimeout(500);
+            
+            // Check if navigation occurred or element state changed
+            const urlAfter = page.url();
+            const navigationOccurred = urlBefore !== urlAfter;
+            
+            console.log(`  ✓ Success with selector: ${selector} (${navigationOccurred ? 'navigated' : 'clicked'})`);
+            return {
+              success: true,
+              action: `page.click('${selector}')`,
+              method: 'snippet'
+            };
+          } catch (error) {
+            console.log(`  ✗ Failed with selector ${selector}: ${error.message}`);
+            // Continue to next selector
+          }
+        }
+        
+        // All selectors failed - fall back to Magnitude AI
+        console.log(`❌ All selectors failed validation. Falling back to Magnitude AI...`);
+        return await this.executeWithMagnitudeAI(step, variables, 'click');
+      }
+    }
+
+    // For other operations, execute directly with basic validation
     try {
-      console.log(`📝 Executing snippet via Magnitude: ${snippetToExecute.substring(0, 100)}...`);
+      if (snippetToExecute.includes('page.goto(')) {
+        const urlMatch = snippetToExecute.match(/(?:await\s+)?page\.goto\(['"](.+?)['"]/);
+        if (urlMatch) {
+          await page.goto(urlMatch[1], { waitUntil: 'domcontentloaded', timeout: 30000 });
+          // Validate navigation succeeded
+          const currentUrl = page.url();
+          if (!currentUrl.includes(urlMatch[1].split('#')[0].split('?')[0])) {
+            throw new Error(`Navigation validation failed: expected to reach ${urlMatch[1]}, but at ${currentUrl}`);
+          }
+        }
+      } else if (snippetToExecute.includes('page.fill(')) {
+        const fillMatch = snippetToExecute.match(/(?:await\s+)?page\.fill\(['"](.+?)['"],\s*['"](.+?)['"]\)/);
+        if (fillMatch) {
+          await page.fill(fillMatch[1], fillMatch[2]);
+          // Validate fill
+          const actualValue = await page.locator(fillMatch[1]).inputValue();
+          if (actualValue !== fillMatch[2]) {
+            throw new Error(`Fill validation failed: expected "${fillMatch[2]}", got "${actualValue}"`);
+          }
+        }
+      } else if (snippetToExecute.includes('page.click(')) {
+        const clickMatch = snippetToExecute.match(/(?:await\s+)?page\.click\(['"](.+?)['"]\)/);
+        if (clickMatch) {
+          await page.click(clickMatch[1]);
+        }
+      } else if (snippetToExecute.includes('page.waitForSelector(')) {
+        const waitMatch = snippetToExecute.match(/(?:await\s+)?page\.waitForSelector\(['"](.+?)['"]\)/);
+        if (waitMatch) {
+          await page.waitForSelector(waitMatch[1], { timeout: 5000 });
+        }
+      } else {
+        // For other snippets, evaluate them directly
+        await eval(`(async () => { const page = this.magnitudeAgent.page; ${snippetToExecute} })()`);
+      }
       
-      // Execute the Playwright snippet through Magnitude's act() function
-      const result = await this.magnitudeAgent.act(snippetToExecute);
-      
-      console.log(`✅ Magnitude executed snippet successfully`);
+      console.log('✅ Snippet executed successfully with validation');
       
       return {
         success: true,
-        data: result,
-        executionMethod: 'snippet'
+        action: snippetToExecute,
+        method: 'snippet'
       };
+    } catch (error) {
+      console.error('❌ Snippet execution failed validation:', error.message);
+      // Fall back to Magnitude AI
+      console.log('🤖 Falling back to Magnitude AI...');
+      return await this.executeWithMagnitudeAI(step, variables, 'general');
+    }
+  }
 
-    } catch (error: any) {
-      console.log(`❌ Snippet execution failed: ${error.message}`);
+  /**
+   * Execute using Magnitude AI as fallback when direct execution fails
+   */
+  private async executeWithMagnitudeAI(
+    step: any,
+    variables: Record<string, string>,
+    actionType: 'fill' | 'click' | 'general'
+  ): Promise<StepResult> {
+    console.log(`🤖 Using Magnitude AI to handle: ${step.ai_instruction || step.name}`);
+    
+    // Build natural language instruction from the step
+    let instruction = step.ai_instruction || step.name;
+    
+    // Add context about what we're trying to do
+    if (actionType === 'fill' && variables) {
+      Object.entries(variables).forEach(([key, value]) => {
+        instruction = instruction.replace(new RegExp(`{{${key}}}`, 'g'), value);
+      });
+    }
+    
+    try {
+      // Use Magnitude's natural language understanding
+      await this.magnitudeAgent.act(instruction);
       
-      // If snippet fails and we have AI fallback, prepare for AI
-      if (step.fallback === 'ai') {
-        console.log('🤖 Preparing for AI fallback...');
-        
-        // Check if this is an element not found error
-        const isElementMissing = error.message?.includes('Timeout') || 
-                                error.message?.includes('waiting for locator') ||
-                                error.message?.includes('not found');
-        
-        if (isElementMissing && step.selectors && step.selectors.length > 0) {
-          console.log('📍 Elements not found, will use AI to navigate...');
-          
-          // First try to get AI to navigate to the right place
-          const navigationInstruction = 
-            `The element "${step.selectors[0]}" is not present on the current page. ` +
-            `Navigate to where this element would exist. ` +
-            `For login fields: Look for and click Sign In/Login buttons. ` +
-            `Once on the correct page with the element visible, stop.`;
-          
-          try {
-            await this.magnitudeAgent.act(navigationInstruction);
-            console.log('✅ AI navigation completed, retrying snippet...');
-            
-            // Retry the original snippet
-            const retryResult = await this.magnitudeAgent.act(snippetToExecute);
-            return {
-              success: true,
-              data: retryResult,
-              executionMethod: 'hybrid'
-            };
-          } catch (retryError) {
-            console.log('❌ Snippet still failed after navigation');
-          }
-        }
-      }
-      
+      console.log('✅ Magnitude AI successfully handled the action');
+      return {
+        success: true,
+        action: instruction,
+        method: 'ai'
+      };
+    } catch (error) {
+      console.error('❌ Magnitude AI also failed:', error.message);
       throw error;
     }
   }
 
   /**
-   * Execute step using Magnitude with AI instruction
+   * Get current page state for AI context
    */
-  private async executeWithAI(
-    step: any,
-    variables: Record<string, string>
-  ): Promise<ExecutionResult> {
-    try {
-      // Build AI instruction with variable replacement
-      let instruction = step.ai_instruction || step.aiInstruction || '';
-      for (const [key, value] of Object.entries(variables)) {
-        instruction = instruction.replace(new RegExp(`{{${key}}}`, 'g'), value);
-      }
-      
-      console.log(`🤖 Executing via Magnitude AI: ${instruction}`);
-      
-      // Execute using Magnitude's AI capabilities
-      const result = await this.magnitudeAgent.act(instruction);
-      
-      console.log(`✅ AI execution completed successfully`);
-      
+  private async getPageState(): Promise<any> {
+    if (!this.magnitudeAgent || !this.magnitudeAgent.page) {
       return {
-        success: true,
-        data: result,
-        executionMethod: 'ai'
-      };
-    } catch (error) {
-      console.error('❌ AI execution failed:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'AI execution failed',
-        executionMethod: 'ai'
+        url: 'unknown',
+        title: 'unknown',
+        hasLoginForm: false
       };
     }
-  }
 
-  /**
-   * Get current URL using Magnitude
-   */
-  private async getCurrentUrl(): Promise<string> {
     try {
-      // Use Magnitude's page property to get URL
-      if (this.magnitudeAgent && this.magnitudeAgent.page) {
-        return await this.magnitudeAgent.page.url();
-      }
-      return '';
-    } catch (error) {
-      console.error('Failed to get current URL:', error);
-      return '';
-    }
-  }
-
-  /**
-   * Get current page title using Magnitude
-   */
-  private async getCurrentTitle(): Promise<string> {
-    try {
-      // Use Magnitude's page property to get title
-      if (this.magnitudeAgent && this.magnitudeAgent.page) {
-        return await this.magnitudeAgent.page.title();
-      }
-      return '';
-    } catch (error) {
-      console.error('Failed to get current title:', error);
-      return '';
-    }
-  }
-
-  /**
-   * Check if element exists using Magnitude
-   */
-  private async checkElementExists(selector: string): Promise<boolean> {
-    try {
-      if (this.magnitudeAgent && this.magnitudeAgent.page) {
-        const count = await this.magnitudeAgent.page.locator(selector).count();
-        return count > 0;
-      }
-      return false;
-    } catch (error) {
-      console.error('Failed to check element:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Navigate to URL using Magnitude
-   */
-  public async navigateToUrl(url: string): Promise<boolean> {
-    try {
-      if (!this.magnitudeAgent) {
-        console.error('Magnitude agent not initialized');
-        return false;
-      }
+      const page = this.magnitudeAgent.page;
+      const url = await page.url();
+      const title = await page.title();
       
-      console.log(`🌐 Navigating to: ${url}`);
+      // Check for common login elements
+      const hasLoginForm = await page.locator('input[type="email"], input[type="password"], #LOGIN_ID').count() > 0;
+      
+      return {
+        url,
+        title,
+        hasLoginForm
+      };
+    } catch (error) {
+      console.error('Failed to get page state:', error);
+      return {
+        url: 'error',
+        title: 'error',
+        hasLoginForm: false
+      };
+    }
+  }
+
+  /**
+   * Navigate to a URL using Magnitude
+   */
+  public async navigate(url: string): Promise<boolean> {
+    if (!this.isConnected || !this.magnitudeAgent) {
+      console.error('Not connected to WebView');
+      return false;
+    }
+
+    try {
       await this.magnitudeAgent.nav(url);
-      console.log('✅ Navigation completed');
+      console.log(`📍 Navigated to: ${url}`);
       return true;
     } catch (error) {
       console.error('Navigation failed:', error);
@@ -320,16 +527,54 @@ export class MagnitudeOnlyController {
   }
 
   /**
-   * Get execution statistics
+   * Disconnect and cleanup
    */
-  public getExecutionStats() {
-    return { ...this.executionStats };
+  public async disconnect(): Promise<void> {
+    this.isConnected = false;
+    this.magnitudeAgent = null;
+    this.webView = null;
+    if (this.aiExecutor) {
+      this.aiExecutor = null;
+    }
+    console.log('🔌 Disconnected from WebView');
   }
 
   /**
-   * Get the Magnitude agent
+   * Check if connected
    */
-  public getMagnitudeAgent(): any {
-    return this.magnitudeAgent;
+  public isReady(): boolean {
+    return this.isConnected && this.magnitudeAgent !== null;
+  }
+
+  /**
+   * Get execution logs
+   */
+  public getExecutionLogs(): any[] {
+    return this.executionLogs;
+  }
+
+  /**
+   * Reset stats (for compatibility)
+   */
+  public resetStats(): void {
+    this.executionLogs = [];
+  }
+
+  /**
+   * Get Playwright page (for compatibility - returns the WebView-specific page)
+   */
+  public getPlaywrightPage(): any {
+    return this.playwrightPage || this.magnitudeAgent?.page || null;
+  }
+
+  /**
+   * Get execution stats (for compatibility)
+   */
+  public getExecutionStats(): any {
+    return {
+      totalSteps: this.executionLogs.length,
+      successfulSteps: this.executionLogs.filter(log => log.success).length,
+      failedSteps: this.executionLogs.filter(log => !log.success).length
+    };
   }
 }

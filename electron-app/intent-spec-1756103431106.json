@@ -1,0 +1,402 @@
+{
+  "name": "Zoho Profile Personal Information Update",
+  "description": "Updates personal profile information in Zoho Accounts profile section",
+  "url": "https://accounts.zoho.com/home#profile/personal",
+  "params": [
+    "LOGIN_ID",
+    "PASSWORD",
+    "PROFILE_LNAME"
+  ],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "",
+    "cookies": true,
+    "localStorage": true
+  },
+  "skipNavigationStates": [
+    "authenticated",
+    "dashboard",
+    "profile"
+  ],
+  "steps": [
+    {
+      "name": "Navigate to Zoho Accounts",
+      "ai_instruction": "Navigate to Zoho Accounts login page if not already authenticated",
+      "snippet": "await page.goto('https://accounts.zoho.com/home#profile/personal');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "body",
+        ".zlogin-page",
+        "#login-form",
+        "[data-testid='login-container']"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "body",
+          "required": true,
+          "alternativeSelectors": [
+            "html",
+            "head"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "skipConditions": [
+        {
+          "type": "url_match",
+          "value": "accounts.zoho.com/home",
+          "skipReason": "Already on Zoho accounts page"
+        },
+        {
+          "type": "element_exists",
+          "value": ".profile-section, #profile-container, .user-profile",
+          "skipReason": "Already authenticated and on profile page"
+        }
+      ],
+      "waitAfter": {
+        "type": "network",
+        "condition": "networkidle",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "accounts.zoho.com",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": [
+          "body",
+          "html"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Login to Zoho Account",
+      "ai_instruction": "Enter login credentials if login form is present",
+      "snippet": "if (await page.locator('#login_id, [name=\"LOGIN_ID\"], .login-email').isVisible()) { await page.fill('#login_id, [name=\"LOGIN_ID\"], .login-email', '{{LOGIN_ID}}'); await page.fill('#password, [name=\"password\"], .login-password', '{{PASSWORD}}'); await page.click('#signin_submit, .login-button, [type=\"submit\"]'); }",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#login_id",
+        "[name='LOGIN_ID']",
+        ".login-email",
+        "[placeholder*='email']",
+        "[type='email']"
+      ],
+      "value": "{{LOGIN_ID}}",
+      "preFlightChecks": [
+        {
+          "selector": "#login_id",
+          "required": false,
+          "alternativeSelectors": [
+            "[name='LOGIN_ID']",
+            ".login-email",
+            "[type='email']"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "skipConditions": [
+        {
+          "type": "element_exists",
+          "value": ".profile-section, #profile-container, .user-menu, #logout-btn",
+          "skipReason": "Already logged in"
+        },
+        {
+          "type": "url_match",
+          "value": "home#profile",
+          "skipReason": "Already authenticated"
+        }
+      ],
+      "waitAfter": {
+        "type": "network",
+        "condition": "networkidle",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "element",
+        "expected": ".profile-section, .user-menu, #logout-btn",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": [
+          "[name='LOGIN_ID']",
+          ".login-email",
+          "[type='email']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 8000,
+        "maxDuration": 20000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Navigate to Personal Profile Section",
+      "ai_instruction": "Click on the personal profile section or navigate to personal information tab",
+      "snippet": "await page.click('.profile-personal, #profile-personal, [data-tab=\"personal\"], .personal-info-tab');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        ".profile-personal",
+        "#profile-personal",
+        "[data-tab='personal']",
+        ".personal-info-tab",
+        "text=Personal",
+        "[aria-label*='personal']",
+        "//a[contains(text(), 'Personal')]"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": ".profile-personal",
+          "required": true,
+          "alternativeSelectors": [
+            "#profile-personal",
+            "[data-tab='personal']",
+            ".personal-info-tab"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "skipConditions": [
+        {
+          "type": "url_match",
+          "value": "#profile/personal",
+          "skipReason": "Already on personal profile section"
+        }
+      ],
+      "waitBefore": {
+        "type": "element",
+        "condition": ".profile-section:visible",
+        "timeout": 5000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": ".personal-form:visible, .edit-profile:visible",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "#profile/personal",
+        "screenshot": false,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": false,
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": [
+          "#profile-personal",
+          "[data-tab='personal']",
+          ".personal-info-tab"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Edit Last Name Field",
+      "ai_instruction": "Click on the last name field and enter the new last name value",
+      "snippet": "await page.fill('#profile_Lname_edit, [name=\"lastName\"], .lastname-input, [data-field=\"lastName\"]', '{{PROFILE_LNAME}}');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#profile_Lname_edit",
+        "[name='lastName']",
+        ".lastname-input",
+        "[data-field='lastName']",
+        "[placeholder*='last name']",
+        "[aria-label*='last name']",
+        "//input[contains(@name, 'lastName')]"
+      ],
+      "value": "{{PROFILE_LNAME}}",
+      "preFlightChecks": [
+        {
+          "selector": "#profile_Lname_edit",
+          "required": true,
+          "alternativeSelectors": [
+            "[name='lastName']",
+            ".lastname-input",
+            "[data-field='lastName']"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "waitBefore": {
+        "type": "element",
+        "condition": "#profile_Lname_edit:visible",
+        "timeout": 3000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": 1000,
+        "timeout": 1000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "#profile_Lname_edit[value*='Fuller']",
+        "screenshot": false,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "clear_and_type",
+        "fallbackSelectors": [
+          "[name='lastName']",
+          ".lastname-input",
+          "[data-field='lastName']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 2000,
+        "maxDuration": 8000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Save Profile Changes",
+      "ai_instruction": "Click the save or update button to save the profile changes",
+      "snippet": "await page.click('.save-profile, #save-btn, [type=\"submit\"], .update-profile, .btn-save');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        ".save-profile",
+        "#save-btn",
+        "[type='submit']",
+        ".update-profile",
+        ".btn-save",
+        "text=Save",
+        "text=Update",
+        "[aria-label*='save']",
+        "//button[contains(text(), 'Save')]"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": ".save-profile",
+          "required": true,
+          "alternativeSelectors": [
+            "#save-btn",
+            "[type='submit']",
+            ".update-profile"
+          ],
+          "waitFor": "enabled",
+          "timeout": 5000
+        }
+      ],
+      "waitAfter": {
+        "type": "network",
+        "condition": "networkidle",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "element",
+        "expected": ".success-message, .profile-saved, .alert-success",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": [
+          "#save-btn",
+          "[type='submit']",
+          ".update-profile",
+          ".btn-save"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000,
+        "fallbackToAI": true
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "screenshotValidation": {
+    "enabled": true,
+    "threshold": 80,
+    "checkpoints": [
+      "after-login",
+      "after-profile-update",
+      "final"
+    ],
+    "ignoreRegions": [
+      ".timestamp",
+      ".dynamic-content",
+      ".notification"
+    ],
+    "compareMode": "structural"
+  },
+  "validations": [
+    {
+      "step": "after-login",
+      "check": "element",
+      "expected": ".profile-section, .user-menu"
+    },
+    {
+      "step": "after-profile-update",
+      "check": "element",
+      "expected": ".success-message, .profile-saved"
+    },
+    {
+      "step": "final",
+      "check": "screenshot",
+      "expected": "matches_recording",
+      "threshold": 85
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3,
+    "fallbackToManual": false
+  },
+  "performance": {
+    "totalExpectedDuration": 45728,
+    "criticalPath": [
+      "Navigate to Zoho Accounts",
+      "Edit Last Name Field",
+      "Save Profile Changes"
+    ],
+    "slowStepThreshold": 10000
+  }
+}

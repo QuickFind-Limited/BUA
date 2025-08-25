@@ -208,8 +208,7 @@ export class WebContentsTabManager extends EventEmitter {
       this.recordingController = new EnhancedRecordingController();
       
       // Connect to the WebContentsView via CDP
-      const sessionId = `enhanced-${Date.now()}`;
-      await this.recordingController.startRecording(
+      const sessionId = await this.recordingController.startRecording(
         activeTab.view as any,
         activeTab.url
       );
@@ -283,6 +282,36 @@ export class WebContentsTabManager extends EventEmitter {
 
     } catch (error: any) {
       return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Process enhanced action from injected script
+   */
+  public processEnhancedAction(action: any): boolean {
+    try {
+      if (!this.recordingController) {
+        console.warn('No recording controller available to process action');
+        return false;
+      }
+      
+      // Forward the action to the recording controller
+      const recorder = this.recordingController as any;
+      if (recorder.session && recorder.recordingState?.isRecording) {
+        // Add the action to the session
+        recorder.session.actions.push(action);
+        console.log(`📝 Recorded action: ${action.type} on ${action.selector || 'element'}`);
+        
+        // Emit event for UI updates
+        this.emit('action-recorded', action);
+        return true;
+      } else {
+        console.warn('Recording not active, action ignored');
+        return false;
+      }
+    } catch (error: any) {
+      console.error('Error processing enhanced action:', error);
+      return false;
     }
   }
 

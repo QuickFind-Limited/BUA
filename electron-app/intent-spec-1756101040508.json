@@ -1,0 +1,201 @@
+{
+  "name": "Google Homepage Navigation",
+  "description": "Navigate to Google homepage and wait for page load",
+  "url": "https://www.google.com/?zx=1756100965412&no_sw_cr=1",
+  "params": [],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "Not captured",
+    "cookies": false,
+    "localStorage": false
+  },
+  "skipNavigationStates": [],
+  "steps": [
+    {
+      "name": "Navigate to Google Homepage",
+      "ai_instruction": "Navigate to Google homepage and wait for the page to fully load",
+      "snippet": "await page.goto('https://www.google.com/?zx=1756100965412&no_sw_cr=1'); await page.waitForLoadState('networkidle');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[title='Google']",
+        "[alt='Google']",
+        ".logo",
+        "#hplogo",
+        "img[src*='logo']",
+        "[role='img'][alt*='Google']",
+        "//img[contains(@alt, 'Google')]",
+        "text=Google"
+      ],
+      "value": null,
+      "preFlightChecks": [
+        {
+          "selector": "body",
+          "required": true,
+          "alternativeSelectors": [
+            "html",
+            "head"
+          ],
+          "waitFor": "visible",
+          "timeout": 10000
+        }
+      ],
+      "skipConditions": [
+        {
+          "type": "url_match",
+          "value": "google.com",
+          "skipReason": "Already on Google homepage"
+        }
+      ],
+      "waitBefore": {
+        "type": "time",
+        "condition": "500",
+        "timeout": 500
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "networkidle",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "google.com",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": [
+          "body",
+          "html",
+          "[title='Google']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Wait for page completion",
+      "ai_instruction": "Wait for Google homepage to fully load and become interactive",
+      "snippet": "await page.waitForSelector('[title=\"Google\"]', {state: 'visible', timeout: 10000}); await page.waitForLoadState('domcontentloaded');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[title='Google']",
+        "#hplogo",
+        ".logo",
+        "[alt='Google']",
+        "input[name='q']",
+        "[role='search']",
+        "//img[@alt='Google']",
+        "text=Google Search"
+      ],
+      "value": null,
+      "preFlightChecks": [
+        {
+          "selector": "[title='Google']",
+          "required": true,
+          "alternativeSelectors": [
+            "#hplogo",
+            ".logo",
+            "[alt='Google']"
+          ],
+          "waitFor": "visible",
+          "timeout": 10000
+        }
+      ],
+      "skipConditions": [],
+      "waitBefore": {
+        "type": "element",
+        "condition": "visible",
+        "timeout": 5000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "domcontentloaded",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "[title='Google']",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": false,
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": [
+          "#hplogo",
+          ".logo",
+          "[alt='Google']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 3000,
+        "maxDuration": 10000,
+        "fallbackToAI": true
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "screenshotValidation": {
+    "enabled": true,
+    "threshold": 80,
+    "checkpoints": [
+      "after-navigation",
+      "final"
+    ],
+    "ignoreRegions": [
+      ".timestamp",
+      ".dynamic-content",
+      "[data-time]"
+    ],
+    "compareMode": "structural"
+  },
+  "validations": [
+    {
+      "step": "after-navigation",
+      "check": "url",
+      "expected": "google.com"
+    },
+    {
+      "step": "final",
+      "check": "screenshot",
+      "expected": "matches_recording",
+      "threshold": 85
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3,
+    "fallbackToManual": false
+  },
+  "performance": {
+    "totalExpectedDuration": 51683,
+    "criticalPath": [
+      "Navigate to Google Homepage",
+      "Wait for page completion"
+    ],
+    "slowStepThreshold": 10000
+  }
+}

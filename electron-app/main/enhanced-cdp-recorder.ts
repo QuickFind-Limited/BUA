@@ -92,7 +92,17 @@ export class EnhancedCDPRecorder extends EventEmitter {
       await this.cdpSession.sendCommand('DOM.enable');
       await this.cdpSession.sendCommand('Page.enable');
       await this.cdpSession.sendCommand('Network.enable');
-      await this.cdpSession.sendCommand('Input.enable');
+      
+      // Note: Input.enable may not work with WebView, so we inject scripts instead
+      try {
+        await this.cdpSession.sendCommand('Input.enable');
+      } catch (error) {
+        console.log('⚠️ Input domain not available, will use injected event listeners');
+      }
+
+      // Inject script to capture user interactions since Input domain doesn't work
+      await this.injectRecordingScript();
+      console.log('✅ Injected event capture script');
 
       // Get page information
       const url = webContents.getURL();
@@ -347,9 +357,14 @@ export class EnhancedCDPRecorder extends EventEmitter {
             ...extra
           };
           
+          console.log('🎯 Recording action:', type, action.selector);
+          
           // Send to main process
           if (window.electronAPI && window.electronAPI.recordEnhancedAction) {
+            console.log('📤 Sending action to main process');
             window.electronAPI.recordEnhancedAction(action);
+          } else {
+            console.error('❌ window.electronAPI.recordEnhancedAction not available!');
           }
         }
         
@@ -423,7 +438,9 @@ export class EnhancedCDPRecorder extends EventEmitter {
       })();
     `;
 
+    console.log('💉 Injecting enhanced recording script to capture user actions...');
     await this.webView.webContents.executeJavaScript(script);
+    console.log('✅ Enhanced recording script injected successfully');
   }
 
   /**

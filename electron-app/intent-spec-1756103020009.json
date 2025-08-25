@@ -1,0 +1,441 @@
+{
+  "name": "Google Search Navigation",
+  "description": "Navigate to Google homepage and perform basic interactions",
+  "url": "https://www.google.com/?zx=1756102914666&no_sw_cr=1",
+  "params": [],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "",
+    "cookies": false,
+    "localStorage": false
+  },
+  "skipNavigationStates": [],
+  "steps": [
+    {
+      "name": "Navigate to Google",
+      "ai_instruction": "Navigate to Google homepage and wait for page to load completely",
+      "snippet": "await page.goto('https://www.google.com/?zx=1756102914666&no_sw_cr=1');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "[name='q']",
+        "#APjFqb",
+        ".gLFyf",
+        "[title='Search']",
+        "input[type='text']",
+        "[aria-label='Search']",
+        "[role='combobox']",
+        "//input[@name='q']"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "[name='q']",
+          "required": true,
+          "alternativeSelectors": [
+            "#APjFqb",
+            ".gLFyf"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "skipConditions": [],
+      "waitBefore": {
+        "type": "network",
+        "condition": "networkidle",
+        "timeout": 10000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "[name='q']",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "google.com",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": [
+          "#APjFqb",
+          ".gLFyf",
+          "[title='Search']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "First Click Interaction",
+      "ai_instruction": "Perform the first click interaction on the Google homepage",
+      "snippet": "await page.click('[data-ved]:visible');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "[data-ved]",
+        ".gb_d",
+        ".gb_C",
+        "[role='button']",
+        "a[href*='accounts.google.com']",
+        ".gb_Aa",
+        "[aria-label*='Google']",
+        "//div[@data-ved]"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "[data-ved]",
+          "required": true,
+          "alternativeSelectors": [
+            ".gb_d",
+            ".gb_C"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "skipConditions": [],
+      "waitBefore": {
+        "type": "element",
+        "condition": "[data-ved]:visible",
+        "timeout": 3000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "1266",
+        "timeout": 2000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "clickable_element_found",
+        "screenshot": false,
+        "continueOnFailure": true
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": true,
+        "alternativeAction": "find_alternative_element",
+        "fallbackSelectors": [
+          ".gb_d",
+          ".gb_C",
+          "[role='button']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 1266,
+        "maxDuration": 5000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Second Click Interaction",
+      "ai_instruction": "Perform the second click interaction",
+      "snippet": "await page.click(':visible >> nth=1');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "[role='button']:nth-child(2)",
+        ".gb_C:nth-child(2)",
+        "[data-ved]:nth-child(2)",
+        "a:nth-child(2)",
+        ".gb_d:nth-child(2)",
+        "[tabindex='0']:nth-child(2)",
+        "button:nth-child(2)",
+        "//button[2]"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "[role='button']",
+          "required": true,
+          "alternativeSelectors": [
+            ".gb_C",
+            "[data-ved]"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "skipConditions": [],
+      "waitBefore": {
+        "type": "time",
+        "condition": "1000",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "1000",
+        "timeout": 2000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "interaction_completed",
+        "screenshot": false,
+        "continueOnFailure": true
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": true,
+        "alternativeAction": "skip_step",
+        "fallbackSelectors": [
+          ".gb_C",
+          "[data-ved]",
+          "a"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 1000,
+        "maxDuration": 4000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Third Click Interaction",
+      "ai_instruction": "Perform the third click interaction",
+      "snippet": "await page.click(':visible >> nth=2');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "[role='button']:nth-child(3)",
+        ".gb_C:nth-child(3)",
+        "[data-ved]:nth-child(3)",
+        "a:nth-child(3)",
+        ".gb_d:nth-child(3)",
+        "[tabindex='0']:nth-child(3)",
+        "button:nth-child(3)",
+        "//button[3]"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "[role='button']",
+          "required": true,
+          "alternativeSelectors": [
+            ".gb_C",
+            "[data-ved]"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "skipConditions": [],
+      "waitBefore": {
+        "type": "time",
+        "condition": "1000",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "3350",
+        "timeout": 4000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "interaction_completed",
+        "screenshot": false,
+        "continueOnFailure": true
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": true,
+        "alternativeAction": "skip_step",
+        "fallbackSelectors": [
+          ".gb_C",
+          "[data-ved]",
+          "a"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 3350,
+        "maxDuration": 8000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Fourth Click Interaction",
+      "ai_instruction": "Perform the fourth click interaction",
+      "snippet": "await page.click(':visible >> nth=3');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "[role='button']:nth-child(4)",
+        ".gb_C:nth-child(4)",
+        "[data-ved]:nth-child(4)",
+        "a:nth-child(4)",
+        ".gb_d:nth-child(4)",
+        "[tabindex='0']:nth-child(4)",
+        "button:nth-child(4)",
+        "//button[4]"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "[role='button']",
+          "required": true,
+          "alternativeSelectors": [
+            ".gb_C",
+            "[data-ved]"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "skipConditions": [],
+      "waitBefore": {
+        "type": "time",
+        "condition": "1000",
+        "timeout": 2000
+      },
+      "waitAfter": {
+        "type": "time",
+        "condition": "3",
+        "timeout": 1000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "interaction_completed",
+        "screenshot": false,
+        "continueOnFailure": true
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 1500,
+        "skipOnError": true,
+        "alternativeAction": "skip_step",
+        "fallbackSelectors": [
+          ".gb_C",
+          "[data-ved]",
+          "a"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 3,
+        "maxDuration": 2000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Submit Action",
+      "ai_instruction": "Perform the submit action to complete the workflow",
+      "snippet": "await page.click('input[type=\"submit\"], button[type=\"submit\"], .gb_yd, [aria-label*=\"Search\"]');",
+      "prefer": "ai",
+      "fallback": "snippet",
+      "selectors": [
+        "input[type='submit']",
+        "button[type='submit']",
+        ".gb_yd",
+        "[aria-label*='Search']",
+        "[name='btnK']",
+        ".gNO89b",
+        "[value='Google Search']",
+        "//input[@type='submit']"
+      ],
+      "preFlightChecks": [
+        {
+          "selector": "input[type='submit'], button[type='submit']",
+          "required": true,
+          "alternativeSelectors": [
+            ".gb_yd",
+            "[aria-label*='Search']"
+          ],
+          "waitFor": "visible",
+          "timeout": 5000
+        }
+      ],
+      "skipConditions": [],
+      "waitBefore": {
+        "type": "element",
+        "condition": "input[type='submit']:visible",
+        "timeout": 3000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "networkidle",
+        "timeout": 10000
+      },
+      "validation": {
+        "type": "url",
+        "expected": "search_results_or_navigation",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "press_enter",
+        "fallbackSelectors": [
+          ".gb_yd",
+          "[name='btnK']",
+          ".gNO89b"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000,
+        "fallbackToAI": true
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "screenshotValidation": {
+    "enabled": true,
+    "threshold": 80,
+    "checkpoints": [
+      "after-navigation",
+      "after-submit",
+      "final"
+    ],
+    "ignoreRegions": [
+      ".timestamp",
+      ".dynamic-content",
+      "[data-ved]"
+    ],
+    "compareMode": "structural"
+  },
+  "validations": [
+    {
+      "step": "after-navigation",
+      "check": "element",
+      "expected": "[name='q']"
+    },
+    {
+      "step": "final",
+      "check": "screenshot",
+      "expected": "matches_recording",
+      "threshold": 85
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3,
+    "fallbackToManual": false
+  },
+  "performance": {
+    "totalExpectedDuration": 39698,
+    "criticalPath": [
+      "Navigate to Google",
+      "Submit Action"
+    ],
+    "slowStepThreshold": 10000
+  }
+}

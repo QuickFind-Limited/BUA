@@ -85,7 +85,10 @@ export class EnhancedFlowExecutor {
       console.log('Intent spec URL:', intentSpec.url);
       console.log('Intent spec steps[0]:', intentSpec.steps?.[0]);
       
-      if (intentSpec.url) {
+      // Skip navigation if URL is Google or looks like a placeholder
+      if (intentSpec.url && 
+          !intentSpec.url.includes('google.com') && 
+          !intentSpec.url.includes('placeholder')) {
         console.log(`📍 Navigating to initial URL: ${intentSpec.url}`);
         try {
           const page = await this.controller.getPlaywrightPage();
@@ -108,7 +111,7 @@ export class EnhancedFlowExecutor {
           // Continue with execution anyway - first step might handle navigation
         }
       } else {
-        console.log('No initial URL specified in intent spec');
+        console.log('Skipping initial URL navigation (Google/placeholder URL detected or no URL)');
       }
 
       // Execute each step with enhanced logic
@@ -303,8 +306,14 @@ export class EnhancedFlowExecutor {
     const stats = this.controller.getExecutionStats();
     const recommendations: string[] = [];
 
+    // Calculate snippet success rate
+    const snippetTotal = stats.snippetSuccess + stats.snippetFailure;
+    const snippetSuccessRate = snippetTotal > 0 
+      ? stats.snippetSuccess / snippetTotal 
+      : 1;
+
     // Analyze snippet success rate
-    if (stats.snippetSuccessRate < 0.7) {
+    if (snippetSuccessRate < 0.7) {
       recommendations.push(
         'Consider updating selectors - snippet success rate is below 70%'
       );
@@ -323,8 +332,12 @@ export class EnhancedFlowExecutor {
       );
     }
 
-    // Analyze skip rate
-    if (stats.skipRate > 0.2) {
+    // Calculate and analyze skip rate
+    const skipRate = stats.totalSteps > 0 
+      ? stats.skippedSteps / stats.totalSteps 
+      : 0;
+      
+    if (skipRate > 0.2) {
       recommendations.push(
         'Many steps are being skipped (>20%). Flow might be optimized by removing redundant steps'
       );

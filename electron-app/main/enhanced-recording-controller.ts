@@ -287,6 +287,9 @@ export class EnhancedRecordingController extends EventEmitter {
     // Initialize monitoring with performance optimization
     await this.initializeMonitoring(session);
 
+    // Inject recording script to capture user actions
+    await this.injectRecordingScript(session);
+
     // Take initial screenshot
     await this.captureStrategicScreenshot(session, 'initial');
 
@@ -684,6 +687,89 @@ export class EnhancedRecordingController extends EventEmitter {
         ? duration / activeSession.metadata.domMutationCount / 1000 
         : 0
     };
+  }
+
+  /**
+   * Inject recording script to capture user actions
+   */
+  private async injectRecordingScript(session: RecordingSession): Promise<void> {
+    if (!session.webView) return;
+
+    const script = `
+      (function() {
+        if (window.__recordingActive) return;
+        window.__recordingActive = true;
+        
+        console.log('🎯 Recording script injected');
+        
+        // Track all user actions
+        const recordedActions = [];
+        
+        function recordAction(type, target, value, extra = {}) {
+          const action = {
+            type,
+            timestamp: Date.now(),
+            selector: getSelector(target),
+            value,
+            url: window.location.href,
+            ...extra
+          };
+          
+          recordedActions.push(action);
+          console.log('📝 Recorded action:', type, action.selector);
+          
+          // Send to main process via IPC
+          if (window.electronAPI && window.electronAPI.recordEnhancedAction) {
+            window.electronAPI.recordEnhancedAction(action);
+          }
+        }
+        
+        function getSelector(element) {
+          if (!element) return '';
+          if (element.id) return '#' + element.id;
+          if (element.className) {
+            const classes = element.className.split(' ').filter(c => c);
+            if (classes.length) return '.' + classes.join('.');
+          }
+          return element.tagName.toLowerCase();
+        }
+        
+        // Capture clicks
+        document.addEventListener('click', function(e) {
+          recordAction('click', e.target, null, {
+            x: e.clientX,
+            y: e.clientY
+          });
+        }, true);
+        
+        // Capture input changes
+        document.addEventListener('input', function(e) {
+          recordAction('input', e.target, e.target.value);
+        }, true);
+        
+        // Capture form submissions
+        document.addEventListener('submit', function(e) {
+          recordAction('submit', e.target, null);
+        }, true);
+        
+        // Capture keyboard events  
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'Escape') {
+            recordAction('keydown', e.target, e.key);
+          }
+        }, true);
+        
+        console.log('✅ Recording event listeners attached');
+      })();
+    `;
+
+    try {
+      console.log('💉 Injecting recording script...');
+      await session.webView.webContents.executeJavaScript(script);
+      console.log('✅ Recording script injected successfully');
+    } catch (error) {
+      console.error('❌ Failed to inject recording script:', error);
+    }
   }
 
   /**

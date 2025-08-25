@@ -1,5 +1,5 @@
 // Comprehensive recording with aggressive data capture
-const { app, BrowserWindow, ipcMain, WebContentsView } = require('electron');
+const { app, BrowserWindow, ipcMain, WebContentsView, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 
@@ -39,6 +39,7 @@ async function cleanupOldSessions() {
 
 let mainWindow = null;
 let webView = null;
+let allWebViews = new Map(); // Track ALL WebViews for multi-tab recording
 let recordingActive = false;
 let debuggerAttached = false;
 let sidebarWidth = 320;
@@ -128,6 +129,73 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'ui', 'tabbar.html'));
   
+  // Create application menu
+  const menuTemplate = [
+    {
+      label: 'File',
+      submenu: [
+        { role: 'quit' }
+      ]
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' }
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    },
+    {
+      label: 'Help',
+      submenu: [
+        {
+          label: 'Open Developer Tools (Main)',
+          accelerator: 'F12',
+          click: () => {
+            if (mainWindow) {
+              mainWindow.webContents.openDevTools();
+            }
+          }
+        },
+        {
+          label: 'Open Developer Tools (WebView)',
+          accelerator: 'Ctrl+Shift+I',
+          click: () => {
+            if (webView && webView.webContents) {
+              webView.webContents.openDevTools();
+            }
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'About',
+          click: () => {
+            console.log('Electron Browser Automation - Comprehensive Recording');
+          }
+        }
+      ]
+    }
+  ];
+
+  const menu = Menu.buildFromTemplate(menuTemplate);
+  Menu.setApplicationMenu(menu);
+  
   // Maximize and show the window when ready
   mainWindow.once('ready-to-show', () => {
     mainWindow.maximize();
@@ -157,6 +225,23 @@ function createWindow() {
   mainWindow.contentView.addChildView(webView);
   updateWebViewBounds();
   
+  // Create isolated CDP endpoint for WebView
+  const { WebViewCDPProxy } = require('./dist/main/webview-cdp-proxy');
+  const webViewProxy = new WebViewCDPProxy(webView);
+  
+  // Start the proxy after WebView loads
+  webView.webContents.once('dom-ready', async () => {
+    try {
+      const isolatedCDPUrl = await webViewProxy.startProxy(10000);
+      console.log(`🎯 WebView isolated CDP endpoint: ${isolatedCDPUrl}`);
+      
+      // Store the isolated endpoint for Magnitude to use
+      process.env.WEBVIEW_CDP_URL = isolatedCDPUrl;
+      global.webViewCDPProxy = webViewProxy;
+    } catch (error) {
+      console.error('Failed to start WebView CDP proxy:', error);
+    }
+  });
   
   // Load Google
   webView.webContents.loadURL('https://www.google.com');
@@ -250,6 +335,36 @@ function createWindow() {
       
       console.log('Default tab initialized');
     `);
+  });
+
+  // Collect data before navigation to prevent data loss
+  webView.webContents.on('will-navigate', async (event, url) => {
+    if (recordingActive) {
+      console.log('📦 Collecting data before navigation to:', url);
+      try {
+        // Extract any captured actions before page unloads
+        const result = await webView.webContents.executeJavaScript(`
+          const data = window.__comprehensiveRecording || { actions: [] };
+          console.log('[WILL-NAV] Found', data.actions ? data.actions.length : 0, 'actions to preserve');
+          JSON.stringify(data.actions || []);
+        `);
+        
+        if (result) {
+          const actions = JSON.parse(result);
+          if (actions && actions.length > 0) {
+            // Store actions in the main process recording data
+            recordingData.actions = recordingData.actions || [];
+            recordingData.actions.push(...actions);
+            console.log(`✅ Preserved ${actions.length} actions before navigation`);
+            console.log('📊 Total actions now:', recordingData.actions.length);
+          } else {
+            console.log('⚠️ No actions to preserve before navigation');
+          }
+        }
+      } catch (e) {
+        console.log('❌ Could not extract actions before navigation:', e.message);
+      }
+    }
   });
 
   // Update WebView navigation state
@@ -354,15 +469,90 @@ function setupRecordingListeners() {
 
   webView.webContents.on('did-finish-load', () => {
     // Re-inject recording script after navigation
-    if (recordingActive && debuggerAttached) {
+    if (recordingActive) {
       const currentTab = recordingData.currentTabId || 'tab-initial';
       const currentUrl = webView.webContents.getURL();
       console.log(`🔄 Re-injecting recording script for tab: ${currentTab} at ${currentUrl}`);
       
-      // Check if comprehensiveScript is defined
-      if (!comprehensiveScript || comprehensiveScript === '') {
-        console.error('❌ Recording script not available for re-injection');
-        // Try to inject a minimal capture script instead
+      // Inject our minimal recording script on every page load
+      const minimalScript = `
+        (function() {
+          if (window.__recordingActive) return;
+          window.__recordingActive = true;
+          
+          console.log('[RECORDER] Script re-injected after navigation on:', window.location.href);
+          
+          // CRITICAL: Initialize if not exists
+          if (!window.__comprehensiveRecording) {
+            window.__comprehensiveRecording = {
+              actions: []
+            };
+            console.log('[RECORDER] Initialized __comprehensiveRecording');
+          } else {
+            console.log('[RECORDER] __comprehensiveRecording already exists with', window.__comprehensiveRecording.actions.length, 'actions');
+          }
+          
+          // Capture clicks
+          document.addEventListener('click', function(e) {
+            const action = {
+              type: 'click',
+              timestamp: Date.now(),
+              target: {
+                tagName: e.target.tagName,
+                id: e.target.id,
+                className: e.target.className,
+                text: e.target.textContent?.substring(0, 100)
+              },
+              url: window.location.href
+            };
+            window.__comprehensiveRecording.actions.push(action);
+            console.log('[RECORDER] Click captured:', e.target.tagName, e.target.id || e.target.className);
+          }, true);
+          
+          // Capture input changes
+          document.addEventListener('input', function(e) {
+            if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+              const action = {
+                type: 'input',
+                timestamp: Date.now(),
+                target: {
+                  tagName: e.target.tagName,
+                  id: e.target.id,
+                  name: e.target.name,
+                  type: e.target.type,
+                  value: e.target.value
+                },
+                url: window.location.href
+              };
+              window.__comprehensiveRecording.actions.push(action);
+              console.log('[RECORDER] Input captured:', e.target.name || e.target.id);
+            }
+          }, true);
+          
+          // Capture form submissions
+          document.addEventListener('submit', function(e) {
+            const action = {
+              type: 'submit',
+              timestamp: Date.now(),
+              target: {
+                tagName: 'FORM',
+                id: e.target.id,
+                action: e.target.action,
+                method: e.target.method
+              },
+              url: window.location.href
+            };
+            window.__comprehensiveRecording.actions.push(action);
+            console.log('[RECORDER] Form submit captured');
+          }, true);
+        })();
+      `;
+      
+      try {
+        webView.webContents.executeJavaScript(minimalScript);
+        console.log('✅ Recording script re-injected successfully');
+      } catch (err) {
+        console.error('❌ Failed to re-inject recording script:', err);
         const minimalScript = `
           (function() {
             if (window.__recordingActive) return;
@@ -602,6 +792,7 @@ ipcMain.handle('start-enhanced-recording', async () => {
   console.log('🎬 Starting COMPREHENSIVE CDP recording...');
   console.log('  - WebView URL:', webView?.webContents.getURL());
   console.log('  - Aggressive capture mode: ENABLED');
+  console.log('  - Multi-tab recording: ENABLED');
   
   recordingActive = true;
   recordingData = {
@@ -623,15 +814,18 @@ ipcMain.handle('start-enhanced-recording', async () => {
     // Add persistent storage for data across all pages and tabs
     capturedInputs: {}, // Will store ALL inputs from ALL pages/tabs
     pageTransitions: [], // Track all page navigations
-    crossTabData: new Map() // Store data per tab
+    crossTabData: new Map(), // Store data per tab
+    allTabsUsed: new Set(['tab-initial']) // Track all tabs used during recording
   };
 
   // Attach debugger for maximum data capture
-  if (webView && !debuggerAttached) {
+  if (webView) {
     try {
-      webView.webContents.debugger.attach('1.3');
-      debuggerAttached = true;
-      console.log('✅ Debugger attached for comprehensive capture');
+      if (!debuggerAttached) {
+        webView.webContents.debugger.attach('1.3');
+        debuggerAttached = true;
+        console.log('✅ Debugger attached for comprehensive capture');
+      }
       
       // Enable ALL CDP domains for maximum data
       await webView.webContents.debugger.sendCommand('Page.enable');
@@ -778,6 +972,11 @@ ipcMain.handle('start-enhanced-recording', async () => {
           console.log('[RECORDER] Minimal persistent recording script injected successfully on:', window.location.href);
         })();
       `;
+      
+      // Inject the minimal persistent script immediately
+      console.log('💉 Injecting minimal persistent recording script...');
+      await webView.webContents.executeJavaScript(minimalPersistentScript);
+      console.log('✅ Minimal persistent script injected successfully');
       
       // This ensures the script runs on EVERY page load, including future navigations
       await webView.webContents.debugger.sendCommand('Page.addScriptToEvaluateOnNewDocument', {
@@ -1224,6 +1423,18 @@ ipcMain.handle('start-enhanced-recording', async () => {
         }
       });
       
+      // INJECT THE COMPREHENSIVE RECORDING SCRIPT
+      console.log('💉 Injecting comprehensive recording script...');
+      if (comprehensiveScript && comprehensiveScript !== '') {
+        await webView.webContents.executeJavaScript(comprehensiveScript);
+        console.log('✅ Comprehensive script injected successfully');
+      } else {
+        console.error('❌ Comprehensive script not available!');
+      }
+      
+      // Also inject the minimal persistent script immediately
+      await webView.webContents.executeJavaScript(minimalPersistentScript);
+      
       console.log('✅ Comprehensive recording scripts injected and all CDP domains enabled');
       
       // Screenshots are only captured when stopping recording
@@ -1232,6 +1443,85 @@ ipcMain.handle('start-enhanced-recording', async () => {
     } catch (err) {
       console.error('Error attaching debugger:', err);
       debuggerAttached = false;
+    }
+  }
+
+  // Inject recording script regardless of debugger status
+  // This is critical - we need to capture user actions even if debugger fails
+  if (webView) {
+    try {
+      const minimalRecordingScript = `
+        (function() {
+          if (window.__recordingActive) return;
+          window.__recordingActive = true;
+          
+          console.log('[RECORDER] Script injected on:', window.location.href);
+          
+          window.__comprehensiveRecording = window.__comprehensiveRecording || {
+            actions: []
+          };
+          
+          // Capture clicks
+          document.addEventListener('click', function(e) {
+            const action = {
+              type: 'click',
+              timestamp: Date.now(),
+              target: {
+                tagName: e.target.tagName,
+                id: e.target.id,
+                className: e.target.className,
+                text: e.target.textContent?.substring(0, 100)
+              },
+              url: window.location.href
+            };
+            window.__comprehensiveRecording.actions.push(action);
+            console.log('[RECORDER] Click captured:', e.target.tagName, e.target.id || e.target.className);
+          }, true);
+          
+          // Capture input changes
+          document.addEventListener('input', function(e) {
+            if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+              const action = {
+                type: 'input',
+                timestamp: Date.now(),
+                target: {
+                  tagName: e.target.tagName,
+                  id: e.target.id,
+                  name: e.target.name,
+                  type: e.target.type,
+                  value: e.target.value
+                },
+                url: window.location.href
+              };
+              window.__comprehensiveRecording.actions.push(action);
+              console.log('[RECORDER] Input captured:', e.target.name || e.target.id);
+            }
+          }, true);
+          
+          // Capture form submissions
+          document.addEventListener('submit', function(e) {
+            const action = {
+              type: 'submit',
+              timestamp: Date.now(),
+              target: {
+                tagName: 'FORM',
+                id: e.target.id,
+                action: e.target.action,
+                method: e.target.method
+              },
+              url: window.location.href
+            };
+            window.__comprehensiveRecording.actions.push(action);
+            console.log('[RECORDER] Form submit captured');
+          }, true);
+        })();
+      `;
+      
+      console.log('💉 Injecting recording script (outside debugger)...');
+      await webView.webContents.executeJavaScript(minimalRecordingScript);
+      console.log('✅ Recording script injected successfully');
+    } catch (err) {
+      console.error('❌ Failed to inject recording script:', err);
     }
   }
   
@@ -1391,17 +1681,42 @@ ipcMain.handle('stop-enhanced-recording', async () => {
     }
   }
   
+  // First collect any actions still on the current page before stopping
+  if (webView) {
+    try {
+      const currentPageActions = await webView.webContents.executeJavaScript(`
+        (function() {
+          const currentData = window.__comprehensiveRecording || { actions: [] };
+          console.log('[STOP] Found', currentData.actions ? currentData.actions.length : 0, 'actions on current page');
+          return JSON.stringify(currentData.actions || []);
+        })();
+      `);
+      
+      if (currentPageActions) {
+        const actions = JSON.parse(currentPageActions);
+        if (actions && actions.length > 0) {
+          recordingData.actions = recordingData.actions || [];
+          recordingData.actions.push(...actions);
+          console.log(`✅ Collected ${actions.length} actions from current page before stopping`);
+        }
+      }
+    } catch (e) {
+      console.log('Could not extract actions from current page:', e.message);
+    }
+  }
+  
   // Then get data from CDP injection
   if (webView && debuggerAttached) {
     try {
       const result = await webView.webContents.debugger.sendCommand('Runtime.evaluate', {
         expression: `
+          console.log('[STOP] Checking for __comprehensiveRecording...');
           const data = window.__comprehensiveRecording || { actions: [], domSnapshots: [], mutations: [], visibilityChanges: [], capturedInputs: {} };
           
           // Recording stopped
           
-          console.log('Collected comprehensive recording data:', {
-            actions: data.actions.length,
+          console.log('[STOP] Collected comprehensive recording data:', {
+            actions: data.actions ? data.actions.length : 0,
             snapshots: data.domSnapshots?.length || 0,
             mutations: data.mutations?.length || 0,
             visibilityChanges: data.visibilityChanges?.length || 0,
@@ -1431,8 +1746,18 @@ ipcMain.handle('stop-enhanced-recording', async () => {
     }
   }
   
-  // Combine all data (merge preload and CDP data)
-  const allActions = [...(preloadData.actions || []), ...(pageData.actions || [])];
+  // Combine all data (merge preload, CDP data, and preserved actions)
+  const allActions = [
+    ...(recordingData.actions || []), // Actions preserved during navigation
+    ...(preloadData.actions || []), 
+    ...(pageData.actions || [])
+  ];
+  console.log('📊 Final action sources:', {
+    preserved: recordingData.actions?.length || 0,
+    preload: preloadData.actions?.length || 0,
+    page: pageData.actions?.length || 0,
+    total: allActions.length
+  });
   
   const finalData = {
     sessionId: `comprehensive-${recordingData.startTime}`,
@@ -1956,7 +2281,27 @@ ipcMain.handle('run-magnitude-webview', async (event, params) => {
       throw new Error('No active WebView found');
     }
     
-    // Set the correct CDP port for this session
+    // Wait for isolated CDP proxy to be ready (if not already)
+    if (!process.env.WEBVIEW_CDP_URL && !global.webViewCDPProxy) {
+      console.log('⏳ Waiting for isolated WebView CDP proxy to start...');
+      
+      // Create and start the proxy if needed
+      const { WebViewCDPProxy } = require('./dist/main/webview-cdp-proxy');
+      const webViewProxy = new WebViewCDPProxy(webView);
+      
+      try {
+        const isolatedCDPUrl = await webViewProxy.startProxy(10000);
+        console.log(`🎯 WebView isolated CDP endpoint ready: ${isolatedCDPUrl}`);
+        process.env.WEBVIEW_CDP_URL = isolatedCDPUrl;
+        global.webViewCDPProxy = webViewProxy;
+      } catch (error) {
+        console.error('Failed to start WebView CDP proxy:', error);
+        // Fall back to global CDP
+        process.env.CDP_PORT = String(CDP_PORT);
+      }
+    }
+    
+    // Set the correct CDP port for this session (as fallback)
     process.env.CDP_PORT = String(CDP_PORT);
     
     // Ensure ANTHROPIC_API_KEY is available

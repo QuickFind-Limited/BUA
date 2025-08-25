@@ -1,0 +1,201 @@
+{
+  "name": "Google Homepage Navigation",
+  "description": "Navigate to Google homepage and wait for page load",
+  "url": "https://www.google.com/?zx=1756101475071&no_sw_cr=1",
+  "params": [],
+  "environment": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "",
+    "cookies": false,
+    "localStorage": false
+  },
+  "skipNavigationStates": [],
+  "steps": [
+    {
+      "name": "Navigate to Google Homepage",
+      "ai_instruction": "Navigate to Google homepage and wait for the page to fully load with search box visible",
+      "snippet": "await page.goto('https://www.google.com/?zx=1756101475071&no_sw_cr=1');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#APjFqb",
+        ".gLFyf",
+        "[name='q']",
+        "[aria-label*='Search']",
+        "input[title*='Search']",
+        "[role='combobox']",
+        ".RNNXgb",
+        "//input[contains(@aria-label, 'Search')]"
+      ],
+      "value": null,
+      "preFlightChecks": [
+        {
+          "selector": "#APjFqb",
+          "required": true,
+          "alternativeSelectors": [
+            ".gLFyf",
+            "[name='q']",
+            "[aria-label*='Search']"
+          ],
+          "waitFor": "visible",
+          "timeout": 10000
+        }
+      ],
+      "skipConditions": [
+        {
+          "type": "url_match",
+          "value": "google.com",
+          "skipReason": "Already on Google homepage"
+        }
+      ],
+      "waitBefore": {
+        "type": "network",
+        "condition": "networkidle0",
+        "timeout": 10000
+      },
+      "waitAfter": {
+        "type": "element",
+        "condition": "#APjFqb",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "element",
+        "expected": "#APjFqb",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 3,
+        "retryDelay": 2000,
+        "skipOnError": false,
+        "alternativeAction": "refresh_and_retry",
+        "fallbackSelectors": [
+          ".gLFyf",
+          "[name='q']",
+          "[aria-label*='Search']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 5000,
+        "maxDuration": 15000,
+        "fallbackToAI": true
+      }
+    },
+    {
+      "name": "Wait for Page Stability",
+      "ai_instruction": "Wait for the Google homepage to be fully loaded and stable with all elements visible",
+      "snippet": "await page.waitForLoadState('networkidle');",
+      "prefer": "snippet",
+      "fallback": "ai",
+      "selectors": [
+        "#APjFqb",
+        ".FPdoLc",
+        "[name='btnK']",
+        ".gNO89b",
+        ".o3j99",
+        "[aria-label*='Google Search']",
+        ".RNNXgb",
+        "//div[contains(@class, 'o3j99')]"
+      ],
+      "value": null,
+      "preFlightChecks": [
+        {
+          "selector": "#APjFqb",
+          "required": true,
+          "alternativeSelectors": [
+            ".gLFyf",
+            "[name='q']"
+          ],
+          "waitFor": "interactive",
+          "timeout": 5000
+        }
+      ],
+      "skipConditions": [],
+      "waitBefore": {
+        "type": "time",
+        "condition": "1000",
+        "timeout": 1000
+      },
+      "waitAfter": {
+        "type": "network",
+        "condition": "networkidle2",
+        "timeout": 5000
+      },
+      "validation": {
+        "type": "screenshot",
+        "expected": "matches_recording",
+        "screenshot": true,
+        "continueOnFailure": false
+      },
+      "errorHandling": {
+        "retry": 2,
+        "retryDelay": 1000,
+        "skipOnError": false,
+        "alternativeAction": "wait_longer",
+        "fallbackSelectors": [
+          "#APjFqb",
+          ".gLFyf",
+          "[name='q']"
+        ]
+      },
+      "performance": {
+        "expectedDuration": 47427,
+        "maxDuration": 60000,
+        "fallbackToAI": true
+      }
+    }
+  ],
+  "preferences": {
+    "dynamic_elements": "ai",
+    "simple_steps": "snippet",
+    "form_interactions": "snippet",
+    "validation": "ai"
+  },
+  "screenshotValidation": {
+    "enabled": true,
+    "threshold": 80,
+    "checkpoints": [
+      "after-navigation",
+      "final"
+    ],
+    "ignoreRegions": [
+      ".timestamp",
+      ".dynamic-content",
+      "#gbwa"
+    ],
+    "compareMode": "structural"
+  },
+  "validations": [
+    {
+      "step": "after-navigation",
+      "check": "element",
+      "expected": "#APjFqb"
+    },
+    {
+      "step": "final",
+      "check": "screenshot",
+      "expected": "matches_recording",
+      "threshold": 85
+    }
+  ],
+  "errorRecovery": {
+    "strategies": [
+      "retry",
+      "refresh",
+      "restart"
+    ],
+    "maxAttempts": 3,
+    "fallbackToManual": false
+  },
+  "performance": {
+    "totalExpectedDuration": 52427,
+    "criticalPath": [
+      "Navigate to Google Homepage",
+      "Wait for Page Stability"
+    ],
+    "slowStepThreshold": 10000
+  }
+}
