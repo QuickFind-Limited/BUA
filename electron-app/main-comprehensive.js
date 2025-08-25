@@ -1970,10 +1970,83 @@ ipcMain.handle('enhanced-recording:status', async () => {
 
 // Tab management handlers matching preload.js
 ipcMain.handle('close-tab', async (event, tabId) => {
-  // In this simple implementation, we don't actually close tabs
-  // since we only have one WebView
   console.log(`Close tab requested for: ${tabId}`);
-  return true;
+  
+  // Remove from our tab data
+  tabsData.delete(tabId);
+  
+  // Remove from UI and handle tab switching
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    try {
+      const result = await mainWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            // Remove the tab from the data structure
+            if (window.tabs && window.tabs.delete) {
+              window.tabs.delete('${tabId}');
+            }
+            
+            // Remove the tab element from UI
+            const tabElement = document.querySelector('.tab[data-tab-id="${tabId}"]');
+            if (tabElement) {
+              tabElement.remove();
+            }
+            
+            // If this was the active tab, switch to another one
+            if (window.activeTabId === '${tabId}') {
+              // Find another tab to switch to
+              const remainingTabs = document.querySelectorAll('.tab');
+              if (remainingTabs.length > 0) {
+                // Switch to the first remaining tab
+                const newActiveTab = remainingTabs[0];
+                const newTabId = newActiveTab.dataset.tabId;
+                
+                // Make it active
+                document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+                newActiveTab.classList.add('active');
+                window.activeTabId = newTabId;
+                
+                // Get the tab's URL and navigate to it
+                const tab = window.tabs.get(newTabId);
+                if (tab) {
+                  console.log('Switching to tab:', newTabId, 'URL:', tab.url);
+                  return { switchTo: newTabId, url: tab.url };
+                }
+              } else {
+                // No tabs left - create a new default tab
+                console.log('No tabs left, creating new default tab');
+                return { createNew: true };
+              }
+            }
+            
+            return { success: true };
+          } catch (err) {
+            console.error('Error closing tab:', err);
+            return { error: err.message };
+          }
+        })();
+      `);
+      
+      // Handle navigation if needed
+      if (result && result.switchTo && result.url) {
+        // Navigate to the new active tab's URL
+        if (webView) {
+          console.log(`Navigating to newly active tab URL: ${result.url}`);
+          await webView.webContents.loadURL(result.url);
+        }
+      } else if (result && result.createNew) {
+        // Create a new default tab if all tabs were closed
+        await ipcMain.handle('create-tab', event, 'https://www.google.com');
+      }
+      
+      return true;
+    } catch (e) {
+      console.error('Failed to close tab:', e);
+      return false;
+    }
+  }
+  
+  return false;
 });
 
 ipcMain.handle('switch-tab', async (event, tabId) => {
