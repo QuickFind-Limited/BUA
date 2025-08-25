@@ -343,31 +343,42 @@ function switchToTab(tabId) {
 }
 
 function closeTab(tabId) {
+    console.log(`Closing tab: ${tabId}`);
+    
     // Don't close if it's the only tab
-    if (tabs.size <= 1) return;
-    
-    // Remove tab from map
-    tabs.delete(tabId);
-    
-    // Remove tab element
-    const tabElement = document.querySelector(`[data-tab-id="${tabId}"]`);
-    if (tabElement) tabElement.remove();
-    
-    // Send IPC message to close tab in main process
-    if (window.electronAPI) {
-        window.electronAPI.closeTab(tabId);
+    if (tabs.size <= 1) {
+        console.log('Cannot close the only tab');
+        return;
     }
     
-    // If this was the active tab, switch to another
-    if (activeTabId === tabId) {
-        const firstTab = tabs.keys().next().value;
-        if (firstTab) {
-            switchToTab(firstTab);
-        }
+    // Call IPC to handle the close properly (it will handle UI removal and navigation)
+    if (window.electronAPI && window.electronAPI.closeTab) {
+        window.electronAPI.closeTab(tabId).then(result => {
+            console.log('Tab closed via IPC:', result);
+            updateStatus();
+        }).catch(err => {
+            console.error('Failed to close tab:', err);
+            // Fallback: remove from UI locally
+            tabs.delete(tabId);
+            const tabElement = document.querySelector(`[data-tab-id="${tabId}"]`);
+            if (tabElement) tabElement.remove();
+            
+            // If this was the active tab, switch to another
+            if (activeTabId === tabId) {
+                const firstTab = tabs.keys().next().value;
+                if (firstTab) {
+                    switchToTab(firstTab);
+                }
+            }
+            updateStatus();
+        });
+    } else {
+        console.error('electronAPI.closeTab not available');
     }
-    
-    updateStatus();
 }
+
+// Make closeTab globally available
+window.closeTab = closeTab;
 
 function updateTabTitle(tabId, title) {
     const tab = tabs.get(tabId);

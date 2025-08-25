@@ -2141,9 +2141,20 @@ ipcMain.handle('create-tab', async (event, url) => {
             const closeBtn = document.createElement('button');
             closeBtn.className = 'tab-close';
             closeBtn.textContent = '×';
-            closeBtn.onclick = function() {
+            closeBtn.onclick = function(e) {
+              e.stopPropagation(); // Prevent tab switch when clicking close
+              // Call the closeTab function if it exists, or use electronAPI directly
               if (typeof closeTab === 'function') {
                 closeTab('${tabId}');
+              } else if (window.electronAPI && window.electronAPI.closeTab) {
+                // Fallback: call IPC directly
+                window.electronAPI.closeTab('${tabId}').then(() => {
+                  // Remove from UI after IPC succeeds
+                  const tabEl = document.querySelector('[data-tab-id="${tabId}"]');
+                  if (tabEl) tabEl.remove();
+                });
+              } else {
+                console.error('Cannot close tab - no closeTab function or electronAPI available');
               }
             };
             
