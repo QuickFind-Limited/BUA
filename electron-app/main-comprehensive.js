@@ -375,6 +375,26 @@ function createWindow() {
     }
   });
 
+  // Forward WebView console messages for debugging and capture actions
+  webView.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    console.log(`[WebView Console] [${level}] ${message}`);
+    
+    // Capture actions sent from the page
+    if (recordingActive && message.startsWith('[ACTION-CAPTURE]')) {
+      try {
+        const actionData = JSON.parse(message.substring('[ACTION-CAPTURE]'.length));
+        recordingData.actions.push({
+          ...actionData,
+          timestamp: Date.now() - recordingData.startTime
+        });
+        console.log(`📝 Action stored in main process: ${actionData.type} on ${actionData.target.tagName}`);
+        console.log(`📊 Total actions in main process: ${recordingData.actions.length}`);
+      } catch (e) {
+        // Not a valid action message
+      }
+    }
+  });
+  
   // Update WebView navigation state
   webView.webContents.on('did-navigate', (event, url) => {
     console.log('WebView navigated to:', url);
@@ -426,20 +446,29 @@ function createWindow() {
 
   webView.webContents.on('page-title-updated', (event, title) => {
     console.log('Page title updated:', title);
-    // Update the tab title
+    // Update the tab title - escape the title to prevent injection
+    const escapedTitle = title.replace(/'/g, "\\'").replace(/"/g, '\\"').substring(0, 50);
+    
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.executeJavaScript(`
         if (typeof activeTabId !== 'undefined' && activeTabId) {
-          const tab = tabs.get(activeTabId);
+          const tab = window.tabs ? window.tabs.get(activeTabId) : null;
           if (tab) {
-            tab.title = '${title}';
+            tab.title = '${escapedTitle}';
             
             // Update tab title in UI
-            const tabElement = document.querySelector(\`.tab[data-tab-id="\${activeTabId}"] .tab-title\`);
+            const tabElement = document.querySelector('.tab[data-tab-id="' + activeTabId + '"] .tab-title');
             if (tabElement) {
-              tabElement.textContent = '${title}';
+              tabElement.textContent = '${escapedTitle}';
+              console.log('Updated tab title for', activeTabId, 'to:', '${escapedTitle}');
+            } else {
+              console.log('Could not find tab element for', activeTabId);
             }
+          } else {
+            console.log('Could not find tab data for', activeTabId);
           }
+        } else {
+          console.log('activeTabId not defined');
         }
       `);
     }
@@ -476,28 +505,32 @@ function setupRecordingListeners() {
   });
 
   webView.webContents.on('did-finish-load', () => {
+    const currentUrl = webView.webContents.getURL();
+    console.log(`📄 Page loaded: ${currentUrl}, Recording active: ${recordingActive}`);
+    
     // Re-inject recording script after navigation
     if (recordingActive) {
       const currentTab = recordingData.currentTabId || 'tab-initial';
-      const currentUrl = webView.webContents.getURL();
       console.log(`🔄 Re-injecting recording script for tab: ${currentTab} at ${currentUrl}`);
       
       // Inject our minimal recording script on every page load
       const minimalScript = `
         (function() {
-          // Don't check for __recordingActive - always reinitialize on new pages
+          // Always reinitialize on new pages (state is lost on navigation anyway)
           window.__recordingActive = true;
           
           console.log('[RECORDER] Script re-injected after navigation on:', window.location.href);
           
-          // CRITICAL: Always reinitialize on new page loads
+          // CRITICAL: Always create fresh recording object (JavaScript state doesn't persist across navigations)
           window.__comprehensiveRecording = {
-            actions: []
+            actions: [],
+            startUrl: window.location.href
           };
-          console.log('[RECORDER] Initialized fresh __comprehensiveRecording');
+          console.log('[RECORDER] Initialized fresh recording for:', window.location.href);
           
-          // Capture clicks
+          // Capture clicks and send to main process immediately
           document.addEventListener('click', function(e) {
+            console.log('[RECORDER-DEBUG] Click event fired on:', e.target);
             const action = {
               type: 'click',
               timestamp: Date.now(),
@@ -511,9 +544,13 @@ function setupRecordingListeners() {
             };
             window.__comprehensiveRecording.actions.push(action);
             console.log('[RECORDER] Click captured:', e.target.tagName, e.target.id || e.target.className);
+            console.log('[RECORDER] Total actions now:', window.__comprehensiveRecording.actions.length);
+            
+            // Send to main process via console message
+            console.log('[ACTION-CAPTURE]' + JSON.stringify(action));
           }, true);
           
-          // Capture input changes
+          // Capture input changes and send to main process
           document.addEventListener('input', function(e) {
             if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
               const action = {
@@ -530,10 +567,13 @@ function setupRecordingListeners() {
               };
               window.__comprehensiveRecording.actions.push(action);
               console.log('[RECORDER] Input captured:', e.target.name || e.target.id);
+              
+              // Send to main process
+              console.log('[ACTION-CAPTURE]' + JSON.stringify(action));
             }
           }, true);
           
-          // Capture form submissions
+          // Capture form submissions and send to main process
           document.addEventListener('submit', function(e) {
             const action = {
               type: 'submit',
@@ -548,15 +588,22 @@ function setupRecordingListeners() {
             };
             window.__comprehensiveRecording.actions.push(action);
             console.log('[RECORDER] Form submit captured');
+            
+            // Send to main process
+            console.log('[ACTION-CAPTURE]' + JSON.stringify(action));
           }, true);
         })();
       `;
       
       try {
-        webView.webContents.executeJavaScript(minimalScript);
-        console.log('✅ Recording script re-injected successfully');
+        // CRITICAL: Use await to ensure script is fully injected
+        webView.webContents.executeJavaScript(minimalScript).then(() => {
+          console.log('✅ Recording script re-injected successfully');
+        }).catch(err => {
+          console.error('❌ Failed to re-inject recording script:', err);
+        });
       } catch (err) {
-        console.error('❌ Failed to re-inject recording script:', err);
+        console.error('❌ Exception re-injecting recording script:', err);
         const minimalScript = `
           (function() {
             if (window.__recordingActive) return;
@@ -933,8 +980,9 @@ ipcMain.handle('start-enhanced-recording', async () => {
             }
           }, true);
           
-          // Capture clicks
+          // Capture clicks and send to main process immediately
           document.addEventListener('click', function(e) {
+            console.log('[RECORDER-DEBUG] Click event fired on:', e.target);
             const action = {
               type: 'click',
               timestamp: Date.now(),
@@ -948,6 +996,10 @@ ipcMain.handle('start-enhanced-recording', async () => {
             };
             window.__comprehensiveRecording.actions.push(action);
             console.log('[RECORDER] Click captured:', e.target.tagName, e.target.id || e.target.className);
+            console.log('[RECORDER] Total actions now:', window.__comprehensiveRecording.actions.length);
+            
+            // Send to main process via console message
+            console.log('[ACTION-CAPTURE]' + JSON.stringify(action));
           }, true);
           
           // Capture form submissions
@@ -977,10 +1029,14 @@ ipcMain.handle('start-enhanced-recording', async () => {
         })();
       `;
       
-      // Inject the minimal persistent script immediately
+      // Inject the minimal persistent script immediately with error handling
       console.log('💉 Injecting minimal persistent recording script...');
-      await webView.webContents.executeJavaScript(minimalPersistentScript);
-      console.log('✅ Minimal persistent script injected successfully');
+      try {
+        const result = await webView.webContents.executeJavaScript(minimalPersistentScript);
+        console.log('✅ Minimal persistent script injected successfully, result:', result);
+      } catch (scriptError) {
+        console.error('❌ Failed to inject minimal persistent script:', scriptError);
+      }
       
       // This ensures the script runs on EVERY page load, including future navigations
       await webView.webContents.debugger.sendCommand('Page.addScriptToEvaluateOnNewDocument', {
@@ -1454,6 +1510,22 @@ ipcMain.handle('start-enhanced-recording', async () => {
   // This is critical - we need to capture user actions even if debugger fails
   if (webView) {
     try {
+      // First, let's test if script injection works at all
+      const testScript = `
+        (function() {
+          console.log('[TEST] Script injection test - this should appear in console');
+          window.__testValue = 'Script injection successful at ' + new Date().toISOString();
+          return window.__testValue;
+        })();
+      `;
+      
+      try {
+        const testResult = await webView.webContents.executeJavaScript(testScript);
+        console.log('📝 Test script result:', testResult);
+      } catch (testErr) {
+        console.error('❌ Test script failed:', testErr);
+      }
+      
       const minimalRecordingScript = `
         (function() {
           // Don't check for __recordingActive - always reinitialize
@@ -1465,8 +1537,14 @@ ipcMain.handle('start-enhanced-recording', async () => {
             actions: []
           };
           
-          // Capture clicks
+          // Test simpler click handler first
           document.addEventListener('click', function(e) {
+            console.log('[CLICK-TEST] Any click detected on:', e.target.tagName);
+          }, true);
+          
+          // Capture clicks and send to main process immediately
+          document.addEventListener('click', function(e) {
+            console.log('[RECORDER-DEBUG] Click event fired on:', e.target);
             const action = {
               type: 'click',
               timestamp: Date.now(),
@@ -1480,9 +1558,13 @@ ipcMain.handle('start-enhanced-recording', async () => {
             };
             window.__comprehensiveRecording.actions.push(action);
             console.log('[RECORDER] Click captured:', e.target.tagName, e.target.id || e.target.className);
+            console.log('[RECORDER] Total actions now:', window.__comprehensiveRecording.actions.length);
+            
+            // Send to main process via console message
+            console.log('[ACTION-CAPTURE]' + JSON.stringify(action));
           }, true);
           
-          // Capture input changes
+          // Capture input changes and send to main process
           document.addEventListener('input', function(e) {
             if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
               const action = {
@@ -1499,10 +1581,13 @@ ipcMain.handle('start-enhanced-recording', async () => {
               };
               window.__comprehensiveRecording.actions.push(action);
               console.log('[RECORDER] Input captured:', e.target.name || e.target.id);
+              
+              // Send to main process
+              console.log('[ACTION-CAPTURE]' + JSON.stringify(action));
             }
           }, true);
           
-          // Capture form submissions
+          // Capture form submissions and send to main process
           document.addEventListener('submit', function(e) {
             const action = {
               type: 'submit',
@@ -1517,6 +1602,9 @@ ipcMain.handle('start-enhanced-recording', async () => {
             };
             window.__comprehensiveRecording.actions.push(action);
             console.log('[RECORDER] Form submit captured');
+            
+            // Send to main process
+            console.log('[ACTION-CAPTURE]' + JSON.stringify(action));
           }, true);
         })();
       `;
@@ -2108,17 +2196,31 @@ ipcMain.handle('create-tab', async (event, url) => {
   console.log(`Creating new tab: ${tabId}`);
   
   if (mainWindow && !mainWindow.isDestroyed()) {
-    // Add tab to UI - wrap in try-catch to prevent errors
+    // FIRST: Store the current URL for the currently active tab BEFORE creating new tab
+    const oldTabId = await mainWindow.webContents.executeJavaScript(`
+      window.activeTabId || 'tab-initial'
+    `);
+    
+    if (oldTabId && webView) {
+      const currentUrl = webView.webContents.getURL();
+      const oldTab = tabsData.get(oldTabId);
+      if (oldTab) {
+        oldTab.url = currentUrl;
+        console.log(`Preserved current tab ${oldTabId} URL: ${currentUrl}`);
+      }
+    }
+    
+    // THEN: Add the new tab to UI
     try {
       await mainWindow.webContents.executeJavaScript(`
         (function() {
           try {
-            // Add the new tab to UI (but don't make it active yet)
+            // Add the new tab to UI but DON'T make it active yet
             const newTab = {
               id: '${tabId}',
               title: '${title}',
               url: '${targetUrl}',
-              active: false  // Don't activate immediately
+              active: false  // Don't make it active visually yet
             };
             
             // Initialize tabs if needed
@@ -2126,22 +2228,20 @@ ipcMain.handle('create-tab', async (event, url) => {
               window.tabs = new Map();
             }
             if (typeof activeTabId === 'undefined') {
-              window.activeTabId = '';
+              window.activeTabId = 'tab-initial';
             }
             
-            // Add the tab to the tabs Map
+            // Add new tab WITHOUT activating it
             if (window.tabs && window.tabs.set) {
               window.tabs.set('${tabId}', newTab);
               console.log('Added tab to tabs Map. Total tabs:', window.tabs.size);
-              // Keep current tab active
             } else {
               console.error('tabs Map not available!');
             }
             
-            // Don't update active state in UI
-            
+            // Create UI element but don't mark as active
             const tabElement = document.createElement('div');
-            tabElement.className = 'tab';  // Not active
+            tabElement.className = 'tab';  // NOT active
             tabElement.dataset.tabId = '${tabId}';
             
             // Use innerHTML like the initial tab does
@@ -2162,9 +2262,7 @@ ipcMain.handle('create-tab', async (event, url) => {
               tabsContainer.insertBefore(tabElement, newTabBtn);
             }
             
-            // Don't update address bar - keep showing current tab's URL
-            
-            console.log('New tab created:', newTab);
+            console.log('New tab created (inactive):', newTab);
             return true;
           } catch (err) {
             console.error('Error in tab creation:', err);
@@ -2176,23 +2274,7 @@ ipcMain.handle('create-tab', async (event, url) => {
       console.error('Failed to create tab UI:', e);
     }
     
-    // Don't immediately navigate - let the user click the tab to switch to it
-    // Store the current URL for the current tab before creating new one
-    const currentTabId = await mainWindow.webContents.executeJavaScript(`
-      typeof activeTabId !== 'undefined' ? activeTabId : null
-    `);
-    
-    if (currentTabId && webView) {
-      const currentUrl = webView.webContents.getURL();
-      const currentTab = tabsData.get(currentTabId);
-      if (currentTab) {
-        currentTab.url = currentUrl;
-        console.log(`Preserved current tab ${currentTabId} URL: ${currentUrl}`);
-      }
-    }
-    
-    // Don't navigate immediately - user needs to click the tab to switch
-    console.log(`New tab ${tabId} created but not activated (current page preserved)`)
+    console.log(`New tab ${tabId} created but NOT active - user must click to switch`)
   }
   
   return {
