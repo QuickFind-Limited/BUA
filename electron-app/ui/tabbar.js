@@ -377,8 +377,9 @@ function closeTab(tabId) {
     }
 }
 
-// Make closeTab globally available
+// Make functions globally available for dynamically created tabs
 window.closeTab = closeTab;
+window.switchToTab = switchToTab;
 
 function updateTabTitle(tabId, title) {
     const tab = tabs.get(tabId);

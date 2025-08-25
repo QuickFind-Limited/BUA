@@ -2141,22 +2141,36 @@ ipcMain.handle('create-tab', async (event, url) => {
             const closeBtn = document.createElement('button');
             closeBtn.className = 'tab-close';
             closeBtn.textContent = '×';
-            closeBtn.onclick = function(e) {
+            closeBtn.addEventListener('click', function(e) {
               e.stopPropagation(); // Prevent tab switch when clicking close
-              // Call the closeTab function if it exists, or use electronAPI directly
-              if (typeof closeTab === 'function') {
+              console.log('Close button clicked for tab: ${tabId}');
+              console.log('closeTab function exists?', typeof closeTab !== 'undefined');
+              console.log('window.closeTab exists?', typeof window.closeTab !== 'undefined');
+              console.log('electronAPI exists?', typeof window.electronAPI !== 'undefined');
+              
+              // Try different methods to close the tab
+              if (typeof window.closeTab === 'function') {
+                console.log('Using window.closeTab');
+                window.closeTab('${tabId}');
+              } else if (typeof closeTab === 'function') {
+                console.log('Using global closeTab');
                 closeTab('${tabId}');
               } else if (window.electronAPI && window.electronAPI.closeTab) {
+                console.log('Using electronAPI.closeTab directly');
                 // Fallback: call IPC directly
                 window.electronAPI.closeTab('${tabId}').then(() => {
+                  console.log('Tab closed via electronAPI');
                   // Remove from UI after IPC succeeds
                   const tabEl = document.querySelector('[data-tab-id="${tabId}"]');
                   if (tabEl) tabEl.remove();
+                }).catch(err => {
+                  console.error('Error closing tab via electronAPI:', err);
                 });
               } else {
-                console.error('Cannot close tab - no closeTab function or electronAPI available');
+                console.error('Cannot close tab - no method available');
+                console.error('Available on window:', Object.keys(window).filter(k => k.includes('close') || k.includes('tab')));
               }
-            };
+            });
             
             tabElement.appendChild(titleSpan);
             tabElement.appendChild(closeBtn);
