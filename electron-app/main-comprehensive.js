@@ -477,20 +477,16 @@ function setupRecordingListeners() {
       // Inject our minimal recording script on every page load
       const minimalScript = `
         (function() {
-          if (window.__recordingActive) return;
+          // Don't check for __recordingActive - always reinitialize on new pages
           window.__recordingActive = true;
           
           console.log('[RECORDER] Script re-injected after navigation on:', window.location.href);
           
-          // CRITICAL: Initialize if not exists
-          if (!window.__comprehensiveRecording) {
-            window.__comprehensiveRecording = {
-              actions: []
-            };
-            console.log('[RECORDER] Initialized __comprehensiveRecording');
-          } else {
-            console.log('[RECORDER] __comprehensiveRecording already exists with', window.__comprehensiveRecording.actions.length, 'actions');
-          }
+          // CRITICAL: Always reinitialize on new page loads
+          window.__comprehensiveRecording = {
+            actions: []
+          };
+          console.log('[RECORDER] Initialized fresh __comprehensiveRecording');
           
           // Capture clicks
           document.addEventListener('click', function(e) {
@@ -843,10 +839,10 @@ ipcMain.handle('start-enhanced-recording', async () => {
       // IMMEDIATELY inject a minimal script that will persist across ALL navigations
       const minimalPersistentScript = `
         (function() {
-          if (window.__recordingInjected) return;
+          // Always reinitialize on each page - don't check for existing
           window.__recordingInjected = true;
           
-          window.__comprehensiveRecording = window.__comprehensiveRecording || {
+          window.__comprehensiveRecording = {
             actions: [],
             domSnapshots: [],
             mutations: [],
@@ -1452,7 +1448,7 @@ ipcMain.handle('start-enhanced-recording', async () => {
     try {
       const minimalRecordingScript = `
         (function() {
-          if (window.__recordingActive) return;
+          // Don't check for __recordingActive - always reinitialize
           window.__recordingActive = true;
           
           console.log('[RECORDER] Script injected on:', window.location.href);
@@ -2036,12 +2032,12 @@ ipcMain.handle('create-tab', async (event, url) => {
       await mainWindow.webContents.executeJavaScript(`
         (function() {
           try {
-            // Add the new tab to UI
+            // Add the new tab to UI (but don't make it active yet)
             const newTab = {
               id: '${tabId}',
               title: '${title}',
               url: '${targetUrl}',
-              active: true
+              active: false  // Don't activate immediately
             };
             
             // Initialize tabs if needed
@@ -2052,18 +2048,16 @@ ipcMain.handle('create-tab', async (event, url) => {
               window.activeTabId = '';
             }
             
-            // Deactivate other tabs
-            if (window.tabs && window.tabs.forEach) {
-              window.tabs.forEach(tab => tab.active = false);
+            // Just add the tab without activating it
+            if (window.tabs && window.tabs.set) {
               window.tabs.set('${tabId}', newTab);
-              window.activeTabId = '${tabId}';
+              // Keep current tab active
             }
             
-            // Update UI
-            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            // Don't update active state in UI
             
             const tabElement = document.createElement('div');
-            tabElement.className = 'tab active';
+            tabElement.className = 'tab';  // Not active
             tabElement.dataset.tabId = '${tabId}';
             
             // Create tab HTML without template literals
@@ -2098,11 +2092,7 @@ ipcMain.handle('create-tab', async (event, url) => {
               tabsContainer.insertBefore(tabElement, newTabBtn);
             }
             
-            // Update address bar
-            const addressBar = document.getElementById('address-bar');
-            if (addressBar) {
-              addressBar.value = '${targetUrl}';
-            }
+            // Don't update address bar - keep showing current tab's URL
             
             console.log('New tab created:', newTab);
             return true;
@@ -2116,12 +2106,23 @@ ipcMain.handle('create-tab', async (event, url) => {
       console.error('Failed to create tab UI:', e);
     }
     
-    // Now navigate to the new tab's URL
-    if (webView) {
-      const firefoxUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0';
-      webView.webContents.setUserAgent(firefoxUserAgent);
-      await webView.webContents.loadURL(targetUrl);
+    // Don't immediately navigate - let the user click the tab to switch to it
+    // Store the current URL for the current tab before creating new one
+    const currentTabId = await mainWindow.webContents.executeJavaScript(`
+      typeof activeTabId !== 'undefined' ? activeTabId : null
+    `);
+    
+    if (currentTabId && webView) {
+      const currentUrl = webView.webContents.getURL();
+      const currentTab = tabsData.get(currentTabId);
+      if (currentTab) {
+        currentTab.url = currentUrl;
+        console.log(`Preserved current tab ${currentTabId} URL: ${currentUrl}`);
+      }
     }
+    
+    // Don't navigate immediately - user needs to click the tab to switch
+    console.log(`New tab ${tabId} created but not activated (current page preserved)`)
   }
   
   return {
