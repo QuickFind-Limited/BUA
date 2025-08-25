@@ -169,7 +169,7 @@ function createWindow() {
           accelerator: 'F12',
           click: () => {
             if (mainWindow) {
-              mainWindow.webContents.openDevTools();
+              mainWindow.webContents.openDevTools({ mode: 'detach' });
             }
           }
         },
@@ -178,7 +178,7 @@ function createWindow() {
           accelerator: 'Ctrl+Shift+I',
           click: () => {
             if (webView && webView.webContents) {
-              webView.webContents.openDevTools();
+              webView.webContents.openDevTools({ mode: 'detach' });
             }
           }
         },
@@ -200,6 +200,14 @@ function createWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.maximize();
     mainWindow.show();
+  });
+  
+  // Register keyboard shortcut to open DevTools detached
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.key === 'F12' && input.type === 'keyDown') {
+      mainWindow.webContents.openDevTools({ mode: 'detach' });
+      event.preventDefault();
+    }
   });
 
   // Use incognito-like session without persistence
@@ -2121,10 +2129,13 @@ ipcMain.handle('create-tab', async (event, url) => {
               window.activeTabId = '';
             }
             
-            // Just add the tab without activating it
+            // Add the tab to the tabs Map
             if (window.tabs && window.tabs.set) {
               window.tabs.set('${tabId}', newTab);
+              console.log('Added tab to tabs Map. Total tabs:', window.tabs.size);
               // Keep current tab active
+            } else {
+              console.error('tabs Map not available!');
             }
             
             // Don't update active state in UI
@@ -2133,47 +2144,8 @@ ipcMain.handle('create-tab', async (event, url) => {
             tabElement.className = 'tab';  // Not active
             tabElement.dataset.tabId = '${tabId}';
             
-            // Create tab HTML without template literals
-            const titleSpan = document.createElement('span');
-            titleSpan.className = 'tab-title';
-            titleSpan.textContent = '${title}';
-            
-            const closeBtn = document.createElement('button');
-            closeBtn.className = 'tab-close';
-            closeBtn.textContent = '×';
-            closeBtn.addEventListener('click', function(e) {
-              e.stopPropagation(); // Prevent tab switch when clicking close
-              console.log('Close button clicked for tab: ${tabId}');
-              console.log('closeTab function exists?', typeof closeTab !== 'undefined');
-              console.log('window.closeTab exists?', typeof window.closeTab !== 'undefined');
-              console.log('electronAPI exists?', typeof window.electronAPI !== 'undefined');
-              
-              // Try different methods to close the tab
-              if (typeof window.closeTab === 'function') {
-                console.log('Using window.closeTab');
-                window.closeTab('${tabId}');
-              } else if (typeof closeTab === 'function') {
-                console.log('Using global closeTab');
-                closeTab('${tabId}');
-              } else if (window.electronAPI && window.electronAPI.closeTab) {
-                console.log('Using electronAPI.closeTab directly');
-                // Fallback: call IPC directly
-                window.electronAPI.closeTab('${tabId}').then(() => {
-                  console.log('Tab closed via electronAPI');
-                  // Remove from UI after IPC succeeds
-                  const tabEl = document.querySelector('[data-tab-id="${tabId}"]');
-                  if (tabEl) tabEl.remove();
-                }).catch(err => {
-                  console.error('Error closing tab via electronAPI:', err);
-                });
-              } else {
-                console.error('Cannot close tab - no method available');
-                console.error('Available on window:', Object.keys(window).filter(k => k.includes('close') || k.includes('tab')));
-              }
-            });
-            
-            tabElement.appendChild(titleSpan);
-            tabElement.appendChild(closeBtn);
+            // Use innerHTML like the initial tab does
+            tabElement.innerHTML = '<span class="tab-title">${title}</span><button class="tab-close" onclick="if(window.closeTab) window.closeTab(\\'${tabId}\\'); else console.error(\\'closeTab not available\\');">×</button>';
             
             // Add click handler for tab switching
             tabElement.onclick = function(e) {

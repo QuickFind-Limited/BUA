@@ -3,6 +3,10 @@
 let activeTabId = null;
 let tabs = new Map();
 
+// Make tabs globally accessible for dynamic tab creation
+window.tabs = tabs;
+window.activeTabId = activeTabId;
+
 // Function to load the full Intent Spec from file
 async function loadFullIntentSpec() {
     try {
@@ -320,6 +324,7 @@ function switchToTab(tabId) {
         tab.active = (id === tabId);
     });
     activeTabId = tabId;
+    window.activeTabId = tabId; // Keep global reference updated
     
     // Update tab UI
     document.querySelectorAll('.tab').forEach(el => {
